@@ -58,6 +58,13 @@ The plan prints the exact steps. In short:
 
 Against an OpenWork you already have running, the same harness works with `--openwork-url`.
 
+### Staged runs
+
+A world spec can list `stages`. Each stage overrides `tasks`, `repeats` or `models` and has a
+`gate` that must hold before the next stage starts. `worlds/pilot.world.yaml` runs a one-task
+smoke stage (proves the model config, MCP attach and cost recording work in the app) before the
+full pilot. `owb world plan --world worlds/pilot.world.yaml` prices each stage and the total.
+
 ## Rules for official runs
 
 - **Pinned everything.** OpenWork revision, openwork-bench revision, weights revisions (lock file)

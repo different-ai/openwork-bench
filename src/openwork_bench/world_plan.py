@@ -22,16 +22,52 @@ def load_world_spec(path: Path) -> dict[str, Any]:
 
 
 def plan(spec: dict[str, Any], tasks_dir: Path | None = None) -> dict[str, Any]:
+    """Plan a run. With `stages:`, each stage is planned separately and totals are summed."""
+    if not spec.get("stages"):
+        return _plan_one(spec, tasks_dir)
+    stages = []
+    for st in spec["stages"]:
+        sub = {
+            **spec,
+            "bench": {
+                **spec["bench"],
+                **{k: v for k, v in st.items() if k in ("tasks", "repeats", "models")},
+            },
+        }
+        sub.pop("stages")
+        p = _plan_one(sub, tasks_dir, check_budget=False)
+        p["stage"] = {"name": st["name"], "gate": st.get("gate")}
+        stages.append(p)
+    first = stages[0]
+    totals = {k: round(sum(p["totals"][k] for p in stages), 2) for k in first["totals"]}
+    budget = spec["budget"]
+    problems = sorted({x for p in stages for x in p["problems"]})
+    if totals["est_model_usd"] > float(budget.get("max_model_usd", math.inf)):
+        problems.append(
+            f"estimated model spend ${totals['est_model_usd']:.2f} exceeds budget ${budget['max_model_usd']}"
+        )
+    if totals["est_sandbox_hours"] > float(budget.get("max_sandbox_hours", math.inf)):
+        problems.append(
+            f"estimated sandbox time {totals['est_sandbox_hours']:.1f} h exceeds budget {budget['max_sandbox_hours']} h"
+        )
+    return {**first, "stages": stages, "totals": totals, "problems": problems}
+
+
+def _plan_one(
+    spec: dict[str, Any], tasks_dir: Path | None = None, check_budget: bool = True
+) -> dict[str, Any]:
     bench, ow, est, budget = spec["bench"], spec["openwork"], spec.get("estimates", {}), spec["budget"]
     subjects = load_subjects()
     harnesses = set(bench.get("harnesses", ["openwork-desktop"]))
     tiers = set(bench.get("tiers", [])) or None
+    only = set(bench.get("models", [])) or None
     chosen = [
         s
         for s in subjects.values()
         if s.get("board") == bench.get("board", "open-weights")
         and s.get("harness") in harnesses
         and (tiers is None or s.get("tier") in tiers)
+        and (only is None or s.get("model_key") in only)
     ]
     for anchor in bench.get("anchors", []):
         if anchor in subjects:
@@ -71,9 +107,9 @@ def plan(spec: dict[str, Any], tasks_dir: Path | None = None) -> dict[str, Any]:
     parallel = max(1, int(bench.get("parallel_sessions", 1)))
     hours = desktop_runs * steps * float(est.get("seconds_per_step", 8)) / parallel / 3600
     sandbox_usd = hours * float(est.get("sandbox_usd_per_hour", 0.27))
-    if total_usd > float(budget.get("max_model_usd", math.inf)):
+    if check_budget and total_usd > float(budget.get("max_model_usd", math.inf)):
         problems.append(f"estimated model spend ${total_usd:.2f} exceeds budget ${budget['max_model_usd']}")
-    if hours > float(budget.get("max_sandbox_hours", math.inf)):
+    if check_budget and hours > float(budget.get("max_sandbox_hours", math.inf)):
         problems.append(
             f"estimated sandbox time {hours:.1f} h exceeds budget {budget['max_sandbox_hours']} h"
         )
@@ -87,11 +123,13 @@ def plan(spec: dict[str, Any], tasks_dir: Path | None = None) -> dict[str, Any]:
         f"(in different-ai/openwork) pnpm world up {ow['world']} --place {ow['place']} -- --ref {ow.get('ref', 'dev')} --lifetime {ow.get('lifetime_minutes', 120)}",
         f"(in the sandbox) uv tool install 'git+https://github.com/different-ai/openwork-bench@{bench.get('ref', 'main')}[all]'",
         "(in the sandbox) owb models verify && owb validate",
-        f"(in the sandbox) owb run {' '.join(desktop_ids) or '<subjects>'} --repeats {repeats} --openwork-url {server.get('url')} "
+        f"(in the sandbox) owb run {' '.join(desktop_ids) or '<subjects>'} --tasks {bench.get('tasks', 'all')} --repeats {repeats} --openwork-url {server.get('url')} "
         f"--workspace-root {ow.get('workspace_root', '/tmp/owb-workspaces')} --workers {parallel}",
     ]
     if control_ids:
-        steps_out.append(f"(anywhere) owb run {' '.join(control_ids)} --repeats {repeats}")
+        steps_out.append(
+            f"(in the sandbox) owb run {' '.join(control_ids)} --tasks {bench.get('tasks', 'all')} --repeats {repeats}"
+        )
     steps_out += [
         "owb leaderboard --runs runs && owb site",
         f"owb hub push-run runs/<run_id>   # opens a pull request on {spec.get('publish', {}).get('results_repo', 'the results dataset')}",
@@ -117,6 +155,27 @@ def plan(spec: dict[str, Any], tasks_dir: Path | None = None) -> dict[str, Any]:
 
 
 def render(p: dict[str, Any]) -> str:
+    if p.get("stages"):
+        parts = []
+        for st in p["stages"]:
+            parts.append(f"=== Stage: {st['stage']['name']} ===")
+            if st["stage"].get("gate"):
+                parts.append(f"Gate before the next stage: {st['stage']['gate']}")
+            parts.append(_render_one({**st, "stages": None}))
+            parts.append("")
+        t, b = p["totals"], p["budget"]
+        parts += [
+            "=== All stages ===",
+            f"Runs {t['runs']}  ·  model spend ${t['est_model_usd']:.2f} (budget ${b.get('max_model_usd')})  ·  "
+            f"sandbox {t['est_sandbox_hours']:.1f} h ≈ ${t['est_sandbox_usd']:.2f} (budget {b.get('max_sandbox_hours')} h)",
+            "Problems: none" if not p["problems"] else "Problems:",
+            *[f"  - {x}" for x in p["problems"]],
+        ]
+        return "\n".join(parts)
+    return _render_one(p)
+
+
+def _render_one(p: dict[str, Any]) -> str:
     out = [
         f"World run: {p['name']}  ·  OpenWork {p['openwork']['world']} on {p['openwork']['place']} @ {p['openwork']['ref']}",
         f"{p['tasks']} tasks × {p['repeats']} repeats  ·  {len(p['subjects'])} subjects  ·  {p['totals']['runs']} runs",

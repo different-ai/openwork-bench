@@ -1,0 +1,64 @@
+# Pilot run: the first real results, kept small.
+#
+# Four open-weight models chosen to span the board (top open model, two strong low-cost models,
+# one model that fits on a single GPU node), each in the agent app and in the plain loop, plus one
+# closed anchor in the agent app. Two stages: a one-task smoke test that must pass its gate before
+# the full pilot on all sample tasks with three repeats.
+name: openwork-bench-pilot
+schema: 1
+
+openwork:
+  world: preview-desktop
+  place: freestyle                # Freestyle credentials are set up; Daytona needs a login first
+  ref: dev                        # replace with the dev commit sha on the day of the run
+  lifetime_minutes: 180
+  resources: {cpu: 4, memory_gb: 8}
+  server:
+    url: http://127.0.0.1:8787    # confirm from `pnpm world outputs preview-desktop --json` after world up
+    token_env: OPENWORK_TOKEN
+    host_token_env: OPENWORK_HOST_TOKEN
+  workspace_root: /root/owb-workspaces
+
+bench:
+  ref: main                       # replace with the merged openwork-bench sha
+  board: open-weights
+  harnesses: [openwork-desktop, owb-agent]
+  models: [kimi-k3.1-pro, glm-5.3, deepseek-v4.1-flash, qwen3.8-27b]
+  anchors: [claude-opus-5-5@openwork-desktop]
+  tasks: all
+  repeats: 3
+  parallel_sessions: 2
+
+stages:
+  - name: smoke
+    tasks: expense-policy-answer
+    repeats: 1
+    gate: every subject finishes with no infrastructure errors, the model config and MCP attach work in the app, and billed cost is recorded
+  - name: pilot
+    tasks: all
+    repeats: 3
+
+secrets:
+  - name: OPENROUTER_API_KEY
+    purpose: dedicated key for this run, spend cap $40, revoked after
+  - name: ANTHROPIC_API_KEY
+    purpose: closed anchor only, dedicated key with a $25 cap
+  - name: FREESTYLE_API_KEY
+    purpose: sandbox provisioning (operator machine only, never inside the sandbox)
+  - name: HF_TOKEN
+    purpose: publishing results (Hub pull request)
+
+budget:
+  max_model_usd: 40
+  max_sandbox_hours: 4
+
+publish:
+  results_repo: different-ai/openwork-bench-results
+  open_pull_request: true
+
+estimates:
+  steps_per_task: 14
+  input_tokens_per_step: 6000
+  output_tokens_per_step: 450
+  seconds_per_step: 8
+  sandbox_usd_per_hour: 0.27

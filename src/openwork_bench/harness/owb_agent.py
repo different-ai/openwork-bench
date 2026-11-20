@@ -28,6 +28,8 @@ class OwbAgent(Agent):
         conv = make_conversation(self.subject, system_prompt(world), tools, client=self.client)
         conv.add_user(bundle.task.brief)
         usage, steps, turns = Usage(), 0, 0
+        billed: float | None = None
+        served_by: list[str] = []
         started = time.monotonic()
         status = "completed"
         try:
@@ -43,6 +45,10 @@ class OwbAgent(Agent):
                     break
                 reply = conv.call()
                 usage.add(reply.usage)
+                if reply.billed_usd is not None:
+                    billed = (billed or 0.0) + reply.billed_usd
+                if reply.served_by and reply.served_by not in served_by:
+                    served_by.append(reply.served_by)
                 turns += 1
                 if reply.stop_reason == "refusal":
                     status = "refused"
@@ -73,5 +79,15 @@ class OwbAgent(Agent):
                 turns=turns,
                 transcript=conv.transcript,
                 error=f"{type(e).__name__}: {e}"[:500],
+                billed_usd=billed,
+                served_by=served_by,
             )
-        return AgentOutcome(status=status, usage=usage, steps=steps, turns=turns, transcript=conv.transcript)
+        return AgentOutcome(
+            status=status,
+            usage=usage,
+            steps=steps,
+            turns=turns,
+            transcript=conv.transcript,
+            billed_usd=billed,
+            served_by=served_by,
+        )

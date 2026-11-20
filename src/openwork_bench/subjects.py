@@ -45,13 +45,26 @@ def load_subjects(root: Path | None = None) -> dict[str, dict[str, Any]]:
         s.setdefault("type", "model")
         if s["type"] not in SUBJECT_TYPES:
             raise ValueError(f"{f.name}: type must be one of {sorted(SUBJECT_TYPES)}")
-        if s.get("kind") == "agent" and "pricing" not in s and s.get("model") in pricing:
+        if (
+            s.get("kind") in ("agent", "openwork-desktop")
+            and "pricing" not in s
+            and s.get("model") in pricing
+        ):
             s["pricing"] = pricing[s["model"]]
         if s.get("kind") == "simulated":
             s["pricing"] = s.get("simulated", {}).get("pricing")
         s["_file"] = str(f.relative_to(root))
         out[s["id"]] = s
+    from .models import expand_subjects
+
+    for sid, s in expand_subjects(root).items():
+        s["_file"] = "models/open-weights.yaml"
+        out.setdefault(sid, s)
     return out
+
+
+def is_verified_open(subject: dict[str, Any]) -> bool:
+    return bool((subject.get("open_weights") or {}).get("verified"))
 
 
 def public_config(subject: dict[str, Any]) -> dict[str, Any]:

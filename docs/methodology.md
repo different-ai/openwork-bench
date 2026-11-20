@@ -20,6 +20,21 @@ Claude runs through the official Anthropic SDK with the configured `effort`. Ser
 fallbacks are deliberately off: the benchmark measures the named model, so a refusal is recorded
 as `refused` and scored on whatever state exists.
 
+## OpenWork Desktop and open-weight models
+
+The primary board runs open-weight models through OpenWork Desktop in OpenWork world sandboxes
+([openwork-desktop.md](openwork-desktop.md)); the same models also run through `owb-agent` as a
+control. Weights are verified and pinned to a Hugging Face revision; OpenRouter routing is pinned
+(no fallbacks, bf16/fp8 only) and each call records the serving provider and billed cost
+([open-weights.md](open-weights.md)). Token and cost totals include sub-agent sessions.
+
+## Readiness targets
+
+Scores are placed against fixed targets: **Delegable** (index ≥ 80, pass^k ≥ 60%, unsafe ≤ 1%,
+every category ≥ 60), **Ready with review** (index ≥ 60, pass^k ≥ 25%, unsafe ≤ 5%) or **Not
+ready**. A subject must run every task to earn a level. Targets label results; they never change
+a score.
+
 ## Grading
 
 1. **Checks** (`grading/checks.py`) read the final state: `file`, `csv_cell`, `csv_rows`,

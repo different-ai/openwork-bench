@@ -9,6 +9,27 @@ from typing import Any
 from .base import Conversation, ModelReply, ToolCall, Usage
 
 
+def openrouter_extra_body(cfg: dict[str, Any]) -> dict[str, Any]:
+    """Pin OpenRouter routing so a run is served by known providers at a known precision.
+
+    Without this, OpenRouter may route calls to any provider, at any quantization, and fall
+    back mid-run, which makes open-weight results irreproducible.
+    """
+    if "openrouter.ai" not in str(cfg.get("base_url", "")):
+        return {}
+    serving = cfg.get("serving") or {}
+    provider: dict[str, Any] = {
+        "allow_fallbacks": bool(serving.get("allow_fallbacks", False)),
+        "require_parameters": True,
+        "data_collection": "deny",
+    }
+    if serving.get("providers"):
+        provider["order"] = list(serving["providers"])
+    if serving.get("quantizations"):
+        provider["quantizations"] = list(serving["quantizations"])
+    return {"provider": provider, "usage": {"include": True}}
+
+
 class OpenAIConversation(Conversation):
     def __init__(self, cfg: dict[str, Any], system: str, tools: list[dict[str, Any]], client: Any = None):
         super().__init__(cfg=cfg, system=system, tools=tools)
@@ -50,6 +71,9 @@ class OpenAIConversation(Conversation):
         if self.cfg.get("reasoning_effort"):
             kwargs["reasoning_effort"] = self.cfg["reasoning_effort"]
         kwargs.update(self.cfg.get("extra_params", {}))
+        extra = openrouter_extra_body(self.cfg)
+        if extra:
+            kwargs["extra_body"] = {**extra, **kwargs.get("extra_body", {})}
         resp = self.client.chat.completions.create(**kwargs)
         choice = resp.choices[0]
         msg = choice.message
@@ -91,7 +115,16 @@ class OpenAIConversation(Conversation):
             if calls
             else ("refusal" if getattr(msg, "refusal", None) else str(choice.finish_reason))
         )
-        return ModelReply(text=msg.content or "", tool_calls=calls, usage=usage, stop_reason=stop, raw=resp)
+        billed = getattr(u, "cost", None) if u is not None else None
+        return ModelReply(
+            text=msg.content or "",
+            tool_calls=calls,
+            usage=usage,
+            stop_reason=stop,
+            raw=resp,
+            billed_usd=float(billed) if billed is not None else None,
+            served_by=getattr(resp, "provider", None),
+        )
 
     def add_tool_results(self, results: list[tuple[ToolCall, bool, str]]) -> None:
         for call, _ok, text in results:

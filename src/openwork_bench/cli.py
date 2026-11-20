@@ -34,6 +34,26 @@ def cmd_subjects(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_models(args: argparse.Namespace) -> int:
+    from .models import load_catalog, load_lock, verify_catalog
+    from .subjects import repo_root
+
+    root = repo_root()
+    lock = verify_catalog(root) if args.models_cmd == "verify" else load_lock(root)
+    cat = {m["key"]: m for m in load_catalog(root).get("models", [])}
+    bad = 0
+    for key, m in cat.items():
+        v = lock.get(key, {})
+        ok = v.get("verified")
+        bad += 0 if ok else 1
+        mark = "ok " if ok else ("?? " if not v else "NO ")
+        rev = (v.get("revision") or "")[:10]
+        print(
+            f"[{mark}] {key:24} {m['hf_repo']:52} license={v.get('license') or '-':12} rev={rev:10} {v.get('reason', 'not verified yet: run owb models verify')}"
+        )
+    return 1 if (bad and args.models_cmd == "verify") else 0
+
+
 def cmd_validate(args: argparse.Namespace) -> int:
     from .validate import validate_all
 
@@ -84,12 +104,28 @@ def cmd_run(args: argparse.Namespace) -> int:
         print("No tasks selected.", file=sys.stderr)
         return 2
     panel = _judge_panel([j for j in (args.judges or "").split(",") if j], subjects)
+    ow = {
+        k: v
+        for k, v in {
+            "url": getattr(args, "openwork_url", None),
+            "workspace_root": getattr(args, "workspace_root", None),
+            "workspace_id": getattr(args, "workspace_id", None),
+            "mcp_host": getattr(args, "mcp_host", None),
+            "mcp_advertise_host": getattr(args, "mcp_advertise_host", None),
+        }.items()
+        if v
+    }
     repeats = args.repeats or int(cfg.get("repeats", 3))
     for sid in args.subjects:
         if sid not in subjects:
             print(f"Unknown subject {sid!r}. See `owb subjects`.", file=sys.stderr)
             return 2
         s = subjects[sid]
+        if s.get("kind") == "openwork-desktop":
+            s = {**s, "openwork": {**s.get("openwork", {}), **ow}}
+        workers = (
+            args.workers if s.get("kind") != "openwork-desktop" or getattr(args, "workers_set", True) else 1
+        )
         print(f"\n▶ {s['label']}  ({len(bundles)} tasks × {repeats} repeats)")
 
         def progress(row: dict[str, Any]) -> None:
@@ -101,7 +137,7 @@ def cmd_run(args: argparse.Namespace) -> int:
             bundles,
             Path(args.out),
             repeats=repeats,
-            workers=args.workers,
+            workers=workers,
             index_version=cfg["version"],
             scoring=ScoringConfig.from_dict(cfg.get("scoring")),
             judge_panel=panel,
@@ -219,15 +255,32 @@ def cmd_show(args: argparse.Namespace) -> int:
 
 
 def cmd_world_serve(args: argparse.Namespace) -> int:
-    from .mcp_server import serve
     from .tasks import select
 
     b = select(_bundles(args), args.task)
     if len(b) != 1:
         print(f"Task {args.task!r} matched {len(b)} tasks", file=sys.stderr)
         return 2
-    serve(b[0], Path(args.state_out) if args.state_out else None)
+    state = Path(args.state_out) if args.state_out else None
+    if args.http:
+        from .mcp_server import serve_http
+
+        serve_http(b[0], args.host, args.port, state)
+    else:
+        from .mcp_server import serve
+
+        serve(b[0], state)
     return 0
+
+
+def cmd_world_plan(args: argparse.Namespace) -> int:
+    from .world_plan import load_world_spec, plan, render
+
+    p = plan(
+        load_world_spec(Path(args.world)), Path(args.tasks_dir) if getattr(args, "tasks_dir", None) else None
+    )
+    print(json.dumps(p, indent=1) if args.json else render(p))
+    return 1 if p["problems"] else 0
 
 
 def cmd_grade_state(args: argparse.Namespace) -> int:
@@ -291,6 +344,12 @@ def build_parser() -> argparse.ArgumentParser:
         fn=cmd_validate
     )
 
+    mo = sub.add_parser("models", help="The open-weight model catalog")
+    mosub = mo.add_subparsers(dest="models_cmd", required=True)
+    mosub.add_parser("list", help="Show models and their verification status")
+    mosub.add_parser("verify", help="Check each model publishes open weights; pin revision and license")
+    mo.set_defaults(fn=cmd_models)
+
     r = sub.add_parser("run", help="Run subjects on tasks")
     r.add_argument("subjects", nargs="+")
     r.add_argument("--tasks", default="all", help="all, a category, ids (comma separated) or an id prefix")
@@ -301,6 +360,15 @@ def build_parser() -> argparse.ArgumentParser:
     r.add_argument("--judges", default="", help="Comma-separated subject ids to use as rubric judges")
     r.add_argument("--include-private", action="store_true")
     r.add_argument("--quiet", action="store_true")
+    r.add_argument(
+        "--openwork-url", help="OpenWork server URL for openwork-desktop subjects (or OPENWORK_URL)"
+    )
+    r.add_argument("--workspace-root", help="Where openwork-desktop creates one fresh workspace per attempt")
+    r.add_argument(
+        "--workspace-id", help="Reuse one existing OpenWork workspace instead of creating one per attempt"
+    )
+    r.add_argument("--mcp-host", help="Interface the task MCP world listens on (default 127.0.0.1)")
+    r.add_argument("--mcp-advertise-host", help="Host the OpenWork engine uses to reach the MCP world")
     r.set_defaults(fn=cmd_run)
 
     g = sub.add_parser("regrade", help="Re-score stored runs with the current graders")
@@ -343,7 +411,14 @@ def build_parser() -> argparse.ArgumentParser:
     ws = wsub.add_parser("serve", help="Serve a task's world as an MCP server over stdio")
     ws.add_argument("task")
     ws.add_argument("--state-out", help="Write the world snapshot here after every tool call")
+    ws.add_argument("--http", action="store_true", help="Serve over streamable HTTP instead of stdio")
+    ws.add_argument("--host", default="127.0.0.1")
+    ws.add_argument("--port", type=int, default=8765)
     ws.set_defaults(fn=cmd_world_serve)
+    wp = wsub.add_parser("plan", help="Check and price an OpenWork world run before starting it")
+    wp.add_argument("--world", default="worlds/openwork-bench.world.yaml")
+    wp.add_argument("--json", action="store_true")
+    wp.set_defaults(fn=cmd_world_plan)
 
     gs = sub.add_parser("grade-state", help="Grade a saved world snapshot (e.g. from `owb world serve`)")
     gs.add_argument("task")
@@ -380,7 +455,9 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 def main(argv: list[str] | None = None) -> int:
+    argv = list(sys.argv[1:] if argv is None else argv)
     args = build_parser().parse_args(argv)
+    args.workers_set = any(a == "--workers" or a.startswith("--workers=") for a in argv)
     return int(args.fn(args) or 0)
 
 

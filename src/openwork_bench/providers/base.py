@@ -44,6 +44,8 @@ class ModelReply:
     usage: Usage
     stop_reason: str
     raw: Any = None
+    billed_usd: float | None = None  # cost the provider reported for this call, when it reports one
+    served_by: str | None = None  # upstream provider that served the call (routers like OpenRouter)
 
 
 @dataclass

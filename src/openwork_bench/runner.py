@@ -101,11 +101,24 @@ def run_one(
         "rubric": graded["rubric"],
         "rubric_status": graded["rubric_status"],
         "usage": outcome.usage.as_dict(),
-        "cost_usd": cost_usd(outcome.usage, subject.get("pricing")),
+        "cost_usd": outcome.billed_usd
+        if outcome.billed_usd is not None
+        else cost_usd(outcome.usage, subject.get("pricing")),
+        "cost_source": "billed"
+        if outcome.billed_usd is not None
+        else ("list-price" if subject.get("pricing") else None),
+        "served_by": outcome.served_by,
+        "open_weights_revision": (subject.get("open_weights") or {}).get("revision"),
+        "harness_meta": outcome.meta,
         "wall_s": wall,
         "steps": outcome.steps,
         "turns": outcome.turns,
         "simulated": subject.get("type") == "simulated",
+        "board": subject.get("board"),
+        "family": subject.get("family") or ("simulated" if subject.get("type") == "simulated" else None),
+        "anchor": bool(subject.get("anchor")),
+        "tier": subject.get("tier"),
+        "open_weights": subject.get("open_weights"),
         "grader_version": GRADER_VERSION,
         "started_at": started_at,
     }

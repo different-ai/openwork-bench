@@ -123,7 +123,14 @@ def _plan_one(
         f"(in different-ai/openwork) pnpm world up {ow['world']} --place {ow['place']} -- --ref {ow.get('ref', 'dev')} --lifetime {ow.get('lifetime_minutes', 120)}",
         f"(in the sandbox) uv tool install 'git+https://github.com/different-ai/openwork-bench@{bench.get('ref', 'main')}[all]'",
         "(in the sandbox) owb models verify && owb validate",
-        f"(in the sandbox) owb run {' '.join(desktop_ids) or '<subjects>'} --tasks {bench.get('tasks', 'all')} --repeats {repeats} --openwork-url {server.get('url')} "
+        "(in the sandbox) write the model key to a mode-600 file and export OPENROUTER_API_KEY_FILE (never on a command line)",
+        f"(in the sandbox) owb run {' '.join(desktop_ids) or '<subjects>'} --tasks {bench.get('tasks', 'all')} --repeats {repeats} "
+        + (
+            f"--openwork-cdp {server['cdp_url']} "
+            if server.get("cdp_url")
+            else f"--openwork-url {server.get('url')} "
+        )
+        + ""
         f"--workspace-root {ow.get('workspace_root', '/tmp/owb-workspaces')} --workers {parallel}",
     ]
     if control_ids:
@@ -133,6 +140,7 @@ def _plan_one(
     steps_out += [
         "owb leaderboard --runs runs && owb site",
         f"owb hub push-run runs/<run_id>   # opens a pull request on {spec.get('publish', {}).get('results_repo', 'the results dataset')}",
+        "(in the sandbox) delete the key file; revoke the key at the provider",
         f"(in different-ai/openwork) pnpm world down {ow['world']}",
     ]
     return {

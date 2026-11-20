@@ -14,9 +14,7 @@ openwork:
   lifetime_minutes: 180
   resources: {cpu: 4, memory_gb: 8}
   server:
-    url: http://127.0.0.1:8787    # confirm from `pnpm world outputs preview-desktop --json` after world up
-    token_env: OPENWORK_TOKEN
-    host_token_env: OPENWORK_HOST_TOKEN
+    cdp_url: http://127.0.0.1:9825  # the desktop's DevTools port inside the world; owb reads the server address and owner token from it
   workspace_root: /root/owb-workspaces
 
 bench:
@@ -40,13 +38,9 @@ stages:
 
 secrets:
   - name: OPENROUTER_API_KEY
-    purpose: dedicated key for this run, spend cap $40, revoked after
-  - name: ANTHROPIC_API_KEY
-    purpose: closed anchor only, dedicated key with a $25 cap
+    purpose: one dedicated key for every model, including the anchor; credit limit $40; revoked after. Copied into the sandbox as a mode-600 file (OPENROUTER_API_KEY_FILE), deleted at the end
   - name: FREESTYLE_API_KEY
     purpose: sandbox provisioning (operator machine only, never inside the sandbox)
-  - name: HF_TOKEN
-    purpose: publishing results (Hub pull request)
 
 budget:
   max_model_usd: 40

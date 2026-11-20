@@ -108,6 +108,7 @@ def cmd_run(args: argparse.Namespace) -> int:
         k: v
         for k, v in {
             "url": getattr(args, "openwork_url", None),
+            "cdp_url": getattr(args, "openwork_cdp", None),
             "workspace_root": getattr(args, "workspace_root", None),
             "workspace_id": getattr(args, "workspace_id", None),
             "mcp_host": getattr(args, "mcp_host", None),
@@ -362,6 +363,10 @@ def build_parser() -> argparse.ArgumentParser:
     r.add_argument("--quiet", action="store_true")
     r.add_argument(
         "--openwork-url", help="OpenWork server URL for openwork-desktop subjects (or OPENWORK_URL)"
+    )
+    r.add_argument(
+        "--openwork-cdp",
+        help="Find the desktop's embedded server through its DevTools port, e.g. http://127.0.0.1:9825",
     )
     r.add_argument("--workspace-root", help="Where openwork-desktop creates one fresh workspace per attempt")
     r.add_argument(

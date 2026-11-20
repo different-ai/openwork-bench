@@ -3,10 +3,9 @@
 from __future__ import annotations
 
 import json
-import os
 from typing import Any
 
-from .base import Conversation, ModelReply, ToolCall, Usage
+from .base import Conversation, ModelReply, ToolCall, Usage, read_secret
 
 
 def openrouter_extra_body(cfg: dict[str, Any]) -> dict[str, Any]:
@@ -38,7 +37,7 @@ class OpenAIConversation(Conversation):
 
             key_env = cfg.get("api_key_env", "OPENAI_API_KEY")
             client = OpenAI(
-                api_key=os.environ.get(key_env),
+                api_key=read_secret(key_env),
                 base_url=cfg.get("base_url") or None,
                 max_retries=int(cfg.get("max_retries", 4)),
             )

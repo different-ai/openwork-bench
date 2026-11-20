@@ -33,7 +33,7 @@ from pathlib import Path
 from typing import Any
 
 from ..mcp_server import SERVER_NAME, HttpWorldServer
-from ..providers.base import Usage
+from ..providers.base import Usage, read_secret
 from ..providers.openai_provider import openrouter_extra_body
 from ..tasks import TaskBundle
 from ..world import World
@@ -137,7 +137,7 @@ def opencode_model_config(subject: dict[str, Any]) -> tuple[str, dict[str, Any]]
     """The OpenCode `provider` block for a subject, and its provider id."""
     route, label = subject["model"], subject.get("label", subject["model"])
     default_env = "ANTHROPIC_API_KEY" if subject.get("provider") == "anthropic" else "OPENROUTER_API_KEY"
-    key = os.environ.get(subject.get("api_key_env", default_env), "")
+    key = read_secret(subject.get("api_key_env", default_env)) or ""
     base_url = str(subject.get("base_url", ""))
     if subject.get("provider") == "anthropic":
         return "anthropic", {"anthropic": {"options": {"apiKey": key}, "models": {route: {"name": label}}}}
@@ -207,10 +207,17 @@ class OpenWorkDesktopAgent(Agent):
         super().__init__(subject)
         ow = subject.get("openwork") or {}
         self.cfg = ow
+        if client is None and (ow.get("cdp_url") or os.environ.get("OPENWORK_CDP_URL")):
+            # Ask the running desktop for its embedded server address and owner token over the
+            # debug port, the same way OpenWork's own evals reach it. The token stays in memory.
+            from .openwork_connect import server_info
+
+            info = server_info(ow.get("cdp_url") or os.environ["OPENWORK_CDP_URL"])
+            client = OpenWorkClient(info["baseUrl"], token=info["token"])
         self.client = client or OpenWorkClient(
             ow.get("url") or os.environ.get("OPENWORK_URL", "http://127.0.0.1:8787"),
-            token=os.environ.get(ow.get("token_env", "OPENWORK_TOKEN")),
-            host_token=os.environ.get(ow.get("host_token_env", "OPENWORK_HOST_TOKEN")),
+            token=read_secret(ow.get("token_env", "OPENWORK_TOKEN")),
+            host_token=read_secret(ow.get("host_token_env", "OPENWORK_HOST_TOKEN")),
         )
 
     def _workspace(self, bundle: TaskBundle, repeat: int) -> str:

@@ -7,8 +7,7 @@ The other documents describe how each part works today.
 
 Teams adopting AI for office work need to know which agent setup will actually do the job, what
 it costs, how long it takes, and whether it can be trusted not to cause damage. OpenWork Bench
-answers that for **open-weight models doing knowledge work inside OpenWork**, with results anyone
-can reproduce.
+answers that for **open-weight models doing knowledge work**, with results anyone can reproduce.
 
 | Related benchmarks | Strength | What OpenWork Bench adds |
 |---|---|---|
@@ -16,11 +15,12 @@ can reproduce.
 | APEX-Agents, TheAgentCompany, Workspace-Bench, OfficeBench | Long-horizon, multi-app agent tasks | Cost, reliability and safety as first-class scores; fully open data |
 | τ-bench, OSWorld | Reliability (pass^k), policy adherence, computer use | An office-work suite with readiness targets |
 
-### Focus: open-weight models in OpenWork
+### Focus: open models you can trust with work
 
-The headline board ranks open-weight models running real tasks in OpenWork Desktop, inside
-OpenWork world sandboxes. It shows how far downloadable, self-hostable models go for knowledge
-work, and what they cost. Results follow strict rules: verified weights pinned to a revision,
+The headline board ranks open-weight models on real office tasks and gives each a verdict:
+Delegable, Ready with review or Not ready. It shows how far downloadable, self-hostable models go
+for knowledge work, and what they cost. Tasks run in a real desktop agent app (OpenWork) inside
+isolated sandboxes, with a plain tool loop alongside as a control. Results follow strict rules: verified weights pinned to a revision,
 pinned serving and precision, identical harness and budgets, a neutral control harness, closed
 models shown only as labelled anchors, and fixed readiness targets
 ([open-weights.md](open-weights.md), [openwork-desktop.md](openwork-desktop.md)).

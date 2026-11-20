@@ -102,7 +102,7 @@ def expand_subjects(root: Path) -> dict[str, dict[str, Any]]:
             s = {
                 **{k: v for k, v in defaults.items() if k != "serving"},
                 "id": sid,
-                "label": f"{m['label']} · {'OpenWork' if harness == 'openwork-desktop' else 'reference harness'}",
+                "label": m["label"] if harness == "openwork-desktop" else f"{m['label']} · plain loop",
                 "type": "product" if harness == "openwork-desktop" else "model",
                 "kind": "openwork-desktop" if harness == "openwork-desktop" else "agent",
                 "harness": harness,

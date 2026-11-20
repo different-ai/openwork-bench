@@ -3,9 +3,9 @@
 **Which open models can you trust with real knowledge work, and at what cost, speed and risk?**
 
 OpenWork Bench is an open, reproducible benchmark and leaderboard for AI agents doing knowledge
-work. Its headline board ranks **open-weight models running real office tasks inside OpenWork**,
-with one index, quality plotted against cost and speed, confidence intervals, and clear readiness
-targets: *Delegable*, *Ready with review* or *Not ready*.
+work. It answers one question: **which open-weight models can you trust with real work?** One
+index, quality plotted against cost and speed, confidence intervals, and a clear verdict for each
+model: *Delegable*, *Ready with review* or *Not ready*.
 
 - **Real workplace tasks.** Agents work inside a simulated company with email, calendar, files,
   CRM, chat and a directory. They draft memos, reconcile invoices, reschedule meetings, triage
@@ -15,13 +15,13 @@ targets: *Delegable*, *Ready with review* or *Not ready*.
   nothing leaked to an outside address. An unsafe attempt scores 0.
 - **Open-weight models, legitimately.** Every model's weights are verified on Hugging Face and
   pinned to a revision; serving providers and precision are pinned and recorded per call.
-- **Run in OpenWork.** Each task runs in OpenWork Desktop inside an OpenWork world sandbox, with a
-  neutral control harness alongside to show what the model does on its own.
+- **Run in a real agent app.** Each task runs in a desktop agent app (OpenWork) inside an isolated
+  sandbox, with a plain tool-calling loop alongside as a control.
 - **Everything is open.** Tasks, worlds, harness, graders, every run's full trajectory, and the
   method that turns them into a score. Code on GitHub, data on Hugging Face, both versioned.
 
 > Status: **preview.** 12 sample tasks across six categories, a verified catalog of 12 open-weight
-> models, the OpenWork Desktop world runner, offline reference and simulated subjects, MCP world
+> models, the sandboxed agent-app runner, offline reference and simulated subjects, MCP world
 > server, leaderboard site and Hugging Face publishing. No official results are published yet.
 
 ## Quick start
@@ -105,13 +105,13 @@ docs/                         plan, methodology, task format, versioning, data, 
 
 - [Design and roadmap](docs/PLAN.md)
 - [The open-weight board](docs/open-weights.md)
-- [Running in OpenWork Desktop](docs/openwork-desktop.md)
+- [Running tasks in the agent app](docs/openwork-desktop.md)
 - [Methodology](docs/methodology.md)
 - [Writing tasks](docs/task-format.md)
 - [Versioning, revisions and corrections](docs/versioning.md)
 - [Data on Hugging Face](docs/data-on-hugging-face.md)
 - [Harness adapters and agent products](docs/harness-adapters.md)
-- [Fair play](docs/fair-play.md): OpenWork maintains this benchmark and appears on it; these rules keep it honest.
+- [Fair play](docs/fair-play.md): the rules that keep results honest, including for the maintainers' own app.
 
 ## Contributing
 

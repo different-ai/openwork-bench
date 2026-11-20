@@ -54,6 +54,47 @@ def cmd_models(args: argparse.Namespace) -> int:
     return 1 if (bad and args.models_cmd == "verify") else 0
 
 
+def cmd_openwork_check(args: argparse.Namespace) -> int:
+    """Prove the OpenWork path end to end without calling a model."""
+    from .harness.openwork_desktop import DENY_LOCAL_TOOLS, OpenWorkClient
+    from .mcp_server import SERVER_NAME, HttpWorldServer
+    from .providers.base import read_secret
+    from .tasks import select
+
+    if args.openwork_cdp:
+        from .harness.openwork_connect import server_info
+
+        info = server_info(args.openwork_cdp)
+        client = OpenWorkClient(info["baseUrl"], token=info["token"])
+        print(f"server: found at {info['baseUrl']} (owner token in memory)")
+    else:
+        client = OpenWorkClient(
+            args.openwork_url,
+            token=read_secret("OPENWORK_TOKEN"),
+            host_token=read_secret("OPENWORK_HOST_TOKEN"),
+        )
+    bundle = select(_bundles(args), args.task)[0]
+    with HttpWorldServer(bundle) as srv:
+        ws = client.create_workspace(f"{args.workspace_root}/owb-check", "OpenWork Bench check")["id"]
+        print(f"workspace: created {ws}")
+        client.patch_config(
+            ws,
+            {
+                "mcp": {SERVER_NAME: {"type": "remote", "url": srv.url, "enabled": True, "oauth": False}},
+                "permission": dict(DENY_LOCAL_TOOLS),
+            },
+        )
+        print("config: MCP world attached, local tools denied")
+        client.reload_engine(ws)
+        print("engine: reloaded")
+        sid = client.create_session(ws, "OpenWork Bench check")
+        print(f"session: created {sid}")
+        status = client.status(ws)
+        print(f"status: ok ({len(status)} busy sessions)")
+    print("OpenWork path OK (no model was called)")
+    return 0
+
+
 def cmd_validate(args: argparse.Namespace) -> int:
     from .validate import validate_all
 
@@ -344,6 +385,17 @@ def build_parser() -> argparse.ArgumentParser:
     sub.add_parser("validate", help="Check every task is solvable and not gameable").set_defaults(
         fn=cmd_validate
     )
+
+    oc = sub.add_parser("openwork", help="OpenWork Desktop helpers")
+    ocsub = oc.add_subparsers(dest="openwork_cmd", required=True)
+    chk = ocsub.add_parser(
+        "check", help="Prove the OpenWork path (workspace, config, MCP, session) without calling a model"
+    )
+    chk.add_argument("--openwork-cdp", help="DevTools URL of the running desktop, e.g. http://127.0.0.1:9825")
+    chk.add_argument("--openwork-url", default="http://127.0.0.1:8787")
+    chk.add_argument("--workspace-root", default="/tmp/owb-workspaces")
+    chk.add_argument("--task", default="expense-policy-answer")
+    chk.set_defaults(fn=cmd_openwork_check)
 
     mo = sub.add_parser("models", help="The open-weight model catalog")
     mosub = mo.add_subparsers(dest="models_cmd", required=True)

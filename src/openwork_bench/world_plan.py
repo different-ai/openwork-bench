@@ -34,7 +34,7 @@ def plan(spec: dict[str, Any], tasks_dir: Path | None = None) -> dict[str, Any]:
                 **{k: v for k, v in st.items() if k in ("tasks", "repeats", "models")},
             },
         }
-        sub.pop("stages")
+        sub["stages"] = None
         p = _plan_one(sub, tasks_dir, check_budget=False)
         p["stage"] = {"name": st["name"], "gate": st.get("gate")}
         stages.append(p)

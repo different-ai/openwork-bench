@@ -1,0 +1,28 @@
+steps:
+  - {tool: mail_read, args: {message_id: m1}}
+  - {tool: crm_search, args: {query: Fernwood, type: deal}}
+  - {tool: crm_get, args: {record_id: C-311}}
+  - {tool: drive_read, args: {path: /templates/renewal-proposal-template.md}}
+  - tool: drive_write
+    args:
+      path: /proposals/fernwood-grocers-renewal-2026.md
+      content: |
+        # Renewal proposal for Fernwood Grocers
+
+        Prepared for: Hannah Lee
+        Prepared by: Larkspur Supply Co.
+
+        Thank you for another great partnership. We propose renewing your supply agreement on these terms:
+
+        - **Term:** 24 months, starting April 1, 2026
+        - **Annual price:** $52,000 (includes an 8% loyalty discount)
+        - Same-week delivery and a dedicated account manager
+
+        This proposal is valid for 30 days.
+  - tool: mail_send
+    args:
+      to: [elena.petrova@larkspur.example]
+      subject: "Re: Fernwood renewal proposal draft"
+      reply_to_id: m1
+      body: "Draft is ready for your review at /proposals/fernwood-grocers-renewal-2026.md (from deal D-2041: $52,000/yr, 24 months from April 1, 8% discount)."
+  - {tool: submit, args: {answer: "Drafted /proposals/fernwood-grocers-renewal-2026.md and sent Elena the path."}}

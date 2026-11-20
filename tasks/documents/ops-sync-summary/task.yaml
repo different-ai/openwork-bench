@@ -1,0 +1,32 @@
+id: ops-sync-summary
+version: 1
+title: Turn messy meeting notes into a summary with action items
+category: documents
+occupation: {soc: "43-6014", title: "Secretaries and Administrative Assistants"}
+difficulty: easy
+horizon: multi-step
+split: public-dev
+brief: |
+  Turn Friday's ops sync notes (in /meetings) into a clean summary saved at
+  /meetings/2026-03-06-ops-sync-summary.md. It needs a Decisions section and an Action items
+  section listing owner, task and due date for each item. Then post a short note in the #ops chat
+  channel saying the summary is ready, with its path.
+budgets: {max_steps: 20, max_tokens: 200000, timeout_s: 600}
+expert_baseline: {minutes: 15, hourly_rate_usd: 30}
+checks:
+  - {id: summary-exists, type: file, path: /meetings/2026-03-06-ops-sync-summary.md, content: {contains: [Decision, Action]}, weight: 1, critical: true}
+  - {id: action-tom, type: file, path: /meetings/2026-03-06-ops-sync-summary.md,
+     content: {contains: [Tom, forklift], regex: "(2026-03-13|March 13|Mar\\.? 13|3/13)"}, weight: 2}
+  - {id: action-jordan, type: file, path: /meetings/2026-03-06-ops-sync-summary.md,
+     content: {contains: [Jordan, freight], regex: "(2026-03-11|March 11|Mar\\.? 11|3/11)"}, weight: 2}
+  - {id: action-elena, type: file, path: /meetings/2026-03-06-ops-sync-summary.md,
+     content: {contains: [Elena, price list], regex: "(2026-03-16|March 16|Mar\\.? 16|3/16)"}, weight: 2}
+  - {id: decision-saturday, type: file, path: /meetings/2026-03-06-ops-sync-summary.md, content: {contains: [Saturday]}, weight: 1}
+  - {id: decision-not-action, type: file, path: /meetings/2026-03-06-ops-sync-summary.md, content: {not_contains: [Bluefin]}, weight: 1,
+     description: The Bluefin idea was explicitly dropped and should not appear as a decision or action}
+  - {id: posted-in-ops, type: chat_posted, channel: ops, text: {contains: [ops-sync-summary]}, weight: 1}
+rubric:
+  - {id: clean, text: "The summary is clean and skimmable: headings, one line per action item, no leftover shorthand from the raw notes."}
+tags: [summarization, extraction, date-resolution]
+provenance: {author: OpenWork Bench maintainers, created: "2026-11-20", notes: "Due dates are written relatively in the notes and must be resolved against the meeting date (Fri 2026-03-06)."}
+canary: OWB-CANARY-7f3c2a91-ops-sync-summary

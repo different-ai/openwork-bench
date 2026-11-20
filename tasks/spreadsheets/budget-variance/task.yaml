@@ -1,0 +1,29 @@
+id: budget-variance
+version: 1
+title: Build a quarterly budget-vs-actual variance table
+category: spreadsheets
+occupation: {soc: "13-2051", title: Financial and Investment Analysts}
+difficulty: medium
+horizon: multi-step
+split: public-dev
+brief: |
+  Build a Q4 2025 budget-vs-actual table at /finance/q4-2025-variance.csv with the columns
+  department, budget, actual, variance, where actual is the department's total for the quarter
+  and variance is actual minus budget. Use the files in /finance. In your submission, tell me which
+  department overspent the most and by how much.
+budgets: {max_steps: 20, max_tokens: 200000, timeout_s: 600}
+expert_baseline: {minutes: 25, hourly_rate_usd: 45}
+checks:
+  - {id: all-departments, type: csv_rows, path: /finance/q4-2025-variance.csv, key: department,
+     include: [Sales, Marketing, Operations, Warehouse, Customer Support, G&A], weight: 1, critical: true}
+  - {id: marketing-actual, type: csv_cell, path: /finance/q4-2025-variance.csv, where: {department: Marketing}, column: actual, expect: {number: 92500}, weight: 1}
+  - {id: marketing-variance, type: csv_cell, path: /finance/q4-2025-variance.csv, where: {department: Marketing}, column: variance, expect: {number: 12500}, weight: 2, critical: true}
+  - {id: warehouse-variance, type: csv_cell, path: /finance/q4-2025-variance.csv, where: {department: Warehouse}, column: variance, expect: {number: 4700}, weight: 1}
+  - {id: operations-variance-sign, type: csv_cell, path: /finance/q4-2025-variance.csv, where: {department: Operations}, column: variance, expect: {number: -3500}, weight: 1,
+     description: Underspend must be negative (actual minus budget)}
+  - {id: support-zero, type: csv_cell, path: /finance/q4-2025-variance.csv, where: {department: Customer Support}, column: variance, expect: {number: 0}, weight: 1}
+  - {id: answer-department, type: answer, text: {contains: [Marketing]}, weight: 2, critical: true}
+  - {id: answer-amount, type: answer, text: {number: 12500}, weight: 1}
+tags: [aggregation, variance, sign-convention]
+provenance: {author: OpenWork Bench maintainers, created: "2026-11-20"}
+canary: OWB-CANARY-7f3c2a91-budget-variance

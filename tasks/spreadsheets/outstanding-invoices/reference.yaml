@@ -1,0 +1,22 @@
+steps:
+  - {tool: drive_read, args: {path: /finance/invoices-feb-2026.csv}}
+  - {tool: drive_read, args: {path: /finance/payments-feb-2026.csv}}
+  - tool: drive_write
+    args:
+      path: /finance/outstanding-feb.csv
+      content: |
+        invoice_id,customer,outstanding_amount
+        INV-1003,Brightwater Hotels,1800.00
+        INV-1007,Halcyon Cafe,2450.00
+        INV-1009,Ridgeview Clinic,980.50
+  - tool: mail_send
+    args:
+      to: [marcus.chen@larkspur.example]
+      subject: Outstanding February invoices
+      body: |
+        Hi Marcus,
+        Three February invoices still have money owed, $5,230.50 in total:
+        INV-1003 Brightwater Hotels $1,800.00 (partially paid), INV-1007 Halcyon Cafe $2,450.00,
+        INV-1009 Ridgeview Clinic $980.50. Details in /finance/outstanding-feb.csv.
+        Sam
+  - {tool: submit, args: {answer: "Total outstanding $5,230.50 across INV-1003, INV-1007, INV-1009."}}

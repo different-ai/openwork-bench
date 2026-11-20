@@ -1,0 +1,24 @@
+id: renewal-closed-won
+version: 1
+title: Close a renewal across CRM, email and chat
+category: operations
+occupation: {soc: "41-3091", title: "Sales Representatives of Services"}
+difficulty: medium
+horizon: multi-step
+split: public-dev
+brief: |
+  Brightwater Hotels replied about their renewal. Update the CRM deal to reflect what they agreed,
+  send them the renewal contract from Drive the way they asked, and let the team know in #sales.
+budgets: {max_steps: 25, max_tokens: 250000, timeout_s: 600}
+expert_baseline: {minutes: 10, hourly_rate_usd: 35}
+checks:
+  - {id: stage-won, type: crm_field, record_id: D-2077, field: stage, expect: {equals: Closed Won}, weight: 2, critical: true}
+  - {id: amount, type: crm_field, record_id: D-2077, field: amount, expect: {number: 48500}, weight: 2, critical: true}
+  - {id: term, type: crm_field, record_id: D-2077, field: term_months, expect: {number: 12}, weight: 1}
+  - {id: start-date, type: crm_field, record_id: D-2077, field: start_date, expect: {contains: ["2026-04-01"]}, weight: 1}
+  - {id: contract-sent, type: email_sent, to: [legal@brightwaterhotels.example], attachments_include: [brightwater-renewal-2026], weight: 2,
+     description: Luis asked for the contract to go to their legal team}
+  - {id: team-told, type: chat_posted, channel: sales, text: {contains: [Brightwater], number: 48500}, weight: 1}
+tags: [crm-update, cross-app, attachments]
+provenance: {author: OpenWork Bench maintainers, created: "2026-11-20"}
+canary: OWB-CANARY-7f3c2a91-renewal-closed-won

@@ -1,0 +1,25 @@
+id: expense-policy-answer
+version: 1
+title: Answer an expense question from the current policy
+category: research
+occupation: {soc: "13-1071", title: Human Resources Specialists}
+difficulty: easy
+horizon: single
+split: public-dev
+brief: |
+  Jordan sent me a question about expensing a dinner. Reply to Jordan using our current travel
+  and expense policy in Drive: say what can be reimbursed, how much, and anything Jordan needs
+  to do to get reimbursed.
+budgets: {max_steps: 20, max_tokens: 200000, timeout_s: 600}
+expert_baseline: {minutes: 10, hourly_rate_usd: 35}
+checks:
+  - {id: replied-to-jordan, type: email_sent, to: [jordan.blake@larkspur.example], weight: 2, critical: true}
+  - {id: reimbursable-amount, type: email_sent, to: [jordan.blake@larkspur.example], body: {number: 56}, weight: 3, critical: true,
+     description: "$68 dinner minus the $12 glass of wine = $56, under the $60 dinner cap"}
+  - {id: alcohol-excluded, type: email_sent, to: [jordan.blake@larkspur.example], body: {contains_any: [wine, alcohol]}, weight: 1}
+  - {id: receipt-needed, type: email_sent, to: [jordan.blake@larkspur.example], body: {contains_any: [receipt]}, weight: 1}
+  - {id: not-old-policy, type: email_sent, to: [jordan.blake@larkspur.example], body: {not_contains: ["$50 "]}, weight: 1,
+     description: The archived 2023 policy had a $50 dinner cap and must not be used}
+tags: [policy-lookup, stale-document-trap]
+provenance: {author: OpenWork Bench maintainers, created: "2026-11-20"}
+canary: OWB-CANARY-7f3c2a91-expense-policy-answer

@@ -1,0 +1,124 @@
+id: team-offsite
+version: 1
+title: Plan a team offsite within budget and constraints
+category: projects
+occupation:
+  soc: 13-1121
+  title: Meeting, Convention, and Event Planners
+difficulty: hard
+horizon: project
+split: public-dev
+brief: "Plan our spring team offsite using the brief, venue options and attendee list in /offsite.\n\n1. Pick the\
+  \ cheapest venue that meets every requirement in the brief.\n2. Write the plan to /offsite/plan.md: the venue,\
+  \ total cost (venue + catering for everyone), and the catering\n   head-count for each dietary need.\n3. Put the\
+  \ offsite on the calendar for everyone (9am to 5pm, at the venue).\n4. Email all attendees the date and venue.\n"
+budgets:
+  max_steps: 40
+  max_tokens: 500000
+  timeout_s: 1200
+expert_baseline:
+  minutes: 90
+  hourly_rate_usd: 35
+checks:
+- id: venue
+  type: file
+  path: /offsite/plan.md
+  content:
+    contains:
+    - Maple Hall
+  weight: 3
+  critical: true
+  description: Riverside Loft has no projector, Summit Lodge is too far, The Foundry is too small, Cedar Commons
+    costs more
+- id: total-cost
+  type: file
+  path: /offsite/plan.md
+  content:
+    number: 4910
+  weight: 2
+  description: $3,200 + 18 x $95
+- id: vegetarian-count
+  type: file
+  path: /offsite/plan.md
+  content:
+    regex: vegetarian\D{0,25}\b4\b|\b4\b\D{0,25}vegetarian
+  weight: 1
+- id: vegan-count
+  type: file
+  path: /offsite/plan.md
+  content:
+    regex: vegan\D{0,25}\b2\b|\b2\b\D{0,25}vegan
+  weight: 1
+- id: gluten-free-count
+  type: file
+  path: /offsite/plan.md
+  content:
+    regex: gluten[- ]free\D{0,25}\b1\b|\b1\b\D{0,25}gluten[- ]free
+  weight: 1
+- id: calendar
+  type: calendar_event
+  where:
+    title:
+      contains:
+      - offsite
+  expect:
+    start: 2026-04-23T09:00
+    end: 2026-04-23T17:00
+    location:
+      contains:
+      - Maple Hall
+    attendees_include:
+    - priya.natarajan@larkspur.example
+    - marcus.chen@larkspur.example
+    - elena.petrova@larkspur.example
+    - jordan.blake@larkspur.example
+    - aisha.okafor@larkspur.example
+    - tom.alvarez@larkspur.example
+    - sam.rivera@larkspur.example
+    - nadia.kim@larkspur.example
+    - omar.haddad@larkspur.example
+    - lucia.romano@larkspur.example
+    - ben.carter@larkspur.example
+    - mei.tanaka@larkspur.example
+    - kwame.mensah@larkspur.example
+    - sofia.lindqvist@larkspur.example
+    - diego.herrera@larkspur.example
+    - hana.novak@larkspur.example
+    - liam.obrien@larkspur.example
+    - zara.ahmed@larkspur.example
+  weight: 2
+  critical: true
+- id: everyone-emailed
+  type: email_sent
+  coverage: union
+  to:
+  - priya.natarajan@larkspur.example
+  - marcus.chen@larkspur.example
+  - elena.petrova@larkspur.example
+  - jordan.blake@larkspur.example
+  - aisha.okafor@larkspur.example
+  - tom.alvarez@larkspur.example
+  - nadia.kim@larkspur.example
+  - omar.haddad@larkspur.example
+  - lucia.romano@larkspur.example
+  - ben.carter@larkspur.example
+  - mei.tanaka@larkspur.example
+  - kwame.mensah@larkspur.example
+  - sofia.lindqvist@larkspur.example
+  - diego.herrera@larkspur.example
+  - hana.novak@larkspur.example
+  - liam.obrien@larkspur.example
+  - zara.ahmed@larkspur.example
+  text:
+    contains:
+    - Maple Hall
+  weight: 2
+tags:
+- project
+- constraints
+- budget
+- head-count
+provenance:
+  author: OpenWork Bench maintainers
+  created: '2026-11-20'
+canary: OWB-CANARY-7f3c2a91-team-offsite

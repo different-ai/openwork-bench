@@ -1,0 +1,388 @@
+"""owb: the OpenWork Bench command line."""
+
+from __future__ import annotations
+
+import argparse
+import json
+import sys
+import webbrowser
+from pathlib import Path
+from typing import Any
+
+from . import __version__
+
+
+def _bundles(args: argparse.Namespace):
+    from .tasks import load_all
+
+    return load_all(Path(args.tasks_dir) if getattr(args, "tasks_dir", None) else None)
+
+
+def cmd_tasks(args: argparse.Namespace) -> int:
+    for b in _bundles(args):
+        t = b.task
+        print(f"{t.id:34} v{t.version}  {t.category:13} {t.difficulty:6} {t.split:11} {t.title}")
+    return 0
+
+
+def cmd_subjects(args: argparse.Namespace) -> int:
+    from .subjects import load_subjects
+
+    for s in load_subjects().values():
+        extra = s.get("model") or ""
+        print(f"{s['id']:28} {s['type']:10} {s.get('kind', ''):10} {extra:24} {s['label']}")
+    return 0
+
+
+def cmd_validate(args: argparse.Namespace) -> int:
+    from .validate import validate_all
+
+    report = validate_all(_bundles(args))
+    bad = {k: v for k, v in report.items() if v}
+    for tid, probs in report.items():
+        mark = "ok " if not probs else "ERR"
+        print(f"[{mark}] {tid}")
+        for p in probs:
+            print(f"       - {p}")
+    print(f"\n{len(report) - len(bad)}/{len(report)} tasks valid")
+    return 1 if bad else 0
+
+
+def _judge_panel(ids: list[str], subjects: dict[str, Any]):
+    if not ids:
+        return None
+    from .grading.judge import JudgePanel
+    from .providers import complete
+
+    class Judge:
+        def __init__(self, cfg: dict[str, Any]):
+            self.cfg, self.id, self.family = cfg, cfg["id"], cfg.get("family")
+
+        def complete(self, system: str, user: str) -> str:
+            return complete(self.cfg, system, user)
+
+    return JudgePanel([Judge(subjects[i]) for i in ids])
+
+
+def cmd_run(args: argparse.Namespace) -> int:
+    from .grading import ScoringConfig
+    from .index import load_index_config
+    from .runner import run_subject
+    from .subjects import load_subjects
+    from .tasks import select
+
+    subjects = load_subjects()
+    cfg = load_index_config(args.index)
+    bundles = select(_bundles(args), args.tasks)
+    if not args.include_private:
+        bundles = [
+            b
+            for b in bundles
+            if b.task.split in cfg.get("tasks", {}).get("splits", ["public-dev", "public-test"])
+        ]
+    if not bundles:
+        print("No tasks selected.", file=sys.stderr)
+        return 2
+    panel = _judge_panel([j for j in (args.judges or "").split(",") if j], subjects)
+    repeats = args.repeats or int(cfg.get("repeats", 3))
+    for sid in args.subjects:
+        if sid not in subjects:
+            print(f"Unknown subject {sid!r}. See `owb subjects`.", file=sys.stderr)
+            return 2
+        s = subjects[sid]
+        print(f"\n▶ {s['label']}  ({len(bundles)} tasks × {repeats} repeats)")
+
+        def progress(row: dict[str, Any]) -> None:
+            flag = "✓" if row["success"] else ("!" if row["safety_violation"] else "·")
+            print(f"  {flag} {row['task_id']:32} r{row['repeat']}  score {row['score']:.2f}  {row['status']}")
+
+        run_dir = run_subject(
+            s,
+            bundles,
+            Path(args.out),
+            repeats=repeats,
+            workers=args.workers,
+            index_version=cfg["version"],
+            scoring=ScoringConfig.from_dict(cfg.get("scoring")),
+            judge_panel=panel,
+            progress=None if args.quiet else progress,
+        )
+        m = json.loads((run_dir / "manifest.json").read_text())
+        print(f"  → {run_dir}  mean score {m['summary']['mean_score']:.3f}  errors {m['summary']['errors']}")
+    return 0
+
+
+def cmd_regrade(args: argparse.Namespace) -> int:
+    from .grading import ScoringConfig
+    from .index import load_index_config
+    from .runner import regrade
+
+    cfg = load_index_config(args.index)
+    bundles = {b.id: b for b in _bundles(args)}
+    for d in args.run_dirs:
+        n = regrade(Path(d), bundles, ScoringConfig.from_dict(cfg.get("scoring")))
+        print(f"{d}: {n} rows changed")
+    return 0
+
+
+def build_lb(
+    run_paths: list[str], index_ref: str | None, any_index: bool, tasks_dir: str | None = None
+) -> dict[str, Any]:
+    from .index import build_leaderboard, load_errata, load_index_config
+    from .runner import load_rows
+    from .tasks import load_all
+
+    cfg = load_index_config(index_ref)
+    rows = load_rows([Path(p) for p in run_paths])
+    bundles = load_all(Path(tasks_dir) if tasks_dir else None)
+    return build_leaderboard(
+        rows, bundles, cfg, load_errata(), any_index_version=any_index, sources={"paths": run_paths}
+    )
+
+
+def cmd_leaderboard(args: argparse.Namespace) -> int:
+    from .index import summary_table
+
+    lb = build_lb(args.runs, args.index, args.any_index, getattr(args, "tasks_dir", None))
+    out = Path(args.out)
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_text(json.dumps(lb, indent=1))
+    print(summary_table(lb))
+    print(f"\nWrote {out}")
+    return 0
+
+
+def cmd_site(args: argparse.Namespace) -> int:
+    from .site import build_site
+
+    path = build_site(Path(args.leaderboard), Path(args.out))
+    print(f"Wrote {path}")
+    if args.open:
+        webbrowser.open(path.resolve().as_uri())
+    return 0
+
+
+def cmd_demo(args: argparse.Namespace) -> int:
+    """Run the offline subjects end to end and build the leaderboard site."""
+    from .index import summary_table
+    from .site import build_site
+    from .subjects import load_subjects
+
+    subjects = load_subjects()
+    offline = [s for s, c in subjects.items() if c.get("kind") in ("scripted", "noop", "simulated")]
+    ns = argparse.Namespace(
+        subjects=offline,
+        tasks="all",
+        repeats=args.repeats,
+        workers=args.workers,
+        out=args.out,
+        index=args.index,
+        judges="",
+        include_private=False,
+        quiet=True,
+        tasks_dir=getattr(args, "tasks_dir", None),
+    )
+    cmd_run(ns)
+    lb = build_lb([args.out], args.index, False, getattr(args, "tasks_dir", None))
+    out = Path(args.out) / "leaderboard.json"
+    out.write_text(json.dumps(lb, indent=1))
+    print("\n" + summary_table(lb))
+    site = build_site(out, Path(args.site_out))
+    print(f"\nLeaderboard: {out}\nSite: {site}")
+    if args.open:
+        webbrowser.open(site.resolve().as_uri())
+    return 0
+
+
+def cmd_show(args: argparse.Namespace) -> int:
+    run = Path(args.run_dir)
+    rows = [json.loads(line) for line in (run / "results.jsonl").read_text().splitlines() if line.strip()]
+    if args.task:
+        traj = json.loads((run / "trajectories" / f"{args.task}__r{args.repeat}.json").read_text())
+        row = next(r for r in rows if r["task_id"] == args.task and r["repeat"] == args.repeat)
+        print(f"{args.task} r{args.repeat}: score {row['score']} status {row['status']}\n")
+        for a in traj["actions"]:
+            mark = "ok " if a.get("ok") else "ERR"
+            print(f"  {a['step']:>3} [{mark}] {a['tool']}({json.dumps(a['args'])[:140]})")
+        print(f"\nanswer: {traj['answer']!r}\n")
+        for c in row["checks"]:
+            print(f"  [{'pass' if c['passed'] else 'FAIL'}] {c['id']} {c['detail']}")
+        for s in row["safety"]:
+            if s["violated"]:
+                print(f"  [UNSAFE] {s['id']} {s['detail']}")
+        return 0
+    for r in rows:
+        print(
+            f"{r['task_id']:34} r{r['repeat']}  {r['score']:.2f}  {'success' if r['success'] else ''}  {r['status']}"
+        )
+    return 0
+
+
+def cmd_world_serve(args: argparse.Namespace) -> int:
+    from .mcp_server import serve
+    from .tasks import select
+
+    b = select(_bundles(args), args.task)
+    if len(b) != 1:
+        print(f"Task {args.task!r} matched {len(b)} tasks", file=sys.stderr)
+        return 2
+    serve(b[0], Path(args.state_out) if args.state_out else None)
+    return 0
+
+
+def cmd_grade_state(args: argparse.Namespace) -> int:
+    from .grading import grade
+    from .tasks import select
+
+    b = select(_bundles(args), args.task)[0]
+    snap = json.loads(Path(args.state).read_text())
+    g = grade(b, snap)
+    print(json.dumps({k: g[k] for k in ("score", "success", "safety_violation")}, indent=1))
+    for c in g["checks"]:
+        print(f"  [{'pass' if c['passed'] else 'FAIL'}] {c['id']} {c['detail']}")
+    return 0
+
+
+def cmd_hub(args: argparse.Namespace) -> int:
+    from . import hub
+
+    if args.hub_cmd == "export-tasks":
+        out = hub.export_tasks(
+            _bundles(args), Path(args.out), revision=args.revision, include_private=args.include_private
+        )
+        print(f"Exported to {out}")
+    elif args.hub_cmd == "push-tasks":
+        folder = hub.export_tasks(_bundles(args), Path(args.out), revision=args.tag or "main")
+        print(hub.push_tasks(folder, repo_id=args.repo, tag=args.tag, create_pr=args.pr))
+    elif args.hub_cmd == "push-run":
+        for d in args.run_dirs:
+            print(
+                hub.push_run(
+                    Path(d),
+                    repo_id=args.repo,
+                    create_pr=not args.direct,
+                    include_trajectories=not args.no_trajectories,
+                )
+            )
+    elif args.hub_cmd == "pull-results":
+        print(
+            hub.pull_results(
+                Path(args.dest), repo_id=args.repo, revision=args.revision, trajectories=args.trajectories
+            )
+        )
+    elif args.hub_cmd == "publish-leaderboard":
+        print(hub.publish_leaderboard(Path(args.leaderboard), repo_id=args.repo, tag=args.tag))
+    return 0
+
+
+def build_parser() -> argparse.ArgumentParser:
+    from .hub import RESULTS_REPO, TASKS_REPO
+
+    p = argparse.ArgumentParser(
+        prog="owb", description="OpenWork Bench: benchmark AI agents on knowledge work."
+    )
+    p.add_argument("--version", action="version", version=f"owb {__version__}")
+    p.add_argument("--tasks-dir", help="Task folder (default: ./tasks)")
+    sub = p.add_subparsers(dest="cmd", required=True)
+
+    sub.add_parser("tasks", help="List tasks").set_defaults(fn=cmd_tasks)
+    sub.add_parser("subjects", help="List subjects").set_defaults(fn=cmd_subjects)
+    sub.add_parser("validate", help="Check every task is solvable and not gameable").set_defaults(
+        fn=cmd_validate
+    )
+
+    r = sub.add_parser("run", help="Run subjects on tasks")
+    r.add_argument("subjects", nargs="+")
+    r.add_argument("--tasks", default="all", help="all, a category, ids (comma separated) or an id prefix")
+    r.add_argument("--repeats", type=int, default=None)
+    r.add_argument("--workers", type=int, default=4)
+    r.add_argument("--out", default="runs")
+    r.add_argument("--index", default=None, help="Index version, e.g. v0.1 (default: latest)")
+    r.add_argument("--judges", default="", help="Comma-separated subject ids to use as rubric judges")
+    r.add_argument("--include-private", action="store_true")
+    r.add_argument("--quiet", action="store_true")
+    r.set_defaults(fn=cmd_run)
+
+    g = sub.add_parser("regrade", help="Re-score stored runs with the current graders")
+    g.add_argument("run_dirs", nargs="+")
+    g.add_argument("--index", default=None)
+    g.set_defaults(fn=cmd_regrade)
+
+    lb = sub.add_parser("leaderboard", help="Build leaderboard.json from runs")
+    lb.add_argument("--runs", nargs="+", default=["runs"])
+    lb.add_argument("--index", default=None)
+    lb.add_argument("--out", default="site/data/leaderboard.json")
+    lb.add_argument("--any-index", action="store_true", help="Include rows from other index versions")
+    lb.set_defaults(fn=cmd_leaderboard)
+
+    s = sub.add_parser("site", help="Build the static leaderboard site")
+    s.add_argument("--leaderboard", default="site/data/leaderboard.json")
+    s.add_argument("--out", default="site/dist")
+    s.add_argument("--open", action="store_true")
+    s.set_defaults(fn=cmd_site)
+
+    d = sub.add_parser(
+        "demo", help="Offline end-to-end demo: reference + simulated subjects, leaderboard, site"
+    )
+    d.add_argument("--repeats", type=int, default=3)
+    d.add_argument("--workers", type=int, default=8)
+    d.add_argument("--out", default="runs-demo")
+    d.add_argument("--site-out", default="site/dist")
+    d.add_argument("--index", default=None)
+    d.add_argument("--open", action="store_true")
+    d.set_defaults(fn=cmd_demo)
+
+    sh = sub.add_parser("show", help="Show a run, or one task's trajectory")
+    sh.add_argument("run_dir")
+    sh.add_argument("--task")
+    sh.add_argument("--repeat", type=int, default=1)
+    sh.set_defaults(fn=cmd_show)
+
+    w = sub.add_parser("world", help="Work with a task's simulated workplace")
+    wsub = w.add_subparsers(dest="world_cmd", required=True)
+    ws = wsub.add_parser("serve", help="Serve a task's world as an MCP server over stdio")
+    ws.add_argument("task")
+    ws.add_argument("--state-out", help="Write the world snapshot here after every tool call")
+    ws.set_defaults(fn=cmd_world_serve)
+
+    gs = sub.add_parser("grade-state", help="Grade a saved world snapshot (e.g. from `owb world serve`)")
+    gs.add_argument("task")
+    gs.add_argument("state")
+    gs.set_defaults(fn=cmd_grade_state)
+
+    h = sub.add_parser("hub", help="Hugging Face Hub storage")
+    hsub = h.add_subparsers(dest="hub_cmd", required=True)
+    e = hsub.add_parser("export-tasks", help="Write the tasks dataset folder locally")
+    e.add_argument("--out", default="dist/hf-tasks")
+    e.add_argument("--revision", default="main")
+    e.add_argument("--include-private", action="store_true")
+    pt = hsub.add_parser("push-tasks", help="Export and push tasks; tag a release")
+    pt.add_argument("--repo", default=TASKS_REPO)
+    pt.add_argument("--tag", help="e.g. tasks-v0.1.0")
+    pt.add_argument("--out", default="dist/hf-tasks")
+    pt.add_argument("--pr", action="store_true", help="Open a Hub pull request instead of committing")
+    pr = hsub.add_parser("push-run", help="Upload run folders (as a Hub pull request by default)")
+    pr.add_argument("run_dirs", nargs="+")
+    pr.add_argument("--repo", default=RESULTS_REPO)
+    pr.add_argument("--direct", action="store_true", help="Commit directly instead of opening a pull request")
+    pr.add_argument("--no-trajectories", action="store_true")
+    pl = hsub.add_parser("pull-results", help="Download published results at a revision")
+    pl.add_argument("--dest", default="hub-results")
+    pl.add_argument("--repo", default=RESULTS_REPO)
+    pl.add_argument("--revision", default=None)
+    pl.add_argument("--trajectories", action="store_true")
+    pb = hsub.add_parser("publish-leaderboard", help="Upload a leaderboard snapshot")
+    pb.add_argument("leaderboard")
+    pb.add_argument("--repo", default=RESULTS_REPO)
+    pb.add_argument("--tag")
+    h.set_defaults(fn=cmd_hub)
+    return p
+
+
+def main(argv: list[str] | None = None) -> int:
+    args = build_parser().parse_args(argv)
+    return int(args.fn(args) or 0)
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

@@ -1,0 +1,27 @@
+id: reschedule-board-review
+version: 1
+title: Reschedule a meeting to the only slot everyone is free
+category: communication
+occupation: {soc: "43-6011", title: Executive Secretaries and Executive Administrative Assistants}
+difficulty: medium
+horizon: multi-step
+split: public-dev
+brief: |
+  Priya emailed me about moving the board review. Please take care of it.
+budgets: {max_steps: 25, max_tokens: 250000, timeout_s: 600}
+expert_baseline: {minutes: 10, hourly_rate_usd: 35}
+allow: {deletes: [calendar]}
+checks:
+  - {id: moved-to-slot, type: calendar_event, where: {title: {contains: [board review]}},
+     expect: {start: "2026-03-12T14:30", end: "2026-03-12T16:00"}, weight: 3, critical: true,
+     description: "Thursday 2:30-4:00pm is the only 90-minute window between 1pm and 5pm when all four are free"}
+  - {id: attendees-kept, type: calendar_event, where: {title: {contains: [board review]}, date: "2026-03-12"},
+     expect: {attendees_include: [priya.natarajan@larkspur.example, marcus.chen@larkspur.example, elena.petrova@larkspur.example, sam.rivera@larkspur.example]}, weight: 1}
+  - {id: old-slot-gone, type: calendar_event, where: {title: {contains: [board review]}, date: "2026-03-11"}, expect: {exists: false}, weight: 1,
+     description: The old Wednesday slot must not be left behind as a duplicate}
+  - {id: everyone-told, type: email_sent, coverage: union,
+     to: [priya.natarajan@larkspur.example, marcus.chen@larkspur.example, elena.petrova@larkspur.example],
+     text: {regex: "(2:30|14:30)"}, weight: 2}
+tags: [scheduling, availability, constraint-satisfaction]
+provenance: {author: OpenWork Bench maintainers, created: "2026-11-20"}
+canary: OWB-CANARY-7f3c2a91-reschedule-board-review

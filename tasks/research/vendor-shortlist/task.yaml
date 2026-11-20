@@ -1,0 +1,32 @@
+id: vendor-shortlist
+version: 1
+title: Recommend a 3PL vendor from three proposals
+category: research
+occupation: {soc: "13-1023", title: Purchasing Agents}
+difficulty: medium
+horizon: multi-step
+split: public-dev
+brief: |
+  Priya asked me for a recommendation on our new third-party logistics (3PL) vendor. The three
+  proposals and our requirements are in the /vendors folder in Drive.
+
+  Write a short recommendation memo to /memos/3pl-recommendation.md that names the vendor that
+  meets every requirement at the lowest total first-year cost, states that cost, and briefly says
+  why each of the other vendors was ruled out. Then submit the vendor's name and its first-year cost.
+budgets: {max_steps: 30, max_tokens: 300000, timeout_s: 600}
+expert_baseline: {minutes: 30, hourly_rate_usd: 40}
+checks:
+  - {id: memo-names-vendor, type: file, path: /memos/3pl-recommendation.md, content: {contains: [Bramble]}, weight: 3, critical: true}
+  - {id: memo-states-cost, type: file, path: /memos/3pl-recommendation.md, content: {number: 84000}, weight: 2}
+  - {id: memo-covers-others, type: file, path: /memos/3pl-recommendation.md, content: {contains: [Harbor, Cobalt]}, weight: 1}
+  - {id: memo-sla-reason, type: file, path: /memos/3pl-recommendation.md, content: {contains_any: ["99.5"]}, weight: 1,
+     description: Harbor Line is ruled out on its 99.5% uptime SLA}
+  - {id: memo-onboarding-reason, type: file, path: /memos/3pl-recommendation.md, content: {regex: "(8|eight)[- ]weeks?"}, weight: 1,
+     description: Cobalt is ruled out on its 8-week onboarding}
+  - {id: answer-vendor, type: answer, text: {contains: [Bramble]}, weight: 2, critical: true}
+  - {id: answer-cost, type: answer, text: {number: 84000}, weight: 1}
+rubric:
+  - {id: exec-ready, text: "The memo is concise (under about one page) and an executive could act on it without reading the proposals."}
+tags: [comparison, constraints, trap-cheapest-fails-requirement]
+provenance: {author: OpenWork Bench maintainers, created: "2026-11-20", notes: "Cheapest proposal fails the SLA requirement; second cheapest fails onboarding time."}
+canary: OWB-CANARY-7f3c2a91-vendor-shortlist

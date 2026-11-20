@@ -1,0 +1,18 @@
+steps:
+  - {tool: mail_read, args: {message_id: m1}}
+  - {tool: crm_search, args: {query: Brightwater, type: deal}}
+  - {tool: crm_update, args: {record_id: D-2077, fields: {stage: Closed Won, amount: 48500, term_months: 12, start_date: "2026-04-01"}}}
+  - {tool: drive_search, args: {query: brightwater}}
+  - tool: mail_send
+    args:
+      to: [legal@brightwaterhotels.example]
+      cc: [luis.romero@brightwaterhotels.example]
+      subject: Brightwater Hotels renewal contract
+      body: |
+        Hello,
+        As agreed with Luis, attached is the 12-month renewal agreement ($48,500 per year from April 1, 2026)
+        for countersignature.
+        Thank you, Sam Rivera, Larkspur Supply Co.
+      attachments: [/contracts/brightwater-renewal-2026.md]
+  - {tool: chat_post, args: {channel: sales, text: "Brightwater Hotels renewed: 12 months at $48,500/yr from April 1. Contract sent to their legal team; CRM updated to Closed Won."}}
+  - {tool: submit, args: {answer: "Deal D-2077 Closed Won at $48,500, contract sent to legal@brightwaterhotels.example, #sales updated."}}

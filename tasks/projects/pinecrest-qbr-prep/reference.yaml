@@ -1,0 +1,36 @@
+steps:
+  - {tool: crm_search, args: {query: Pinecrest}}
+  - {tool: drive_read, args: {path: /data/pinecrest-orders-by-quarter.csv}}
+  - {tool: drive_read, args: {path: /support/tickets.csv}}
+  - tool: drive_write
+    args:
+      path: /qbr/pinecrest-q1-2026.md
+      content: |
+        # Pinecrest School District — QBR brief (Q1 2026)
+
+        - **Revenue growth:** Q4 2025 $58,900 vs Q3 2025 $51,400 = **+14.6%**
+        - **Top 3 products by Q4 revenue:** Copy paper ($20,700), Paper towels ($15,600), Disinfectant ($9,000)
+        - **Support:** 3 open tickets (T-88 wrong soap refill size, T-91 damaged pallet, T-97 delivery window change)
+        - **Renewal date:** July 1, 2026 (2026-07-01)
+        - **Contact:** Rob Harlan, Director of Facilities
+  - {tool: calendar_availability, args: {date: "2026-03-16", emails: [elena.petrova@larkspur.example, sam.rivera@larkspur.example]}}
+  - {tool: calendar_availability, args: {date: "2026-03-17", emails: [elena.petrova@larkspur.example, sam.rivera@larkspur.example]}}
+  - tool: calendar_create
+    args:
+      title: Pinecrest School District QBR
+      start: "2026-03-17T14:00"
+      end: "2026-03-17T15:00"
+      attendees: [rob.harlan@pinecrestsd.example, elena.petrova@larkspur.example]
+  - tool: mail_send
+    args:
+      to: [rob.harlan@pinecrestsd.example]
+      cc: [elena.petrova@larkspur.example]
+      subject: "QBR on Tuesday, March 17 at 2pm"
+      body: |
+        Hi Rob,
+        Looking forward to our quarterly business review on Tuesday, March 17, 2:00–3:00pm. Proposed agenda:
+        1. Q4 results and order trends
+        2. Open support items and delivery changes
+        3. Plans for the spring term and the July renewal
+        Best, Sam Rivera and Elena Petrova
+  - {tool: submit, args: {answer: "QBR brief written, meeting booked Tue Mar 17 2-3pm, agenda sent to Rob Harlan."}}

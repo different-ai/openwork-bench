@@ -1,0 +1,32 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python: ["3.11", "3.13"]
+    steps:
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v10
+        with:
+          python-version: ${{ matrix.python }}
+      - run: uv sync --all-extras
+      - name: Lint
+        run: uv run ruff check src tests && uv run ruff format --check src tests
+      - name: Validate tasks (solvable, not gameable)
+        run: uv run owb validate
+      - name: Tests
+        run: uv run pytest -q
+      - name: Offline end-to-end demo
+        run: uv run owb demo --repeats 1 --out /tmp/owb-demo --site-out /tmp/owb-site
+      - name: Export tasks dataset (dry run)
+        run: uv run owb hub export-tasks --out /tmp/hf-tasks

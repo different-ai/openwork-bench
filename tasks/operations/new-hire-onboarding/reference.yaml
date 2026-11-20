@@ -1,0 +1,33 @@
+steps:
+  - {tool: mail_read, args: {message_id: m1}}
+  - {tool: contacts_search, args: {query: Nadia}}
+  - {tool: calendar_availability, args: {date: "2026-03-16", emails: [tom.alvarez@larkspur.example]}}
+  - tool: calendar_create
+    args:
+      title: "Orientation: Nadia Kim"
+      start: "2026-03-16T10:00"
+      end: "2026-03-16T11:00"
+      attendees: [nadia.kim@larkspur.example, tom.alvarez@larkspur.example]
+      description: First-day orientation for Nadia Kim, Inventory Analyst.
+  - {tool: drive_read, args: {path: /templates/onboarding-checklist.md}}
+  - tool: drive_write
+    args:
+      path: /onboarding/nadia-kim.md
+      content: |
+        # Onboarding checklist: Nadia Kim
+
+        Role: Inventory Analyst · Manager: Tom Alvarez · Start date: March 16, 2026
+
+        - [ ] Laptop and accounts ready
+        - [ ] Orientation with manager (Mon 10:00–11:00, booked)
+        - [ ] Safety walkthrough of the warehouse
+        - [ ] Benefits enrollment with HR in week 1
+  - tool: mail_send
+    args:
+      to: [tom.alvarez@larkspur.example]
+      subject: Nadia Kim starts Monday
+      body: |
+        Hi Tom, heads-up: Nadia Kim starts Monday, March 16 as Inventory Analyst reporting to you.
+        I booked a one-hour orientation with you at 10am and her checklist is at /onboarding/nadia-kim.md.
+        Sam
+  - {tool: submit, args: {answer: "Orientation booked Mon 10-11 with Tom, checklist at /onboarding/nadia-kim.md, Tom notified."}}

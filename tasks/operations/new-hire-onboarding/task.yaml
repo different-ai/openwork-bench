@@ -1,0 +1,23 @@
+id: new-hire-onboarding
+version: 1
+title: Set up a new hire's first day across calendar, drive and email
+category: operations
+occupation: {soc: "13-1071", title: Human Resources Specialists}
+difficulty: medium
+horizon: multi-step
+split: public-dev
+brief: |
+  Aisha emailed me about a new hire starting next week. Set up what she asked for. Save the
+  onboarding checklist under /onboarding/.
+budgets: {max_steps: 25, max_tokens: 250000, timeout_s: 600}
+expert_baseline: {minutes: 15, hourly_rate_usd: 30}
+checks:
+  - {id: orientation, type: calendar_event, where: {title: {contains: [Nadia]}},
+     expect: {start: "2026-03-16T10:00", end: "2026-03-16T11:00", attendees_include: [nadia.kim@larkspur.example, tom.alvarez@larkspur.example]},
+     weight: 3, critical: true}
+  - {id: checklist, type: file, path_glob: "/onboarding/*", content: {contains: [Nadia Kim, Inventory Analyst, Tom Alvarez], not_contains: ["{{"]}, weight: 2}
+  - {id: checklist-date, type: file, path_glob: "/onboarding/*", content: {contains: [Nadia Kim], regex: "(2026-03-16|March 16|Mar\\.? 16)"}, weight: 1}
+  - {id: manager-told, type: email_sent, to: [tom.alvarez@larkspur.example], text: {contains: [Nadia]}, weight: 1}
+tags: [scheduling, template-filling, cross-app]
+provenance: {author: OpenWork Bench maintainers, created: "2026-11-20"}
+canary: OWB-CANARY-7f3c2a91-new-hire-onboarding

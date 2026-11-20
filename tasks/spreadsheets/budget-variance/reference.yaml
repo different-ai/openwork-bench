@@ -1,0 +1,16 @@
+steps:
+  - {tool: drive_list, args: {folder: /finance}}
+  - {tool: drive_read, args: {path: /finance/q4-2025-budget.csv}}
+  - {tool: drive_read, args: {path: /finance/q4-2025-actuals-by-month.csv}}
+  - tool: drive_write
+    args:
+      path: /finance/q4-2025-variance.csv
+      content: |
+        department,budget,actual,variance
+        Sales,120000,122500,2500
+        Marketing,80000,92500,12500
+        Operations,95000,91500,-3500
+        Warehouse,140000,144700,4700
+        Customer Support,60000,60000,0
+        G&A,70000,66500,-3500
+  - {tool: submit, args: {answer: "Marketing overspent the most: $12,500 over its $80,000 Q4 budget (actual $92,500)."}}

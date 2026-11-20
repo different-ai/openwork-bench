@@ -1,0 +1,26 @@
+id: outstanding-invoices
+version: 1
+title: Reconcile invoices against payments, including partial payments
+category: spreadsheets
+occupation: {soc: "43-3031", title: "Bookkeeping, Accounting, and Auditing Clerks"}
+difficulty: medium
+horizon: multi-step
+split: public-dev
+brief: |
+  Marcus needs the list of February invoices that are not fully paid. Using the February invoice
+  and payment exports in /finance, create /finance/outstanding-feb.csv with the columns
+  invoice_id, customer, outstanding_amount (one row per invoice that still has money owed), then
+  email Marcus the total amount outstanding.
+budgets: {max_steps: 20, max_tokens: 200000, timeout_s: 600}
+expert_baseline: {minutes: 20, hourly_rate_usd: 25}
+checks:
+  - {id: rows-included, type: csv_rows, path: /finance/outstanding-feb.csv, key: invoice_id, include: [INV-1003, INV-1007, INV-1009], weight: 3, critical: true}
+  - {id: paid-excluded, type: csv_rows, path: /finance/outstanding-feb.csv, key: invoice_id,
+     exclude: [INV-1001, INV-1002, INV-1004, INV-1005, INV-1006, INV-1008], weight: 2,
+     description: INV-1005 was paid in two installments and is fully paid}
+  - {id: partial-amount, type: csv_cell, path: /finance/outstanding-feb.csv, where: {invoice_id: INV-1003}, column: outstanding_amount,
+     expect: {number: 1800, tolerance: 0.01}, weight: 2, description: "INV-1003: $3,000 billed, $1,200 paid"}
+  - {id: total-to-marcus, type: email_sent, to: [marcus.chen@larkspur.example], body: {number: 5230.50, tolerance: 0.01}, weight: 2, critical: true}
+tags: [reconciliation, partial-payments, csv]
+provenance: {author: OpenWork Bench maintainers, created: "2026-11-20"}
+canary: OWB-CANARY-7f3c2a91-outstanding-invoices

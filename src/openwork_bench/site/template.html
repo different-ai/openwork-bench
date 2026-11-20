@@ -1,0 +1,379 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>OpenWork Bench</title>
+<meta name="description" content="Open, reproducible benchmark of AI agents doing knowledge work: quality, cost, speed, reliability and safety.">
+<style>
+:root {
+  color-scheme: light;
+  --surface-0: #f5f4f1; --surface-1: #fcfcfb; --surface-2: #f0efec; --border: #e2e0da;
+  --text-primary: #0b0b0b; --text-secondary: #52514e; --text-muted: #7a7975;
+  --grid: #e8e6e1; --axis: #b9b7b0;
+  --series-1: #2a78d6; --series-2: #eb6834; --series-3: #1baf7a; --neutral: #8a8984;
+  --critical: #d03b3b; --good: #0ca30c; --accent: #2a78d6;
+  --seq-0: #f0efec; --seq-1: #cde2fb; --seq-2: #9ec5f4; --seq-3: #6da7ec; --seq-4: #3987e5; --seq-5: #256abf; --seq-6: #184f95; --seq-7: #0d366b;
+  --tip-bg: #1a1a19; --tip-fg: #f0efec; --seq-ink-hi: #ffffff;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --surface-0: #121211; --surface-1: #1a1a19; --surface-2: #262624; --border: #33332f;
+    --text-primary: #f0efec; --text-secondary: #c3c2b7; --text-muted: #8f8e86;
+    --grid: #2b2b28; --axis: #55544f;
+    --series-1: #3987e5; --series-2: #d95926; --series-3: #199e70; --neutral: #8f8e86;
+    --accent: #5598e7;
+    --seq-0: #262624; --seq-1: #0d366b; --seq-2: #104281; --seq-3: #184f95; --seq-4: #1c5cab; --seq-5: #256abf; --seq-6: #3987e5; --seq-7: #6da7ec;
+    --tip-bg: #f0efec; --tip-fg: #1a1a19; --seq-ink-hi: #0b0b0b;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --surface-0: #121211; --surface-1: #1a1a19; --surface-2: #262624; --border: #33332f;
+  --text-primary: #f0efec; --text-secondary: #c3c2b7; --text-muted: #8f8e86;
+  --grid: #2b2b28; --axis: #55544f;
+  --series-1: #3987e5; --series-2: #d95926; --series-3: #199e70; --neutral: #8f8e86;
+  --accent: #5598e7;
+  --seq-0: #262624; --seq-1: #0d366b; --seq-2: #104281; --seq-3: #184f95; --seq-4: #1c5cab; --seq-5: #256abf; --seq-6: #3987e5; --seq-7: #6da7ec;
+  --tip-bg: #f0efec; --tip-fg: #1a1a19; --seq-ink-hi: #0b0b0b;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--surface-0); color: var(--text-primary);
+  font: 15px/1.5 ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif; }
+a { color: var(--accent); }
+.wrap { max-width: 1180px; margin: 0 auto; padding: 0 16px 64px; }
+header.top { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 18px 0; flex-wrap: wrap; }
+.brand { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.brand h1 { font-size: 20px; margin: 0; letter-spacing: -0.01em; }
+.badge { font-size: 12px; padding: 2px 8px; border-radius: 999px; background: var(--surface-2); color: var(--text-secondary); border: 1px solid var(--border); }
+.controls { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; font-size: 13px; color: var(--text-secondary); }
+.controls label { display: inline-flex; gap: 6px; align-items: center; cursor: pointer; }
+button.theme { background: var(--surface-1); color: var(--text-primary); border: 1px solid var(--border); border-radius: 8px; padding: 5px 10px; cursor: pointer; font: inherit; }
+.hero { padding: 8px 0 18px; }
+.hero h2 { font-size: 30px; line-height: 1.15; margin: 0 0 8px; letter-spacing: -0.02em; max-width: 820px; }
+.hero p { margin: 0; color: var(--text-secondary); max-width: 760px; }
+.notice { margin: 14px 0 0; padding: 10px 14px; border-radius: 10px; border: 1px solid var(--border); background: var(--surface-1); color: var(--text-secondary); font-size: 14px; }
+.notice strong { color: var(--text-primary); }
+.card { background: var(--surface-1); border: 1px solid var(--border); border-radius: 14px; padding: 18px 18px 14px; margin-top: 16px; }
+.card h3 { margin: 0; font-size: 16px; }
+.card .sub { margin: 2px 0 12px; font-size: 13px; color: var(--text-secondary); }
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+@media (max-width: 860px) { .grid2 { grid-template-columns: 1fr; } .hero h2 { font-size: 24px; } }
+.legend { display: flex; gap: 14px; flex-wrap: wrap; font-size: 12px; color: var(--text-secondary); margin: 0 0 8px; }
+.legend i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 5px; vertical-align: -1px; }
+svg text { fill: var(--text-secondary); font-size: 11px; }
+svg .label { fill: var(--text-primary); font-size: 12px; }
+svg .value { fill: var(--text-primary); font-size: 12px; font-variant-numeric: tabular-nums; }
+.scroll { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: 13px; font-variant-numeric: tabular-nums; }
+th, td { padding: 7px 8px; text-align: right; border-bottom: 1px solid var(--grid); white-space: nowrap; }
+th { color: var(--text-secondary); font-weight: 600; font-size: 12px; }
+th:first-child, td:first-child, th.l, td.l { text-align: left; }
+td.heat { text-align: center; border: 2px solid var(--surface-1); border-radius: 4px; }
+.tag { font-size: 11px; padding: 1px 6px; border-radius: 6px; border: 1px solid var(--border); color: var(--text-secondary); margin-left: 6px; }
+.bars { display: grid; grid-template-columns: minmax(140px, 220px) 1fr 1fr 1fr; gap: 6px 14px; align-items: center; font-size: 13px; }
+.bars .h { font-size: 12px; color: var(--text-secondary); font-weight: 600; }
+.mini { position: relative; height: 16px; background: var(--surface-2); border-radius: 4px; }
+.mini > span { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 4px; }
+.mini > b { position: absolute; right: 6px; top: -1px; font-size: 11px; font-weight: 500; color: var(--text-primary); }
+.matrix td.heat { min-width: 44px; }
+.matrix th.rot { writing-mode: vertical-rl; transform: rotate(180deg); text-align: left; height: 180px; vertical-align: bottom; }
+details { margin-top: 10px; color: var(--text-secondary); font-size: 14px; }
+footer { margin-top: 28px; color: var(--text-muted); font-size: 13px; }
+footer dl { display: grid; grid-template-columns: max-content 1fr; gap: 4px 14px; margin: 8px 0; }
+footer dt { color: var(--text-secondary); }
+footer dd { margin: 0; word-break: break-word; }
+#tip { position: fixed; pointer-events: none; z-index: 9; background: var(--tip-bg); color: var(--tip-fg); padding: 7px 9px; border-radius: 8px; font-size: 12px; line-height: 1.4; max-width: 280px; opacity: 0; transition: opacity .08s; }
+.empty { color: var(--text-muted); font-size: 13px; padding: 12px 0; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="brand"><h1>OpenWork Bench</h1><span class="badge" id="ver"></span></div>
+    <div class="controls">
+      <label><input type="checkbox" id="showSim" checked> Simulated</label>
+      <label><input type="checkbox" id="showRef" checked> Reference</label>
+      <button class="theme" id="theme" type="button" aria-label="Toggle theme">◐ Theme</button>
+    </div>
+  </header>
+
+  <section class="hero">
+    <h2>Which AI agents do real knowledge work best — and at what cost, speed and risk?</h2>
+    <p>Agents complete workplace tasks against a simulated company: email, calendar, files, CRM and chat. Each result is graded on the finished work and on what the agent changed along the way. Everything is open: tasks, harness, graders and every run log.</p>
+    <div class="notice" id="notice" hidden></div>
+  </section>
+
+  <div class="card">
+    <h3>OpenWork Bench Index</h3>
+    <p class="sub">Equal-weighted average of six knowledge-work categories, 0–100. Whiskers show 95% confidence intervals from resampling tasks and repeats.</p>
+    <div class="legend" id="typeLegend"></div>
+    <div id="indexChart"></div>
+  </div>
+
+  <div class="grid2">
+    <div class="card">
+      <h3>Index vs. cost per task</h3>
+      <p class="sub">USD per task attempt, log scale. Top-left is better.</p>
+      <div id="costChart"></div>
+    </div>
+    <div class="card">
+      <h3>Index vs. time per task</h3>
+      <p class="sub">Wall-clock seconds per task attempt, log scale. Top-left is better.</p>
+      <div id="timeChart"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Categories</h3>
+    <p class="sub">Mean task score per category, 0–100.</p>
+    <div class="scroll"><table id="catTable"></table></div>
+  </div>
+
+  <div class="card">
+    <h3>Reliability and safety</h3>
+    <p class="sub">pass@1: share of attempts fully correct. pass^k: share of tasks solved on every one of k repeats. Unsafe: share of attempts with a safety violation (deleting without being asked, emailing unknown outside addresses, task-specific red lines) — these score 0.</p>
+    <div id="relChart"></div>
+  </div>
+
+  <div class="card">
+    <h3>All results</h3>
+    <p class="sub">The table view of everything above. Value per $ = expert labour cost of the work delivered ÷ agent cost. Speed-up = expert time ÷ agent time.</p>
+    <div class="scroll"><table id="mainTable"></table></div>
+  </div>
+
+  <div class="card">
+    <h3>Per-task scores</h3>
+    <p class="sub">Mean score across repeats for each task. Hover a cell for details.</p>
+    <div class="scroll"><table class="matrix" id="matrix"></table></div>
+  </div>
+
+  <footer>
+    <strong>Methodology and data</strong>
+    <dl id="meta"></dl>
+    <p>Methodology, task format and contribution guide: <a href="https://github.com/different-ai/openwork-bench">github.com/different-ai/openwork-bench</a>. Published tasks and run logs: <a href="https://huggingface.co/datasets/different-ai/openwork-bench-tasks">tasks dataset</a> · <a href="https://huggingface.co/datasets/different-ai/openwork-bench-results">results dataset</a>. OpenWork maintains this benchmark; OpenWork's own results are labelled “maintainer”.</p>
+  </footer>
+</div>
+<div id="tip" role="tooltip"></div>
+
+<script id="owb-data" type="application/json">__OWB_DATA__</script>
+<script>
+(function () {
+  "use strict";
+  const DATA = JSON.parse(document.getElementById("owb-data").textContent);
+  const NS = "http://www.w3.org/2000/svg";
+  const TYPE = {
+    model: { label: "Model (reference harness)", color: "var(--series-1)" },
+    product: { label: "Agent product", color: "var(--series-2)" },
+    simulated: { label: "Simulated (pipeline test)", color: "var(--series-3)" },
+    reference: { label: "Reference (oracle / no-op)", color: "var(--neutral)" },
+  };
+  const state = { showSim: true, showRef: true };
+  try { const t = localStorage.getItem("owb-theme"); if (t) document.documentElement.dataset.theme = t; } catch (e) {}
+
+  const fmt = (v, d = 1) => (v == null || Number.isNaN(v) ? "–" : Number(v).toFixed(d));
+  const money = (v) => (v == null ? "n/a" : v < 0.01 ? "$" + v.toFixed(4) : "$" + v.toFixed(v < 1 ? 3 : 2));
+  const secs = (v) => (v == null ? "–" : v < 60 ? v.toFixed(v < 10 ? 1 : 0) + "s" : (v / 60).toFixed(1) + "m");
+  const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+  const el = (tag, attrs = {}, parent) => {
+    const n = document.createElementNS(NS, tag);
+    for (const [k, v] of Object.entries(attrs)) n.setAttribute(k, v);
+    if (parent) parent.appendChild(n);
+    return n;
+  };
+  const seq = (v) => {
+    if (v == null) return "var(--surface-2)";
+    const i = Math.max(0, Math.min(7, Math.round((v / 100) * 7)));
+    return `var(--seq-${i})`;
+  };
+  const inkOn = (v) => (v != null && v >= 64 ? "var(--seq-ink-hi)" : "var(--text-primary)");
+  const name = (s) => s.label + (s.type === "product" && /openwork/i.test(s.id) ? " · maintainer" : "");
+
+  // Tooltip
+  const tip = document.getElementById("tip");
+  document.addEventListener("mousemove", (e) => {
+    const t = e.target.closest ? e.target.closest("[data-tip]") : null;
+    if (!t) { tip.style.opacity = 0; return; }
+    tip.innerHTML = t.getAttribute("data-tip");
+    const x = Math.min(window.innerWidth - tip.offsetWidth - 12, e.clientX + 14);
+    const y = Math.min(window.innerHeight - tip.offsetHeight - 12, e.clientY + 14);
+    tip.style.left = x + "px"; tip.style.top = y + "px"; tip.style.opacity = 1;
+  });
+
+  function visible() {
+    return DATA.subjects.filter((s) => (state.showSim || !s.simulated) && (state.showRef || s.type !== "reference"));
+  }
+
+  function header() {
+    const ix = DATA.index;
+    document.getElementById("ver").textContent = `${ix.name} ${ix.version} · ${ix.status}`;
+    const sim = DATA.subjects.some((s) => s.simulated);
+    const real = DATA.subjects.some((s) => s.type === "model" || s.type === "product");
+    const n = document.getElementById("notice");
+    if (sim || !real) {
+      n.hidden = false;
+      n.innerHTML = real
+        ? "<strong>Includes simulated subjects.</strong> Rows marked simulated come from a seeded test agent, not a real model. Untick “Simulated” to hide them."
+        : "<strong>Sample data.</strong> This leaderboard shows only reference and simulated subjects, used to test the pipeline offline. No real model results yet: run <code>owb run claude-sonnet-5-5</code> (or any subject) to add them.";
+    }
+    const types = [...new Set(DATA.subjects.map((s) => s.type))];
+    document.getElementById("typeLegend").innerHTML = types
+      .map((t) => `<span><i style="background:${TYPE[t].color}"></i>${TYPE[t].label}</span>`).join("");
+  }
+
+  function indexChart() {
+    const host = document.getElementById("indexChart");
+    host.innerHTML = "";
+    const subs = visible().filter((s) => s.index != null);
+    if (!subs.length) { host.innerHTML = '<p class="empty">No subjects to show.</p>'; return; }
+    const W = Math.max(320, host.clientWidth), labelW = Math.min(240, W * 0.36), row = 30, top = 8, bottom = 26;
+    const H = top + subs.length * row + bottom;
+    const x = (v) => labelW + (v / 100) * (W - labelW - 44);
+    const svg = el("svg", { width: W, height: H, viewBox: `0 0 ${W} ${H}`, role: "img", "aria-label": "Index scores" }, host);
+    for (let g = 0; g <= 100; g += 20) {
+      el("line", { x1: x(g), x2: x(g), y1: top, y2: H - bottom, stroke: "var(--grid)" }, svg);
+      el("text", { x: x(g), y: H - 8, "text-anchor": "middle" }, svg).textContent = g;
+    }
+    subs.forEach((s, i) => {
+      const y = top + i * row + 6, h = row - 12;
+      const lbl = el("text", { x: labelW - 10, y: y + h / 2 + 4, "text-anchor": "end", class: "label" }, svg);
+      lbl.textContent = name(s).length > 34 ? name(s).slice(0, 33) + "…" : name(s);
+      const w = Math.max(2, x(s.index) - labelW);
+      const tipHtml = `<b>${esc(name(s))}</b><br>Index ${fmt(s.index)}${s.ci ? ` (95% CI ${fmt(s.ci[0])}–${fmt(s.ci[1])})` : ""}<br>pass^${s.k} ${fmt(s.pass_hat_k * 100, 0)}% · unsafe ${fmt(s.safety_rate * 100, 0)}%${s.complete ? "" : "<br>Incomplete: " + fmt(s.coverage * 100, 0) + "% of tasks"}`;
+      el("path", { d: `M${labelW},${y} h${w - 4} q4,0 4,4 v${h - 8} q0,4 -4,4 h${-(w - 4)} z`, fill: TYPE[s.type].color,
+        opacity: s.complete ? 1 : 0.45, "data-tip": tipHtml }, svg);
+      if (s.ci) {
+        const cy = y + h / 2;
+        el("line", { x1: x(s.ci[0]), x2: x(s.ci[1]), y1: cy, y2: cy, stroke: "var(--text-primary)", "stroke-width": 1.5, opacity: 0.7 }, svg);
+        [s.ci[0], s.ci[1]].forEach((v) => el("line", { x1: x(v), x2: x(v), y1: cy - 4, y2: cy + 4, stroke: "var(--text-primary)", "stroke-width": 1.5, opacity: 0.7 }, svg));
+      }
+      el("text", { x: x(s.ci ? Math.max(s.ci[1], s.index) : s.index) + 6, y: y + h / 2 + 4, class: "value" }, svg).textContent = fmt(s.index);
+    });
+  }
+
+  function scatter(hostId, key, fmtX, unit) {
+    const host = document.getElementById(hostId);
+    host.innerHTML = "";
+    const subs = visible().filter((s) => s.index != null && s[key] != null && s[key] > 0 && s.type !== "reference");
+    if (subs.length < 1) { host.innerHTML = `<p class="empty">No ${unit} data yet. Reference subjects are not plotted; real or simulated runs record ${unit}.</p>`; return; }
+    const W = Math.max(300, host.clientWidth), H = 300, m = { l: 40, r: 16, t: 12, b: 34 };
+    const xs = subs.map((s) => s[key]);
+    let lo = Math.log10(Math.min(...xs)), hi = Math.log10(Math.max(...xs));
+    if (hi - lo < 0.5) { lo -= 0.25; hi += 0.25; }
+    lo = Math.floor(lo * 2) / 2 - 0.1; hi = Math.ceil(hi * 2) / 2 + 0.1;
+    const yLo = Math.max(0, Math.floor(Math.min(...subs.map((s) => s.index)) / 10) * 10 - 10), yHi = 100;
+    const x = (v) => m.l + ((Math.log10(v) - lo) / (hi - lo)) * (W - m.l - m.r);
+    const y = (v) => m.t + (1 - (v - yLo) / (yHi - yLo)) * (H - m.t - m.b);
+    const svg = el("svg", { width: W, height: H, viewBox: `0 0 ${W} ${H}`, role: "img", "aria-label": `Index vs ${unit}` }, host);
+    const medX = xs.slice().sort((a, b) => a - b)[Math.floor(xs.length / 2)];
+    const medY = subs.map((s) => s.index).sort((a, b) => a - b)[Math.floor(subs.length / 2)];
+    el("rect", { x: m.l, y: m.t, width: Math.max(0, x(medX) - m.l), height: Math.max(0, y(medY) - m.t), fill: "var(--surface-2)" }, svg);
+    el("text", { x: m.l + 6, y: m.t + 14 }, svg).textContent = "Most attractive";
+    for (let g = Math.ceil(yLo / 10) * 10; g <= yHi; g += 10) {
+      el("line", { x1: m.l, x2: W - m.r, y1: y(g), y2: y(g), stroke: "var(--grid)" }, svg);
+      el("text", { x: m.l - 6, y: y(g) + 4, "text-anchor": "end" }, svg).textContent = g;
+    }
+    for (let p = Math.ceil(lo); p <= Math.floor(hi); p++) {
+      el("line", { x1: x(10 ** p), x2: x(10 ** p), y1: m.t, y2: H - m.b, stroke: "var(--grid)" }, svg);
+      el("text", { x: x(10 ** p), y: H - m.b + 16, "text-anchor": "middle" }, svg).textContent = fmtX(10 ** p);
+    }
+    const placed = [];
+    subs.forEach((s) => {
+      const cx = x(s[key]), cy = y(s.index);
+      el("circle", { cx, cy, r: 6, fill: TYPE[s.type].color, stroke: "var(--surface-1)", "stroke-width": 2,
+        "data-tip": `<b>${esc(name(s))}</b><br>Index ${fmt(s.index)}<br>${unit}: ${fmtX(s[key])}` }, svg);
+      let ly = cy - 9;
+      while (placed.some((p) => Math.abs(p.y - ly) < 12 && Math.abs(p.x - cx) < 110)) ly -= 12;
+      placed.push({ x: cx, y: ly });
+      const anchor = cx > W - 120 ? "end" : "start";
+      el("text", { x: cx + (anchor === "end" ? -8 : 8), y: ly, "text-anchor": anchor, class: "label" }, svg).textContent =
+        s.label.length > 24 ? s.label.slice(0, 23) + "…" : s.label;
+    });
+  }
+
+  function catTable() {
+    const cats = DATA.index.categories;
+    const subs = visible();
+    let h = `<thead><tr><th>Subject</th><th>Index</th>${Object.values(cats).map((c) => `<th>${esc(c.label)}</th>`).join("")}</tr></thead><tbody>`;
+    for (const s of subs) {
+      h += `<tr><td>${esc(name(s))}${s.simulated ? '<span class="tag">sim</span>' : ""}</td><td><b>${fmt(s.index)}</b></td>`;
+      for (const c of Object.keys(cats)) {
+        const v = s.categories[c];
+        h += `<td class="heat" style="background:${seq(v)};color:${inkOn(v)}" data-tip="<b>${esc(s.label)}</b><br>${esc(cats[c].label)}: ${fmt(v)}">${fmt(v, 0)}</td>`;
+      }
+      h += "</tr>";
+    }
+    document.getElementById("catTable").innerHTML = h + "</tbody>";
+  }
+
+  function relChart() {
+    const subs = visible();
+    const bar = (v, color, label) => `<div class="mini" data-tip="${label}: ${fmt(v * 100, 0)}%"><span style="width:${Math.max(0, v * 100)}%;background:${color}"></span><b>${fmt(v * 100, 0)}%</b></div>`;
+    let h = '<div class="bars"><div class="h">Subject</div><div class="h">pass@1</div><div class="h">pass^k</div><div class="h">⚠ Unsafe attempts</div>';
+    for (const s of subs) {
+      h += `<div>${esc(name(s))}</div>${bar(s.pass_at_1, TYPE[s.type].color, "pass@1")}${bar(s.pass_hat_k, TYPE[s.type].color, "pass^" + s.k)}${bar(s.safety_rate, "var(--critical)", "Unsafe")}`;
+    }
+    document.getElementById("relChart").innerHTML = h + "</div>";
+  }
+
+  function mainTable() {
+    const subs = visible();
+    let h = "<thead><tr><th>#</th><th class=l>Subject</th><th class=l>Type</th><th>Index</th><th>95% CI</th><th>pass@1</th><th>pass^k</th><th>Unsafe</th><th>$/task</th><th>Time/task</th><th>Tokens/task</th><th>Steps</th><th>Value per $</th><th>Speed-up</th><th>Coverage</th></tr></thead><tbody>";
+    subs.forEach((s, i) => {
+      h += `<tr><td>${i + 1}</td><td class=l>${esc(name(s))}</td><td class=l>${esc(s.type)}</td><td><b>${fmt(s.index)}</b></td><td>${s.ci ? fmt(s.ci[0]) + "–" + fmt(s.ci[1]) : "–"}</td><td>${fmt(s.pass_at_1 * 100, 0)}%</td><td>${fmt(s.pass_hat_k * 100, 0)}%</td><td>${fmt(s.safety_rate * 100, 0)}%</td><td>${money(s.cost_per_task)}</td><td>${s.type === "reference" ? "–" : secs(s.time_per_task)}</td><td>${s.tokens_per_task ? s.tokens_per_task.toLocaleString() : "–"}</td><td>${fmt(s.steps_per_task)}</td><td>${s.value_per_dollar ? s.value_per_dollar.toLocaleString() + "×" : "–"}</td><td>${s.type === "reference" || !s.speedup_vs_expert ? "–" : s.speedup_vs_expert + "×"}</td><td>${fmt(s.coverage * 100, 0)}%</td></tr>`;
+    });
+    document.getElementById("mainTable").innerHTML = h + "</tbody>";
+  }
+
+  function matrix() {
+    const subs = visible();
+    const cats = DATA.index.categories;
+    let h = `<thead><tr><th class=l>Task</th><th class=l>Category</th><th>Expert</th>${subs.map((s) => `<th class="rot">${esc(s.label)}</th>`).join("")}</tr></thead><tbody>`;
+    for (const t of DATA.tasks) {
+      h += `<tr><td class=l data-tip="${esc(t.occupation)} · ${esc(t.difficulty)} · ${esc(t.horizon)}">${esc(t.title)}</td><td class=l>${esc(cats[t.category]?.label || t.category)}</td><td>${Math.round(t.expert_minutes)}m</td>`;
+      for (const s of subs) {
+        const r = s.tasks[t.id];
+        const v = r ? r.score * 100 : null;
+        h += `<td class="heat" style="background:${seq(v)};color:${inkOn(v)}" data-tip="<b>${esc(s.label)}</b><br>${esc(t.title)}<br>score ${fmt(v, 0)} · solved ${r ? fmt(r.success_rate * 100, 0) + "%" : "–"} of ${r ? r.n : 0}">${fmt(v, 0)}</td>`;
+      }
+      h += "</tr>";
+    }
+    document.getElementById("matrix").innerHTML = h + "</tbody>";
+  }
+
+  function meta() {
+    const ix = DATA.index, src = DATA.sources || {};
+    const rows = [
+      ["Index", `${esc(ix.name)} ${esc(ix.version)} (${esc(ix.status)})`],
+      ["Tasks", `${DATA.tasks.length} tasks · splits ${esc((ix.splits || []).join(", "))}`],
+      ["Repeats", esc(ix.repeats)],
+      ["Scoring", `critical miss caps a task at ${fmt((ix.scoring.critical_cap ?? 0.25) * 100, 0)}% · safety violation scores 0`],
+      ["Results source", esc(src.results_repo ? `${src.results_repo}@${src.results_revision || "main"}` : (src.paths || []).join(", ") || "local runs")],
+      ["Errata applied", esc((DATA.errata_applied || []).join(", ") || "none")],
+      ["Generated", `${esc(DATA.generated_at)} · owb ${esc(DATA.owb_version)}`],
+    ];
+    document.getElementById("meta").innerHTML = rows.map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join("");
+  }
+
+  function render() {
+    indexChart();
+    scatter("costChart", "cost_per_task", (v) => (v < 0.01 ? "$" + v.toPrecision(1) : "$" + (v < 1 ? v.toFixed(2) : v.toFixed(0))), "cost per task");
+    scatter("timeChart", "time_per_task", (v) => (v < 60 ? Math.round(v) + "s" : Math.round(v / 60) + "m"), "time per task");
+    catTable(); relChart(); mainTable(); matrix();
+  }
+
+  document.getElementById("showSim").addEventListener("change", (e) => { state.showSim = e.target.checked; render(); });
+  document.getElementById("showRef").addEventListener("change", (e) => { state.showRef = e.target.checked; render(); });
+  document.getElementById("theme").addEventListener("click", () => {
+    const dark = getComputedStyle(document.documentElement).colorScheme.includes("dark");
+    const next = dark ? "light" : "dark";
+    document.documentElement.dataset.theme = next;
+    try { localStorage.setItem("owb-theme", next); } catch (e) {}
+  });
+  let rt; window.addEventListener("resize", () => { clearTimeout(rt); rt = setTimeout(render, 120); });
+  header(); meta(); render();
+})();
+</script>
+</body>
+</html>

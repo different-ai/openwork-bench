@@ -1,0 +1,34 @@
+name: Publish tasks to Hugging Face
+
+# On a suite release tag (tasks-v0.1.0), export the public tasks and push them to the
+# Hugging Face tasks dataset with the same tag. Needs the HF_TOKEN secret (write access
+# to the namespace). Without it, the job only exports and uploads an artifact.
+
+on:
+  push:
+    tags: ["tasks-v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    env:
+      HF_TOKEN: ${{ secrets.HF_TOKEN }}
+      OWB_HF_NAMESPACE: ${{ vars.OWB_HF_NAMESPACE || 'different-ai' }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v10
+        with:
+          python-version: "3.13"
+      - run: uv sync --all-extras
+      - run: uv run owb validate
+      - run: uv run owb hub export-tasks --out dist/hf-tasks --revision "${GITHUB_REF_NAME}"
+      - name: Push to Hugging Face
+        if: env.HF_TOKEN != ''
+        run: uv run owb hub push-tasks --repo "${OWB_HF_NAMESPACE}/openwork-bench-tasks" --tag "${GITHUB_REF_NAME}"
+      - name: Note when skipped
+        if: env.HF_TOKEN == ''
+        run: echo "HF_TOKEN not set; exported dataset only."

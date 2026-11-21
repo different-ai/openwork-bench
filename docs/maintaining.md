@@ -30,5 +30,8 @@ CI approval cannot give.
 (Starlight, synced from `docs/` by `site/scripts/sync-docs.mjs`). The `site` workflow builds it on
 every PR, checking every docs link, and publishes it to
 [GitHub Pages](https://different-ai.github.io/openwork-bench/) on every push to `pre-release`.
+After each deploy a smoke check fetches the live leaderboard, a model page, a task page, a docs
+page, the data file and the preview image, and fails the run if any is missing. Workflow actions
+are pinned to commit SHAs.
 The leaderboard comes from the results revision pinned in `leaderboard/published.yaml`, or from
 the offline demo until one is pinned. See [`site/README.md`](../site/README.md) to run it locally.

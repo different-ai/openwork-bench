@@ -1,8 +1,9 @@
 name: site
 
 # Builds the leaderboard and docs (site/, Astro) on every pull request and publishes them to
-# GitHub Pages from pre-release. Until leaderboard/published.yaml pins a results revision, the
-# leaderboard comes from the offline demo and says so.
+# GitHub Pages from pre-release. The leaderboard comes from the results pinned in
+# leaderboard/published.yaml: a folder in this repository (results_path), a Hugging Face results
+# revision, or the offline demo until either is pinned.
 on:
   push:
     branches: [pre-release]
@@ -28,8 +29,12 @@ jobs:
       - name: Leaderboard data
         run: |
           REV=$(uv run python -c "import yaml;print(yaml.safe_load(open('leaderboard/published.yaml')).get('results_revision') or '')")
+          LOCAL=$(uv run python -c "import yaml;print(yaml.safe_load(open('leaderboard/published.yaml')).get('results_path') or '')")
           IDX=$(uv run python -c "import yaml;print(yaml.safe_load(open('leaderboard/published.yaml'))['index_version'])")
-          if [ -n "$REV" ]; then
+          if [ -n "$LOCAL" ]; then
+            NOTE=$(uv run python -c "import yaml;print(yaml.safe_load(open('leaderboard/published.yaml')).get('note') or '')")
+            uv run owb leaderboard --runs "$LOCAL" --index "$IDX" --note "$NOTE" --out site/public/leaderboard.json
+          elif [ -n "$REV" ]; then
             uv run owb hub pull-results --revision "$REV" --dest hub-results
             uv run owb leaderboard --runs hub-results --index "$IDX" --out site/public/leaderboard.json
           else

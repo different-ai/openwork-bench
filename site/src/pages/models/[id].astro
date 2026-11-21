@@ -1,7 +1,7 @@
 ---
 import Site from '../../layouts/Site.astro';
 import type { Subject } from '../../lib/site';
-import { RESULTS, docs, fmt, heat, heatInk, leaderboard, minutes, money, pct, route, slug, subjectName, taskRoute } from '../../lib/site';
+import { docs, resultsUrl, fmt, heat, heatInk, leaderboard, minutes, money, pct, route, slug, subjectName, taskRoute } from '../../lib/site';
 
 export function getStaticPaths() {
   return leaderboard().subjects.map((subject) => ({ params: { id: slug(subject.id) }, props: { subject } }));
@@ -107,7 +107,7 @@ const stats = [
   {s.runs.length > 0 && (
     <section class="block">
       <h2>Runs</h2>
-      <p class="sub">The runs behind these numbers. Published runs, with every trajectory, are on <a href={RESULTS}>Hugging Face</a>.</p>
+      <p class="sub">The runs behind these numbers. Published runs, with every trajectory, are <a href={resultsUrl()}>open</a>.</p>
       <div class="chips">{s.runs.map((run) => <span><code>{run}</code></span>)}</div>
     </section>
   )}

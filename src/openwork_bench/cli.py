@@ -238,6 +238,8 @@ def cmd_leaderboard(args: argparse.Namespace) -> int:
     from .index import summary_table
 
     lb = build_lb(args.runs, args.index, args.any_index, getattr(args, "tasks_dir", None))
+    if args.note:
+        lb["note"] = args.note
     out = Path(args.out)
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(json.dumps(lb, indent=1))
@@ -447,6 +449,7 @@ def build_parser() -> argparse.ArgumentParser:
     lb.add_argument("--index", default=None)
     lb.add_argument("--out", default="site/public/leaderboard.json")
     lb.add_argument("--any-index", action="store_true", help="Include rows from other index versions")
+    lb.add_argument("--note", default=None, help="A short notice shown above the leaderboard")
     lb.set_defaults(fn=cmd_leaderboard)
 
     d = sub.add_parser(

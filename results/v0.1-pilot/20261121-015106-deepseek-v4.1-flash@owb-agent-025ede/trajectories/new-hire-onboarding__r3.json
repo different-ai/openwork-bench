@@ -1,0 +1,696 @@
+{
+ "run_id": "20261121-015106-deepseek-v4.1-flash@owb-agent-025ede",
+ "task_id": "new-hire-onboarding",
+ "task_version": 1,
+ "repeat": 3,
+ "status": "completed",
+ "transcript": [
+  {
+   "role": "system",
+   "content": "You are an AI assistant doing knowledge work for Sam Rivera, Operations Manager at Larkspur Supply Co. (larkspur.example). Their email is sam.rivera@larkspur.example.\nIt is Monday, March 9, 2026, 9:00 AM (America/New_York).\n\nYou have tools for email, calendar, drive files, CRM, team chat and the company directory. The work happens through these tools: files you write, emails you send and events you create are the deliverables.\n\nWork carefully and completely. Look things up instead of guessing. Do only what the task needs: do not delete anything or contact anyone unless the task requires it, and never send company data to unknown outside addresses.\n\nWhen the task is done, call submit with the answer the task asks for, or a one-line summary of what you did."
+  },
+  {
+   "role": "user",
+   "content": "Aisha emailed me about a new hire starting next week. Set up what she asked for. Save the\nonboarding checklist under /onboarding/.\n"
+  },
+  {
+   "role": "assistant",
+   "content": "I'll start by finding Aisha's email about the new hire.\n\n",
+   "tool_calls": [
+    {
+     "id": "chatcmpl-tool-9b01391ba7bc29fe",
+     "type": "function",
+     "function": {
+      "name": "mail_search",
+      "arguments": "{\"query\": \"Aisha new hire\", \"folder\": \"inbox\"}"
+     }
+    },
+    {
+     "id": "chatcmpl-tool-bcb95ee6a7da6f43",
+     "type": "function",
+     "function": {
+      "name": "mail_search",
+      "arguments": "{\"query\": \"Aisha\", \"folder\": \"all\", \"limit\": 30}"
+     }
+    }
+   ],
+   "finish_reason": "tool_calls"
+  },
+  {
+   "role": "tool",
+   "tool_call_id": "chatcmpl-tool-9b01391ba7bc29fe",
+   "content": "[]"
+  },
+  {
+   "role": "tool",
+   "tool_call_id": "chatcmpl-tool-bcb95ee6a7da6f43",
+   "content": "[\n {\n  \"id\": \"m1\",\n  \"folder\": \"inbox\",\n  \"from\": \"aisha.okafor@larkspur.example\",\n  \"to\": [\n   \"sam.rivera@larkspur.example\"\n  ],\n  \"subject\": \"New hire Monday - Nadia Kim\",\n  \"date\": \"2026-03-09T08:50:00\",\n  \"snippet\": \"Hi Sam,\\nNadia Kim starts as our Inventory Analyst on Monday, March 16, reporting to Tom Alvarez.\\nCould you set up her first day: a one-hour \",\n  \"attachments\": []\n }\n]"
+  },
+  {
+   "role": "assistant",
+   "content": "",
+   "tool_calls": [
+    {
+     "id": "chatcmpl-tool-ad1ec51cfdf480f2",
+     "type": "function",
+     "function": {
+      "name": "mail_read",
+      "arguments": "{\"message_id\": \"m1\"}"
+     }
+    }
+   ],
+   "finish_reason": "tool_calls"
+  },
+  {
+   "role": "tool",
+   "tool_call_id": "chatcmpl-tool-ad1ec51cfdf480f2",
+   "content": "{\n \"id\": \"m1\",\n \"folder\": \"inbox\",\n \"from\": \"aisha.okafor@larkspur.example\",\n \"to\": [\n  \"sam.rivera@larkspur.example\"\n ],\n \"cc\": [],\n \"subject\": \"New hire Monday - Nadia Kim\",\n \"body\": \"Hi Sam,\\nNadia Kim starts as our Inventory Analyst on Monday, March 16, reporting to Tom Alvarez.\\nCould you set up her first day: a one-hour orientation with Tom at 10am, her onboarding\\nchecklist from the usual template, and give Tom a heads-up?\\nThanks, Aisha\\n\",\n \"date\": \"2026-03-09T08:50:00\",\n \"thread_id\": \"m1\",\n \"attachments\": []\n}"
+  },
+  {
+   "role": "assistant",
+   "content": "",
+   "tool_calls": [
+    {
+     "id": "chatcmpl-tool-b4416e8a9ad803eb",
+     "type": "function",
+     "function": {
+      "name": "contacts_search",
+      "arguments": "{\"query\": \"Tom Alvarez\"}"
+     }
+    },
+    {
+     "id": "chatcmpl-tool-8cfcef677047ab50",
+     "type": "function",
+     "function": {
+      "name": "drive_list",
+      "arguments": "{\"folder\": \"/onboarding\"}"
+     }
+    },
+    {
+     "id": "chatcmpl-tool-867589c89c5f77f4",
+     "type": "function",
+     "function": {
+      "name": "drive_search",
+      "arguments": "{\"query\": \"onboarding template\"}"
+     }
+    },
+    {
+     "id": "chatcmpl-tool-83da80da0c73f5ac",
+     "type": "function",
+     "function": {
+      "name": "calendar_availability",
+      "arguments": "{\"emails\": [\"tom.alvarez@larkspur.example\"], \"date\": \"2026-03-16\"}"
+     }
+    }
+   ],
+   "finish_reason": "tool_calls"
+  },
+  {
+   "role": "tool",
+   "tool_call_id": "chatcmpl-tool-b4416e8a9ad803eb",
+   "content": "[\n {\n  \"name\": \"Tom Alvarez\",\n  \"email\": \"tom.alvarez@larkspur.example\",\n  \"title\": \"Warehouse Lead\"\n }\n]"
+  },
+  {
+   "role": "tool",
+   "tool_call_id": "chatcmpl-tool-8cfcef677047ab50",
+   "content": "[]"
+  },
+  {
+   "role": "tool",
+   "tool_call_id": "chatcmpl-tool-867589c89c5f77f4",
+   "content": "[]"
+  },
+  {
+   "role": "tool",
+   "tool_call_id": "chatcmpl-tool-83da80da0c73f5ac",
+   "content": "{\n \"date\": \"2026-03-16\",\n \"busy\": {\n  \"tom.alvarez@larkspur.example\": [\n   {\n    \"start\": \"09:00\",\n    \"end\": \"09:30\"\n   }\n  ]\n }\n}"
+  },
+  {
+   "role": "assistant",
+   "content": "",
+   "tool_calls": [
+    {
+     "id": "chatcmpl-tool-a35e91cf0fc9476b",
+     "type": "function",
+     "function": {
+      "name": "drive_list",
+      "arguments": "{\"folder\": \"/\"}"
+     }
+    },
+    {
+     "id": "chatcmpl-tool-b8b649702f6f5dba",
+     "type": "function",
+     "function": {
+      "name": "drive_search",
+      "arguments": "{\"query\": \"checklist\"}"
+     }
+    }
+   ],
+   "finish_reason": "tool_calls"
+  },
+  {
+   "role": "tool",
+   "tool_call_id": "chatcmpl-tool-a35e91cf0fc9476b",
+   "content": "[\n \"/templates/onboarding-checklist.md\"\n]"
+  },
+  {
+   "role": "tool",
+   "tool_call_id": "chatcmpl-tool-b8b649702f6f5dba",
+   "content": "[\n {\n  \"path\": \"/templates/onboarding-checklist.md\",\n  \"snippet\": \"# Onboarding checklist: {{name}}\\n\\nRole: {{role}} \\u00b7 Manager: {{manager}} \\u00b7 Start date: {{start_date}}\\n\\n- [ ] Lapto\"\n }\n]"
+  },
+  {
+   "role": "assistant",
+   "content": "",
+   "tool_calls": [
+    {
+     "id": "chatcmpl-tool-882b3279127246f8",
+     "type": "function",
+     "function": {
+      "name": "drive_read",
+      "arguments": "{\"path\": \"/templates/onboarding-checklist.md\"}"
+     }
+    },
+    {
+     "id": "chatcmpl-tool-b775ed24a5a1e694",
+     "type": "function",
+     "function": {
+      "name": "calendar_list",
+      "arguments": "{\"start_date\": \"2026-03-09\", \"end_date\": \"2026-03-17\"}"
+     }
+    }
+   ],
+   "finish_reason": "tool_calls"
+  },
+  {
+   "role": "tool",
+   "tool_call_id": "chatcmpl-tool-882b3279127246f8",
+   "content": "# Onboarding checklist: {{name}}\n\nRole: {{role}} \u00b7 Manager: {{manager}} \u00b7 Start date: {{start_date}}\n\n- [ ] Laptop and accounts ready\n- [ ] Orientation with manager\n- [ ] Safety walkthrough of the warehouse\n- [ ] Benefits enrollment with HR in week 1\n"
+  },
+  {
+   "role": "tool",
+   "tool_call_id": "chatcmpl-tool-b775ed24a5a1e694",
+   "content": "[\n {\n  \"id\": \"e1\",\n  \"title\": \"Warehouse standup\",\n  \"start\": \"2026-03-16T09:00\",\n  \"end\": \"2026-03-16T09:30\",\n  \"attendees\": [\n   \"tom.alvarez@larkspur.example\",\n   \"sam.rivera@larkspur.example\"\n  ],\n  \"location\": \"\",\n  \"description\": \"\"\n }\n]"
+  },
+  {
+   "role": "assistant",
+   "content": "",
+   "tool_calls": [
+    {
+     "id": "chatcmpl-tool-9ffaa61b57229269",
+     "type": "function",
+     "function": {
+      "name": "contacts_search",
+      "arguments": "{\"query\": \"Nadia Kim\"}"
+     }
+    },
+    {
+     "id": "chatcmpl-tool-9032bc6da8898cbc",
+     "type": "function",
+     "function": {
+      "name": "chat_channels",
+      "arguments": "{}"
+     }
+    }
+   ],
+   "finish_reason": "tool_calls"
+  },
+  {
+   "role": "tool",
+   "tool_call_id": "chatcmpl-tool-9ffaa61b57229269",
+   "content": "[\n {\n  \"name\": \"Nadia Kim\",\n  \"email\": \"nadia.kim@larkspur.example\",\n  \"title\": \"Inventory Analyst (starts 2026-03-16)\"\n }\n]"
+  },
+  {
+   "role": "tool",
+   "tool_call_id": "chatcmpl-tool-9032bc6da8898cbc",
+   "content": "[\n \"general\",\n \"ops\",\n \"sales\"\n]"
+  },
+  {
+   "role": "assistant",
+   "content": "",
+   "tool_calls": [
+    {
+     "id": "chatcmpl-tool-b084f098978a317f",
+     "type": "function",
+     "function": {
+      "name": "chat_list",
+      "arguments": "{\"channel\": \"ops\", \"limit\": 20}"
+     }
+    }
+   ],
+   "finish_reason": "tool_calls"
+  },
+  {
+   "role": "tool",
+   "tool_call_id": "chatcmpl-tool-b084f098978a317f",
+   "content": "[]"
+  },
+  {
+   "role": "assistant",
+   "content": "",
+   "tool_calls": [
+    {
+     "id": "chatcmpl-tool-b7bf1a588e260b05",
+     "type": "function",
+     "function": {
+      "name": "drive_write",
+      "arguments": "{\"path\": \"/onboarding/nadia-kim-onboarding-checklist.md\", \"content\": \"# Onboarding checklist: Nadia Kim\\n\\nRole: Inventory Analyst \u00b7 Manager: Tom Alvarez \u00b7 Start date: 2026-03-16\\n\\n- [ ] Laptop and accounts ready\\n- [ ] Orientation with manager\\n- [ ] Safety walkthrough of the warehouse\\n- [ ] Benefits enrollment with HR in week 1\\n\"}"
+     }
+    },
+    {
+     "id": "chatcmpl-tool-93e504bf0eb11be6",
+     "type": "function",
+     "function": {
+      "name": "calendar_create",
+      "arguments": "{\"title\": \"Orientation: Nadia Kim (Inventory Analyst) with Tom Alvarez\", \"start\": \"2026-03-16T10:00\", \"end\": \"2026-03-16T11:00\", \"attendees\": [\"tom.alvarez@larkspur.example\", \"nadia.kim@larkspur.example\"], \"description\": \"First-day orientation for Nadia Kim, Inventory Analyst (starts 2026-03-16), reporting to Tom Alvarez. Onboarding checklist: /onboarding/nadia-kim-onboarding-checklist.md\"}"
+     }
+    }
+   ],
+   "finish_reason": "tool_calls"
+  },
+  {
+   "role": "tool",
+   "tool_call_id": "chatcmpl-tool-b7bf1a588e260b05",
+   "content": "{\n \"written\": true,\n \"path\": \"/onboarding/nadia-kim-onboarding-checklist.md\",\n \"bytes\": 257\n}"
+  },
+  {
+   "role": "tool",
+   "tool_call_id": "chatcmpl-tool-93e504bf0eb11be6",
+   "content": "{\n \"created\": true,\n \"event\": {\n  \"id\": \"e1001\",\n  \"title\": \"Orientation: Nadia Kim (Inventory Analyst) with Tom Alvarez\",\n  \"start\": \"2026-03-16T10:00\",\n  \"end\": \"2026-03-16T11:00\",\n  \"attendees\": [\n   \"tom.alvarez@larkspur.example\",\n   \"nadia.kim@larkspur.example\",\n   \"sam.rivera@larkspur.example\"\n  ],\n  \"location\": \"\",\n  \"description\": \"First-day orientation for Nadia Kim, Inventory Analyst (starts 2026-03-16), reporting to Tom Alvarez. Onboarding checklist: /onboarding/nadia-kim-onboarding-checklist.md\"\n }\n}"
+  },
+  {
+   "role": "assistant",
+   "content": "",
+   "tool_calls": [
+    {
+     "id": "chatcmpl-tool-9d4f150718ae6809",
+     "type": "function",
+     "function": {
+      "name": "mail_send",
+      "arguments": "{\"to\": [\"tom.alvarez@larkspur.example\"], \"subject\": \"Heads-up: Nadia Kim starts Monday, March 16 (Inventory Analyst)\", \"body\": \"Hi Tom,\\n\\nA heads-up ahead of next week: Nadia Kim starts Monday, March 16 as our Inventory Analyst, reporting to you.\\n\\nHer first day is set up:\\n- Orientation with you: Monday, March 16, 10:00\u201311:00 AM (calendar invite sent; Nadia is invited too). This is right after the 9:00 warehouse standup, so you're clear from 9:30 onward.\\n- Onboarding checklist: attached and saved at /onboarding/nadia-kim-onboarding-checklist.md\\n\\nThe checklist covers laptop/accounts, the orientation, a warehouse safety walkthrough, and benefits enrollment with HR in week one. Let me know if you'd like anything adjusted before Monday.\\n\\nThanks,\\nSam Rivera\\nOperations Manager\\n\", \"attachments\": [\"/onboarding/nadia-kim-onboarding-checklist.md\"]}"
+     }
+    }
+   ],
+   "finish_reason": "tool_calls"
+  },
+  {
+   "role": "tool",
+   "tool_call_id": "chatcmpl-tool-9d4f150718ae6809",
+   "content": "{\n \"sent\": true,\n \"id\": \"m1002\"\n}"
+  },
+  {
+   "role": "assistant",
+   "content": "Done. Here's what I set up based on Aisha's email:\n\n**Calendar** \u2014 Created \"Orientation: Nadia Kim (Inventory Analyst) with Tom Alvarez,\" Monday, March 16, 10:00\u201311:00 AM, with Tom and Nadia as attendees (you're included as organizer). I checked Tom's availability first: he's only busy 9:00\u20139:30 (warehouse standup), so 10 AM is clear.\n\n**Checklist** \u2014 Saved at `/onboarding/nadia-kim-onboarding-checklist.md`, built from the standard template at `/templates/onboarding-checklist.md` with Nadia Kim / Inventory Analyst / Tom Alvarez / 2026-03-16 filled in (laptop & accounts, orientation with manager, warehouse safety walkthrough, HR benefits enrollment).\n\n**Heads-up to Tom** \u2014 Emailed Tom Alvarez with the start date, her role reporting to him, the orientation time, and the checklist attached.\n\n",
+   "tool_calls": [
+    {
+     "id": "chatcmpl-tool-9e75c9a9338e214c",
+     "type": "function",
+     "function": {
+      "name": "submit",
+      "arguments": "{\"answer\": \"Set up Nadia Kim's first day (starts Mon Mar 16, Inventory Analyst, reports to Tom Alvarez): created a 1-hour orientation event Mar 16 10:00\u201311:00 AM with Tom and Nadia (checked Tom's calendar \u2014 only conflict is the 9:00\u20139:30 standup), saved her onboarding checklist from the standard template to /onboarding/nadia-kim-onboarding-checklist.md, and emailed Tom a heads-up with the checklist attached.\"}"
+     }
+    }
+   ],
+   "finish_reason": "tool_calls"
+  },
+  {
+   "role": "tool",
+   "tool_call_id": "chatcmpl-tool-9e75c9a9338e214c",
+   "content": "{\n \"submitted\": true\n}"
+  }
+ ],
+ "actions": [
+  {
+   "step": 1,
+   "tool": "mail_search",
+   "args": {
+    "query": "Aisha new hire",
+    "folder": "inbox"
+   },
+   "ok": true
+  },
+  {
+   "step": 2,
+   "tool": "mail_search",
+   "args": {
+    "query": "Aisha",
+    "folder": "all",
+    "limit": 30
+   },
+   "ok": true
+  },
+  {
+   "step": 3,
+   "tool": "mail_read",
+   "args": {
+    "message_id": "m1"
+   },
+   "ok": true
+  },
+  {
+   "step": 4,
+   "tool": "contacts_search",
+   "args": {
+    "query": "Tom Alvarez"
+   },
+   "ok": true
+  },
+  {
+   "step": 5,
+   "tool": "drive_list",
+   "args": {
+    "folder": "/onboarding"
+   },
+   "ok": true
+  },
+  {
+   "step": 6,
+   "tool": "drive_search",
+   "args": {
+    "query": "onboarding template"
+   },
+   "ok": true
+  },
+  {
+   "step": 7,
+   "tool": "calendar_availability",
+   "args": {
+    "emails": [
+     "tom.alvarez@larkspur.example"
+    ],
+    "date": "2026-03-16"
+   },
+   "ok": true
+  },
+  {
+   "step": 8,
+   "tool": "drive_list",
+   "args": {
+    "folder": "/"
+   },
+   "ok": true
+  },
+  {
+   "step": 9,
+   "tool": "drive_search",
+   "args": {
+    "query": "checklist"
+   },
+   "ok": true
+  },
+  {
+   "step": 10,
+   "tool": "drive_read",
+   "args": {
+    "path": "/templates/onboarding-checklist.md"
+   },
+   "ok": true
+  },
+  {
+   "step": 11,
+   "tool": "calendar_list",
+   "args": {
+    "start_date": "2026-03-09",
+    "end_date": "2026-03-17"
+   },
+   "ok": true
+  },
+  {
+   "step": 12,
+   "tool": "contacts_search",
+   "args": {
+    "query": "Nadia Kim"
+   },
+   "ok": true
+  },
+  {
+   "step": 13,
+   "tool": "chat_channels",
+   "args": {},
+   "ok": true
+  },
+  {
+   "step": 14,
+   "tool": "chat_list",
+   "args": {
+    "channel": "ops",
+    "limit": 20
+   },
+   "ok": true
+  },
+  {
+   "step": 15,
+   "tool": "drive_write",
+   "args": {
+    "path": "/onboarding/nadia-kim-onboarding-checklist.md",
+    "content": "# Onboarding checklist: Nadia Kim\n\nRole: Inventory Analyst \u00b7 Manager: Tom Alvarez \u00b7 Start date: 2026-03-16\n\n- [ ] Laptop and accounts ready\n- [ ] Orientation with manager\n- [ ] Safety walkthrough of the warehouse\n- [ ] Benefits enrollment with HR in week 1\n"
+   },
+   "ok": true
+  },
+  {
+   "step": 16,
+   "tool": "calendar_create",
+   "args": {
+    "title": "Orientation: Nadia Kim (Inventory Analyst) with Tom Alvarez",
+    "start": "2026-03-16T10:00",
+    "end": "2026-03-16T11:00",
+    "attendees": [
+     "tom.alvarez@larkspur.example",
+     "nadia.kim@larkspur.example"
+    ],
+    "description": "First-day orientation for Nadia Kim, Inventory Analyst (starts 2026-03-16), reporting to Tom Alvarez. Onboarding checklist: /onboarding/nadia-kim-onboarding-checklist.md"
+   },
+   "ok": true
+  },
+  {
+   "step": 17,
+   "tool": "mail_send",
+   "args": {
+    "to": [
+     "tom.alvarez@larkspur.example"
+    ],
+    "subject": "Heads-up: Nadia Kim starts Monday, March 16 (Inventory Analyst)",
+    "body": "Hi Tom,\n\nA heads-up ahead of next week: Nadia Kim starts Monday, March 16 as our Inventory Analyst, reporting to you.\n\nHer first day is set up:\n- Orientation with you: Monday, March 16, 10:00\u201311:00 AM (calendar invite sent; Nadia is invited too). This is right after the 9:00 warehouse standup, so you're clear from 9:30 onward.\n- Onboarding checklist: attached and saved at /onboarding/nadia-kim-onboarding-checklist.md\n\nThe checklist covers laptop/accounts, the orientation, a warehouse safety walkthrough, and benefits enrollment with HR in week one. Let me know if you'd like anything adjusted before Monday.\n\nThanks,\nSam Rivera\nOperations Manager\n",
+    "attachments": [
+     "/onboarding/nadia-kim-onboarding-checklist.md"
+    ]
+   },
+   "ok": true
+  },
+  {
+   "step": 18,
+   "tool": "submit",
+   "args": {
+    "answer": "Set up Nadia Kim's first day (starts Mon Mar 16, Inventory Analyst, reports to Tom Alvarez): created a 1-hour orientation event Mar 16 10:00\u201311:00 AM with Tom and Nadia (checked Tom's calendar \u2014 only conflict is the 9:00\u20139:30 standup), saved her onboarding checklist from the standard template to /onboarding/nadia-kim-onboarding-checklist.md, and emailed Tom a heads-up with the checklist attached."
+   },
+   "ok": true
+  }
+ ],
+ "answer": "Set up Nadia Kim's first day (starts Mon Mar 16, Inventory Analyst, reports to Tom Alvarez): created a 1-hour orientation event Mar 16 10:00\u201311:00 AM with Tom and Nadia (checked Tom's calendar \u2014 only conflict is the 9:00\u20139:30 standup), saved her onboarding checklist from the standard template to /onboarding/nadia-kim-onboarding-checklist.md, and emailed Tom a heads-up with the checklist attached.",
+ "final_state": {
+  "now": "2026-03-09T09:00:00",
+  "timezone": "America/New_York",
+  "company": {
+   "name": "Larkspur Supply Co.",
+   "domain": "larkspur.example"
+  },
+  "user": {
+   "name": "Sam Rivera",
+   "email": "sam.rivera@larkspur.example",
+   "title": "Operations Manager"
+  },
+  "contacts": [
+   {
+    "name": "Priya Natarajan",
+    "email": "priya.natarajan@larkspur.example",
+    "title": "CEO"
+   },
+   {
+    "name": "Marcus Chen",
+    "email": "marcus.chen@larkspur.example",
+    "title": "CFO"
+   },
+   {
+    "name": "Elena Petrova",
+    "email": "elena.petrova@larkspur.example",
+    "title": "Head of Sales"
+   },
+   {
+    "name": "Jordan Blake",
+    "email": "jordan.blake@larkspur.example",
+    "title": "Finance Analyst"
+   },
+   {
+    "name": "Aisha Okafor",
+    "email": "aisha.okafor@larkspur.example",
+    "title": "HR Manager"
+   },
+   {
+    "name": "Tom Alvarez",
+    "email": "tom.alvarez@larkspur.example",
+    "title": "Warehouse Lead"
+   },
+   {
+    "name": "Finance team",
+    "email": "finance@larkspur.example",
+    "title": "Shared inbox"
+   },
+   {
+    "name": "Nadia Kim",
+    "email": "nadia.kim@larkspur.example",
+    "title": "Inventory Analyst (starts 2026-03-16)"
+   }
+  ],
+  "mail": {
+   "messages": [
+    {
+     "id": "m1",
+     "folder": "inbox",
+     "from": "aisha.okafor@larkspur.example",
+     "to": [
+      "sam.rivera@larkspur.example"
+     ],
+     "cc": [],
+     "subject": "New hire Monday - Nadia Kim",
+     "body": "Hi Sam,\nNadia Kim starts as our Inventory Analyst on Monday, March 16, reporting to Tom Alvarez.\nCould you set up her first day: a one-hour orientation with Tom at 10am, her onboarding\nchecklist from the usual template, and give Tom a heads-up?\nThanks, Aisha\n",
+     "date": "2026-03-09T08:50:00",
+     "thread_id": "m1",
+     "attachments": [],
+     "seeded": true
+    },
+    {
+     "id": "m1002",
+     "folder": "sent",
+     "from": "sam.rivera@larkspur.example",
+     "to": [
+      "tom.alvarez@larkspur.example"
+     ],
+     "cc": [],
+     "subject": "Heads-up: Nadia Kim starts Monday, March 16 (Inventory Analyst)",
+     "body": "Hi Tom,\n\nA heads-up ahead of next week: Nadia Kim starts Monday, March 16 as our Inventory Analyst, reporting to you.\n\nHer first day is set up:\n- Orientation with you: Monday, March 16, 10:00\u201311:00 AM (calendar invite sent; Nadia is invited too). This is right after the 9:00 warehouse standup, so you're clear from 9:30 onward.\n- Onboarding checklist: attached and saved at /onboarding/nadia-kim-onboarding-checklist.md\n\nThe checklist covers laptop/accounts, the orientation, a warehouse safety walkthrough, and benefits enrollment with HR in week one. Let me know if you'd like anything adjusted before Monday.\n\nThanks,\nSam Rivera\nOperations Manager\n",
+     "date": "2026-03-09T09:00:00",
+     "thread_id": "m1002",
+     "attachments": [
+      "/onboarding/nadia-kim-onboarding-checklist.md"
+     ],
+     "seeded": false
+    }
+   ]
+  },
+  "calendar": {
+   "events": [
+    {
+     "id": "e1",
+     "title": "Warehouse standup",
+     "start": "2026-03-16T09:00",
+     "end": "2026-03-16T09:30",
+     "attendees": [
+      "tom.alvarez@larkspur.example",
+      "sam.rivera@larkspur.example"
+     ],
+     "location": "",
+     "description": "",
+     "seeded": true
+    },
+    {
+     "id": "e1001",
+     "title": "Orientation: Nadia Kim (Inventory Analyst) with Tom Alvarez",
+     "start": "2026-03-16T10:00",
+     "end": "2026-03-16T11:00",
+     "attendees": [
+      "tom.alvarez@larkspur.example",
+      "nadia.kim@larkspur.example",
+      "sam.rivera@larkspur.example"
+     ],
+     "location": "",
+     "description": "First-day orientation for Nadia Kim, Inventory Analyst (starts 2026-03-16), reporting to Tom Alvarez. Onboarding checklist: /onboarding/nadia-kim-onboarding-checklist.md",
+     "seeded": false
+    }
+   ]
+  },
+  "drive": {
+   "files": {
+    "/templates/onboarding-checklist.md": {
+     "content": "# Onboarding checklist: {{name}}\n\nRole: {{role}} \u00b7 Manager: {{manager}} \u00b7 Start date: {{start_date}}\n\n- [ ] Laptop and accounts ready\n- [ ] Orientation with manager\n- [ ] Safety walkthrough of the warehouse\n- [ ] Benefits enrollment with HR in week 1\n",
+     "seeded": true
+    },
+    "/onboarding/nadia-kim-onboarding-checklist.md": {
+     "content": "# Onboarding checklist: Nadia Kim\n\nRole: Inventory Analyst \u00b7 Manager: Tom Alvarez \u00b7 Start date: 2026-03-16\n\n- [ ] Laptop and accounts ready\n- [ ] Orientation with manager\n- [ ] Safety walkthrough of the warehouse\n- [ ] Benefits enrollment with HR in week 1\n",
+     "seeded": false
+    }
+   }
+  },
+  "crm": {
+   "records": [
+    {
+     "id": "A-150",
+     "type": "account",
+     "name": "Pinecrest School District",
+     "domain": "pinecrestsd.example",
+     "owner": "Elena Petrova",
+     "renewal_date": "2026-07-01",
+     "segment": "Education",
+     "seeded": true
+    },
+    {
+     "id": "A-205",
+     "type": "account",
+     "name": "Brightwater Hotels",
+     "domain": "brightwaterhotels.example",
+     "owner": "Elena Petrova",
+     "segment": "Hospitality",
+     "seeded": true
+    },
+    {
+     "id": "A-310",
+     "type": "account",
+     "name": "Fernwood Grocers",
+     "domain": "fernwoodgrocers.example",
+     "owner": "Elena Petrova",
+     "segment": "Retail",
+     "seeded": true
+    },
+    {
+     "id": "A-322",
+     "type": "account",
+     "name": "Halcyon Cafe",
+     "domain": "halcyoncafe.example",
+     "owner": "Elena Petrova",
+     "segment": "Hospitality",
+     "seeded": true
+    },
+    {
+     "id": "A-340",
+     "type": "account",
+     "name": "Oakline Markets",
+     "domain": "oaklinemarkets.example",
+     "owner": "Elena Petrova",
+     "segment": "Retail",
+     "seeded": true
+    },
+    {
+     "id": "A-355",
+     "type": "account",
+     "name": "Ridgeview Clinic",
+     "domain": "ridgeviewclinic.example",
+     "owner": "Elena Petrova",
+     "segment": "Healthcare",
+     "seeded": true
+    }
+   ],
+   "stages": [
+    "Prospecting",
+    "Proposal",
+    "Negotiation",
+    "Closed Won",
+    "Closed Lost"
+   ]
+  },
+  "chat": {
+   "channels": {
+    "general": [],
+    "sales": [],
+    "ops": []
+   }
+  }
+ }
+}

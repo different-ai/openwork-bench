@@ -54,6 +54,7 @@ class OpenWorkClient:
         self.token = token
         self.host_token = host_token
         self.timeout = timeout
+        self.v2 = False  # set once the server says the history belongs to engine v2
 
     def request(self, method: str, path: str, body: Any = None, host: bool = False) -> Any:
         headers = {"Content-Type": "application/json", "Accept": "application/json"}
@@ -105,18 +106,44 @@ class OpenWorkClient:
     def reload_engine(self, ws: str) -> Any:
         return self.request("POST", f"/workspace/{self._q(ws)}/engine/reload", {})
 
-    def create_session(self, ws: str, title: str) -> str:
-        out = self.request("POST", f"/workspace/{self._q(ws)}/opencode/session", {"title": title})
-        sid = (out or {}).get("id") if isinstance(out, dict) else None
-        if not sid:
-            raise OpenWorkError(f"session creation returned no id: {str(out)[:200]}")
-        return sid
+    def create_session(self, ws: str, title: str, model: dict[str, str] | None = None) -> str:
+        """Open a session. A desktop whose history belongs to engine v2 refuses v1 writes
+        (409 engine_v1_history_adopted); those go to the native v2 routes, like the app's own."""
+        if not self.v2:
+            try:
+                out = self.request("POST", f"/workspace/{self._q(ws)}/opencode/session", {"title": title})
+            except OpenWorkError as e:
+                if "engine_v1_history_adopted" not in str(e):
+                    raise
+                self.v2 = True
+            else:
+                sid = (out or {}).get("id") if isinstance(out, dict) else None
+                if not sid:
+                    raise OpenWorkError(f"session creation returned no id: {str(out)[:200]}")
+                return sid
+        body: dict[str, Any] = {"title": title}
+        if model:
+            body["model"] = {"providerID": model["providerID"], "id": model["modelID"]}
+        out = self.request("POST", f"/workspace/{self._q(ws)}/opencode2/api/session", body)
+        row = out.get("data", out) if isinstance(out, dict) else {}
+        info = row.get("info", row) if isinstance(row, dict) else {}
+        if not isinstance(info, dict) or not info.get("id"):
+            raise OpenWorkError(f"v2 session creation returned no id: {str(out)[:200]}")
+        return info["id"]
 
     def prompt_async(self, ws: str, sid: str, text: str, model: dict[str, str] | None) -> None:
-        body: dict[str, Any] = {
-            "messageID": f"msg_owb_{uuid.uuid4().hex[:20]}",
-            "parts": [{"type": "text", "text": text}],
-        }
+        message_id = f"msg_owb_{uuid.uuid4().hex[:20]}"
+        if self.v2:
+            base = f"/workspace/{self._q(ws)}/opencode2/api/session/{self._q(sid)}"
+            if model:
+                self.request(
+                    "POST",
+                    f"{base}/model",
+                    {"model": {"providerID": model["providerID"], "id": model["modelID"]}},
+                )
+            self.request("POST", f"{base}/prompt", {"text": text, "id": message_id, "delivery": "steer"})
+            return
+        body: dict[str, Any] = {"messageID": message_id, "parts": [{"type": "text", "text": text}]}
         if model:
             body["model"] = model
         self.request("POST", f"/workspace/{self._q(ws)}/opencode/session/{self._q(sid)}/prompt_async", body)
@@ -137,10 +164,15 @@ class OpenWorkClient:
         return out if isinstance(out, list) else []
 
     def abort(self, ws: str, sid: str) -> None:
-        try:
-            self.request("POST", f"/workspace/{self._q(ws)}/opencode/session/{self._q(sid)}/abort", {})
-        except OpenWorkError:
-            pass
+        paths = [f"/workspace/{self._q(ws)}/opencode/session/{self._q(sid)}/abort"]
+        if self.v2:
+            paths.insert(0, f"/workspace/{self._q(ws)}/opencode2/api/session/{self._q(sid)}/abort")
+        for path in paths:
+            try:
+                self.request("POST", path, {})
+                return
+            except OpenWorkError:
+                continue
 
 
 def opencode_model_config(subject: dict[str, Any]) -> tuple[str, dict[str, Any]]:
@@ -264,7 +296,8 @@ class OpenWorkDesktopAgent(Agent):
                     },
                 )
                 self.client.reload_engine(ws)
-                sid = self.client.create_session(ws, f"OpenWork Bench · {bundle.id} · r{repeat}")
+                model_ref = {"providerID": provider_id, "modelID": self.subject["model"]}
+                sid = self.client.create_session(ws, f"OpenWork Bench · {bundle.id} · r{repeat}", model_ref)
                 meta.update(workspace_id=ws, session_id=sid, mcp_url=srv.url)
                 started = time.monotonic()
                 self.client.prompt_async(

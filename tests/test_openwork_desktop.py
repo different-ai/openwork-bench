@@ -23,8 +23,8 @@ CLIENT, HOST = "client-secret", "host-secret"
 
 
 class FakeOpenWork:
-    def __init__(self, steps, hang=False):
-        self.steps, self.hang = steps, hang
+    def __init__(self, steps, hang=False, v2=False):
+        self.steps, self.hang, self.v2 = steps, hang, v2
         self.config, self.prompts, self.calls, self.busy, self.aborted = {}, [], [], False, False
         fake = self
 
@@ -69,7 +69,26 @@ class FakeOpenWork:
                 if p == "/workspace/ws_1/engine/reload":
                     return self._send(200, {"ok": True})
                 if method == "POST" and p == "/workspace/ws_1/opencode/session":
+                    if fake.v2:
+                        return self._send(
+                            409,
+                            {
+                                "code": "engine_v1_history_adopted",
+                                "message": "This history is owned by OpenCode v2.",
+                            },
+                        )
                     return self._send(200, {"id": "ses_1"})
+                if fake.v2 and p == "/workspace/ws_1/opencode2/api/session":
+                    fake.v2_create = self._body()
+                    return self._send(200, {"data": {"info": {"id": "ses_1"}}})
+                if fake.v2 and p == "/workspace/ws_1/opencode2/api/session/ses_1/model":
+                    fake.v2_model = self._body()
+                    return self._send(200, {"ok": True})
+                if fake.v2 and p == "/workspace/ws_1/opencode2/api/session/ses_1/prompt":
+                    fake.prompts.append(self._body())
+                    fake.busy = True
+                    threading.Thread(target=fake.play, daemon=True).start()
+                    return self._send(200, {"ok": True})
                 if p == "/workspace/ws_1/opencode/session/ses_1/prompt_async":
                     fake.prompts.append(self._body())
                     fake.busy = True
@@ -231,3 +250,15 @@ def test_server_errors_are_infrastructure_errors(env, by_id):
     b = by_id["vendor-shortlist"]
     row, _ = run_one(_subject("http://127.0.0.1:9"), b, 1, "run-test", "v0.1", scoring=ScoringConfig())
     assert row["status"] == "error" and row["error"]
+
+
+def test_v2_desktop_uses_native_session_routes(env, by_id):
+    from openwork_bench.grading import ScoringConfig
+
+    b = by_id["expense-policy-answer"]
+    fake = FakeOpenWork(b.reference, v2=True)
+    row, _ = run_one(_subject(fake.url), b, 1, "run-test", "v0.1", scoring=ScoringConfig())
+    assert row["status"] == "completed" and row["score"] == 1.0
+    assert fake.v2_create["model"] == {"providerID": "openrouter", "id": "z-ai/glm-5.3"}
+    assert fake.v2_model == {"model": {"providerID": "openrouter", "id": "z-ai/glm-5.3"}}
+    assert fake.prompts[0]["delivery"] == "steer" and "Reply to Jordan" in fake.prompts[0]["text"]

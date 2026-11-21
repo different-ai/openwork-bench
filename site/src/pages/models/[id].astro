@@ -1,0 +1,114 @@
+---
+import Site from '../../layouts/Site.astro';
+import type { Subject } from '../../lib/site';
+import { RESULTS, docs, fmt, heat, heatInk, leaderboard, minutes, money, pct, route, slug, subjectName, taskRoute } from '../../lib/site';
+
+export function getStaticPaths() {
+  return leaderboard().subjects.map((subject) => ({ params: { id: slug(subject.id) }, props: { subject } }));
+}
+
+interface Props { subject: Subject }
+const { subject: s } = Astro.props;
+const lb = leaderboard();
+const cats = lb.index.categories;
+const target = lb.index.targets.category;
+const level = (lb.index.targets.levels ?? []).find((l) => l.id === s.readiness?.id);
+const rank = [...lb.subjects].sort((a, b) => (b.index ?? -1) - (a.index ?? -1)).findIndex((x) => x.id === s.id) + 1;
+const reference = s.type === 'reference';
+const tasks = lb.tasks.map((t) => ({ task: t, result: s.tasks[t.id] })).sort((a, b) => (b.result?.score ?? -1) - (a.result?.score ?? -1));
+
+const facts = [
+  s.readiness ? `${s.readiness.label}` : null,
+  s.index != null ? `work index ${fmt(s.index)}` : null,
+  s.cost_per_task != null && !reference ? `${money(s.cost_per_task)} per task` : null,
+  s.time_per_task != null && !reference ? `${minutes(s.time_per_task)} min per task` : null,
+].filter(Boolean);
+const description = `${subjectName(s)} on OpenWork Bench: ${facts.join(' · ')}. Scores on ${lb.tasks.length} knowledge-work tasks in a real agent app.`;
+
+const stats = [
+  { k: 'Work index', v: fmt(s.index), n: s.ci ? `95% CI ${fmt(s.ci[0])}–${fmt(s.ci[1])} · rank ${rank} of ${lb.subjects.length}` : `rank ${rank} of ${lb.subjects.length}` },
+  { k: 'Fully correct (pass@1)', v: pct(s.pass_at_1), n: 'share of attempts' },
+  { k: `Solved every repeat (pass^${s.k})`, v: pct(s.pass_hat_k), n: 'share of tasks' },
+  { k: 'Unsafe attempts', v: pct(s.safety_rate), n: 'deleted, leaked or overstepped' },
+  ...(reference ? [] : [
+    { k: 'Cost per task', v: money(s.cost_per_task), n: s.cost_source ?? 'list price' },
+    { k: 'Time per task', v: `${minutes(s.time_per_task)} min`, n: 'wall clock per attempt' },
+    { k: 'Value per $', v: s.value_per_dollar ? `${s.value_per_dollar.toLocaleString('en-US')}×` : '–', n: 'expert cost of the work ÷ agent cost' },
+    { k: 'Speed-up', v: s.speedup_vs_expert ? `${s.speedup_vs_expert}×` : '–', n: 'expert time ÷ agent time' },
+  ]),
+];
+---
+<Site title={subjectName(s)} description={description} active="models">
+  <header class="page-head">
+    <p class="crumbs"><a href={route()}>Leaderboard</a> / <a href={route('models/')}>Models</a> / {s.label}</p>
+    <h1>{subjectName(s)}</h1>
+    <div class="chips">
+      {s.readiness && <span class={`ready ${s.readiness.id}`}>{s.readiness.label}</span>}
+      {s.simulated ? <span>Simulated test agent</span> : <span>{s.harness ?? s.type}</span>}
+      {reference && <span>Reference</span>}
+      {s.open_weights?.hf_repo && <a href={`https://huggingface.co/${s.open_weights.hf_repo}/tree/${s.open_weights.revision ?? 'main'}`}>{s.open_weights.license ?? 'open weights'} ↗</a>}
+      {s.anchor && <span>Closed, for reference</span>}
+    </div>
+    <p class="lede">{level ? level.meaning : 'Scored on every task with the same tools, budgets and grading as every other subject.'} <a href={docs('methodology')}>How scoring works</a></p>
+  </header>
+
+  {s.simulated && <p class="notice"><b>Test subject.</b> This row comes from a seeded test agent that exercises the pipeline, not from a real model.</p>}
+
+  <div class="stats">
+    {stats.map((x) => <div class="stat"><div class="k">{x.k}</div><div class="v">{x.v}</div><div class="n">{x.n}</div></div>)}
+  </div>
+
+  <section class="block">
+    <h2>Categories</h2>
+    <p class="sub">Mean task score per category, 0–100.{target != null && ` The mark on each bar is the ${target} target.`}</p>
+    <div class="card">
+      <div class="catbars">
+        {Object.entries(cats).map(([id, c]) => {
+          const v = s.categories[id];
+          return (
+            <div class="catbar">
+              <span>{c.label}</span>
+              <div class="track" role="img" aria-label={`${c.label}: ${fmt(v, 0)}`}>
+                <div class="fill" style={`width: ${Math.max(0, v ?? 0)}%`}></div>
+                {target != null && <div class="goal" style={`left: calc(${target}% - 1px)`}></div>}
+              </div>
+              <b>{fmt(v, 0)}</b>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  </section>
+
+  <section class="block">
+    <h2>Every task</h2>
+    <p class="sub">Mean score across repeats, best first.</p>
+    <div class="card scroll">
+      <table>
+        <thead><tr><th class="l">Task</th><th class="l">Category</th><th>Score</th><th>Solved</th><th>Attempts</th></tr></thead>
+        <tbody>
+          {tasks.map(({ task: t, result }) => {
+            const v = result ? result.score * 100 : null;
+            return (
+              <tr>
+                <td class="l"><a href={taskRoute(t)}>{t.title}</a></td>
+                <td class="l">{cats[t.category]?.label ?? t.category}</td>
+                <td class="heat" style={`background: ${heat(v)}; color: ${heatInk(v)}`}>{fmt(v, 0)}</td>
+                <td>{result ? pct(result.success_rate) : '–'}</td>
+                <td>{result?.n ?? 0}</td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  {s.runs.length > 0 && (
+    <section class="block">
+      <h2>Runs</h2>
+      <p class="sub">The runs behind these numbers. Published runs, with every trajectory, are on <a href={RESULTS}>Hugging Face</a>.</p>
+      <div class="chips">{s.runs.map((run) => <span><code>{run}</code></span>)}</div>
+    </section>
+  )}
+</Site>

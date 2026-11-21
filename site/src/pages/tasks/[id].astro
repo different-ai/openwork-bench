@@ -1,0 +1,56 @@
+---
+import Site from '../../layouts/Site.astro';
+import type { Task } from '../../lib/site';
+import { REPO, docs, fmt, heat, heatInk, leaderboard, modelRoute, pct, route, slug, subjectName } from '../../lib/site';
+
+export function getStaticPaths() {
+  return leaderboard().tasks.map((task) => ({ params: { id: slug(task.id) }, props: { task } }));
+}
+
+interface Props { task: Task }
+const { task: t } = Astro.props;
+const lb = leaderboard();
+const category = lb.index.categories[t.category]?.label ?? t.category;
+const rows = lb.subjects
+  .map((s) => ({ subject: s, result: s.tasks[t.id] }))
+  .sort((a, b) => (b.result?.score ?? -1) - (a.result?.score ?? -1));
+const solvedBy = rows.filter((r) => r.subject.type !== 'reference' && r.result && r.result.success_rate >= 1).length;
+const article = /^[aeiou]/i.test(t.difficulty) ? 'an' : 'a';
+const description = `${t.title}: ${article} ${t.difficulty} ${category.toLowerCase()} task for ${t.occupation.toLowerCase()} on OpenWork Bench, about ${Math.round(t.expert_minutes)} minutes for an expert. See how every model scored.`;
+---
+<Site title={t.title} description={description} active="tasks">
+  <header class="page-head">
+    <p class="crumbs"><a href={route()}>Leaderboard</a> / <a href={route('tasks/')}>Tasks</a> / {category}</p>
+    <h1>{t.title}</h1>
+    <div class="chips">
+      <span>{category}</span>
+      <span>{t.difficulty}</span>
+      <span>{t.horizon === 'single' ? 'single session' : t.horizon}</span>
+      <span>{t.occupation}</span>
+      <span>Expert: {Math.round(t.expert_minutes)} min · ${fmt(t.expert_cost_usd, 2)}</span>
+      <span>Version {t.version}</span>
+      <a href={`${REPO}/tree/main/tasks/${t.category}/${t.id}`}>Task files ↗</a>
+    </div>
+    <p class="lede">The agent works through the task's company tools (mail, calendar, drive, CRM, chat), and checks on the final state decide the score. {solvedBy > 0 ? `${solvedBy} of ${rows.filter((r) => r.subject.type !== 'reference').length} subjects solve it on every repeat.` : 'No subject solves it on every repeat yet.'} <a href={docs('task-format')}>How tasks are written</a></p>
+  </header>
+
+  <div class="card scroll">
+    <table>
+      <thead><tr><th class="l">Subject</th><th class="l">Readiness</th><th>Score</th><th>Solved</th><th>Attempts</th></tr></thead>
+      <tbody>
+        {rows.map(({ subject: s, result }) => {
+          const v = result ? result.score * 100 : null;
+          return (
+            <tr>
+              <td class="l"><a href={modelRoute(s)}>{subjectName(s)}</a>{s.simulated && <span class="tag">sim</span>}</td>
+              <td class="l">{s.readiness && <span class={`ready ${s.readiness.id}`}>{s.readiness.label}</span>}</td>
+              <td class="heat" style={`background: ${heat(v)}; color: ${heatInk(v)}`}>{fmt(v, 0)}</td>
+              <td>{result ? pct(result.success_rate) : '–'}</td>
+              <td>{result?.n ?? 0}</td>
+            </tr>
+          );
+        })}
+      </tbody>
+    </table>
+  </div>
+</Site>

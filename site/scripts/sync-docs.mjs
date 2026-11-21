@@ -36,6 +36,14 @@ function rewriteLinks(md, fromRepoPath) {
   });
 }
 
+// The page's first paragraph as plain text: its description in search results and link previews.
+function summary(md) {
+  const para = md.split(/\n\s*\n/).map((b) => b.trim()).find((b) => b && !/^(#|```|\||-|\*|>|<|!\[|\d+\.)/.test(b));
+  if (!para) return '';
+  const text = para.replace(/!?\[([^\]]*)\]\([^)]*\)/g, '$1').replace(/`/g, '').replace(/\*\*|__/g, '').replace(/\s+/g, ' ').trim();
+  return text.length > 200 ? `${text.slice(0, 197).replace(/\s+\S*$/, '')}…` : text;
+}
+
 function page(fromRepoPath, md, extra = {}) {
   let title = path.basename(fromRepoPath, '.md');
   const h1 = md.match(/^# (.+)\n/m);
@@ -43,7 +51,7 @@ function page(fromRepoPath, md, extra = {}) {
     title = h1[1].trim();
     md = md.replace(h1[0], '');
   }
-  const fm = { title: title.replace(/`/g, ''), ...extra };
+  const fm = { title: title.replace(/`/g, ''), ...(summary(md) ? { description: summary(md) } : {}), ...extra };
   const front = Object.entries(fm).map(([k, v]) => `${k}: ${JSON.stringify(v)}`).join('\n');
   const source = `\n\n---\n\n<small>Source: [\`${fromRepoPath}\`](${GITHUB}/blob/${BRANCH}/${fromRepoPath})</small>\n`;
   return { title: fm.title, text: `---\n${front}\n---\n${rewriteLinks(md, fromRepoPath)}${source}` };

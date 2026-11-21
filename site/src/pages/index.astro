@@ -1,210 +1,18 @@
 ---
 // The leaderboard. Its data is public/leaderboard.json, written before `astro build` by
 // `owb demo` (offline) or `owb leaderboard --out site/public/leaderboard.json`.
-import fs from 'node:fs';
-import path from 'node:path';
+import Site from '../layouts/Site.astro';
+import Wordmark from '../components/Wordmark.astro';
+import { docs, embedJson, leaderboard } from '../lib/site';
 
-const file = path.resolve('public/leaderboard.json');
-if (!fs.existsSync(file)) {
-  throw new Error('site/public/leaderboard.json is missing: run `uv run owb demo` or `uv run owb leaderboard --out site/public/leaderboard.json` first.');
-}
-// Compact, with "</" escaped so the JSON can never close the <script> tag it is embedded in.
-const data = JSON.stringify(JSON.parse(fs.readFileSync(file, 'utf8'))).replace(/<\//g, '<\\/');
-const base = import.meta.env.BASE_URL.replace(/\/$/, '');
-const docs = (page?: string) => `${base}/docs/${page ? `${page}/` : ''}`;
+const data = embedJson(leaderboard());
+const description = 'An open benchmark of open-weight AI models on real knowledge work: which ones you can trust, at what cost, speed and risk.';
 ---
-<!doctype html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>OpenWork Bench</title>
-<link rel="icon" type="image/svg+xml" href={`${base}/favicon.svg`}>
-<meta name="description" content="An open benchmark of open-weight AI models on real knowledge work: which ones you can trust, at what cost, speed and risk.">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-<style is:global>
-:root {
-  color-scheme: light;
-  --bg: #fcfdfe; --panel: #ffffff; --soft: #f3f5f8; --pill: #e9edf2; --line: #e3e7ed; --grid: #eceff3;
-  --ink: #011627; --ink-2: #5e6877; --ink-3: #8a93a0;
-  --dark: #011627; --dark-ink: #e9edf2; --dark-muted: #9fb0c2;
-  --f1: #2a78d6; --f2: #eb6834; --f3: #1baf7a; --f4: #eda100; --f5: #e87ba4; --f6: #008300; --f7: #6250d6; --f8: #e34948;
-  --neutral: #9aa3ae; --good: #0ca30c; --critical: #d03b3b; --accent: #2a78d6;
-  --s0: #f3f5f8; --s1: #cde2fb; --s2: #9ec5f4; --s3: #6da7ec; --s4: #3987e5; --s5: #256abf; --s6: #184f95; --s7: #0d366b; --s-ink-hi: #ffffff;
-  --tip-bg: #011627; --tip-fg: #ffffff;
-}
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    color-scheme: dark;
-    --bg: #07111b; --panel: #0c1824; --soft: #13202e; --pill: #182736; --line: #1f2f40; --grid: #172534;
-    --ink: #e9edf2; --ink-2: #a3afbd; --ink-3: #6f7d8c;
-    --dark: #0f2235; --dark-ink: #e9edf2; --dark-muted: #9fb0c2;
-    --f1: #3987e5; --f2: #d95926; --f3: #199e70; --f4: #c98500; --f5: #d55181; --f6: #0ca30c; --f7: #9085e9; --f8: #e66767;
-    --neutral: #6f7d8c; --accent: #5598e7;
-    --s0: #13202e; --s1: #0d366b; --s2: #104281; --s3: #184f95; --s4: #1c5cab; --s5: #256abf; --s6: #3987e5; --s7: #6da7ec; --s-ink-hi: #011627;
-    --tip-bg: #e9edf2; --tip-fg: #011627;
-  }
-}
-:root[data-theme="dark"] {
-  color-scheme: dark;
-  --bg: #07111b; --panel: #0c1824; --soft: #13202e; --pill: #182736; --line: #1f2f40; --grid: #172534;
-  --ink: #e9edf2; --ink-2: #a3afbd; --ink-3: #6f7d8c;
-  --dark: #0f2235; --dark-ink: #e9edf2; --dark-muted: #9fb0c2;
-  --f1: #3987e5; --f2: #d95926; --f3: #199e70; --f4: #c98500; --f5: #d55181; --f6: #0ca30c; --f7: #9085e9; --f8: #e66767;
-  --neutral: #6f7d8c; --accent: #5598e7;
-  --s0: #13202e; --s1: #0d366b; --s2: #104281; --s3: #184f95; --s4: #1c5cab; --s5: #256abf; --s6: #3987e5; --s7: #6da7ec; --s-ink-hi: #011627;
-  --tip-bg: #e9edf2; --tip-fg: #011627;
-}
-* { box-sizing: border-box; }
-html { -webkit-text-size-adjust: 100%; }
-body { margin: 0; overflow-x: hidden; background: var(--bg); color: var(--ink); font: 16px/1.6 Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif; font-feature-settings: "cv11", "ss01"; }
-a { color: inherit; }
-h1, h2, h3 { text-wrap: balance; }
-p { text-wrap: pretty; }
-code, .mono { font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.92em; }
-.wrap { max-width: 1280px; margin: 0 auto; padding: 0 24px; }
-@media (max-width: 600px) { .wrap { padding: 0 16px; } }
-
-.nav { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 24px 0; }
-.brand { display: inline-flex; align-items: center; background: var(--ink); color: var(--bg); padding: 12px 18px; border-radius: 999px; text-decoration: none; }
-.brandmark { display: block; height: 15px; width: auto; }
-.links { display: flex; gap: 2px; background: var(--pill); padding: 4px; border-radius: 999px; }
-.links a { text-decoration: none; padding: 6px 14px; border-radius: 999px; font-size: 14px; color: var(--ink); }
-.links a:hover { background: var(--panel); }
-.actions { display: flex; gap: 8px; align-items: center; }
-.btn { display: inline-flex; align-items: center; gap: 6px; text-decoration: none; border-radius: 999px; padding: 8px 16px; font-size: 14px; border: 0; cursor: pointer; font-family: inherit; white-space: nowrap; }
-.btn.dark { background: var(--ink); color: var(--bg); }
-.btn.soft { background: var(--pill); color: var(--ink); }
-.icon-btn { width: 36px; height: 36px; justify-content: center; padding: 0; }
-@media (max-width: 1180px) { .links { display: none; } }
-.nav { flex-wrap: nowrap; } .actions { flex: none; }
-@media (max-width: 560px) {
-  .brand { padding: 12px 16px; }
-  .brandmark { height: 14px; }
-  .actions .btn.gh, .actions .btn.dark { display: none; }
-}
-
-.hero { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); gap: 80px; padding: 56px 0 80px; align-items: end; }
-@media (max-width: 900px) { .hero { grid-template-columns: 1fr; gap: 40px; padding: 32px 0 56px; } }
-.eyebrow { font-size: 14px; color: var(--ink-2); margin: 0 0 20px; }
-.wordmark { display: block; width: min(100%, 520px); height: auto; margin: 0 0 28px; color: var(--ink); }
-.hero h1 { font-size: clamp(26px, 1vw + 20px, 34px); line-height: 1.15; font-weight: 500; letter-spacing: -0.035em; margin: 0 0 16px; max-width: 640px; }
-.hero p.lede { font-size: 17px; line-height: 1.65; color: var(--ink-2); margin: 0; max-width: 600px; }
-.hero .cta { display: flex; gap: 10px; flex-wrap: wrap; }
-.updates { border-top: 1px solid var(--line); margin-top: 8px; }
-.update { display: grid; grid-template-columns: 1fr auto; gap: 4px 16px; padding: 22px 0; border-bottom: 1px solid var(--line); text-decoration: none; }
-.update .k { font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--accent); grid-column: 1; }
-.update .t { font-weight: 500; font-size: 17px; letter-spacing: -0.01em; grid-column: 1; }
-.update .d { color: var(--ink-2); font-size: 14px; grid-column: 1; }
-.update .arrow { grid-column: 2; grid-row: 1 / span 3; width: 30px; height: 30px; border-radius: 8px; background: var(--soft); display: grid; place-items: center; font-size: 14px; }
-
-.toolbar { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin: 0 0 24px; }
-.seg { display: inline-flex; background: var(--pill); padding: 4px; border-radius: 999px; gap: 2px; }
-.seg button { border: 0; background: transparent; color: var(--ink-2); padding: 8px 18px; border-radius: 999px; font: 500 14px Inter, sans-serif; cursor: pointer; white-space: nowrap; }
-.seg button[aria-pressed="true"] { background: var(--ink); color: var(--bg); }
-.seg.small button { padding: 5px 12px; font-size: 13px; }
-.seg.small button[aria-pressed="true"] { background: var(--panel); color: var(--ink); box-shadow: 0 0 0 1px var(--line); }
-.tool-r { display: flex; gap: 10px; align-items: center; font-size: 13px; color: var(--ink-2); flex-wrap: wrap; }
-.tool-r label { display: inline-flex; align-items: center; gap: 6px; cursor: pointer; }
-@media (max-width: 640px) {
-  .toolbar { flex-direction: column; align-items: stretch; gap: 16px; }
-  .toolbar > .seg { align-self: flex-start; }
-  .tool-r { justify-content: flex-end; gap: 10px 12px; }
-}
-.notice { margin: 0 0 32px; padding: 16px 20px; border-radius: 14px; background: var(--soft); color: var(--ink-2); font-size: 14px; }
-.notice b { color: var(--ink); font-weight: 600; }
-
-.cards3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; }
-@media (max-width: 1080px) { .cards3 { grid-template-columns: 1fr; } }
-.card { background: var(--panel); border: 1px solid var(--line); border-radius: 18px; padding: 28px 28px 18px; min-width: 0; }
-@media (max-width: 600px) { .card { padding: 22px 18px 14px; } }
-.card h3 { display: flex; align-items: center; gap: 10px; margin: 0; font-size: 22px; font-weight: 500; letter-spacing: -0.03em; }
-.card h3 .px { width: 14px; height: 14px; flex: none; }
-.card .sub { margin: 10px 0 20px; font-size: 14px; color: var(--ink-2); }
-.chart { width: 100%; overflow: hidden; }
-svg text { fill: var(--ink-2); font: 12px Inter, sans-serif; }
-svg .lbl { fill: var(--ink); font-size: 12px; }
-svg .target { paint-order: stroke; stroke: var(--panel); stroke-width: 5px; stroke-linejoin: round; }
-svg .val { fill: var(--ink); font: 500 12px Inter, sans-serif; font-variant-numeric: tabular-nums; }
-svg .val-in { fill: #fff; font: 500 12px Inter, sans-serif; font-variant-numeric: tabular-nums; }
-.legend { display: flex; flex-wrap: wrap; gap: 8px 20px; font-size: 13px; color: var(--ink-2); margin: 20px 0 0; }
-.legend i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 6px; vertical-align: -1px; }
-
-.feature { display: grid; grid-template-columns: 1fr 1fr 1.15fr; gap: 24px; margin-top: 96px; }
-@media (max-width: 1080px) { .feature { grid-template-columns: 1fr; margin-top: 72px; } }
-.dark-card { position: relative; overflow: hidden; background: var(--dark); color: var(--dark-ink); border-radius: 18px; padding: 36px; min-height: 380px; display: flex; flex-direction: column; justify-content: space-between; gap: 20px; }
-.dark-card h3 { margin: 0; font-size: 30px; line-height: 1.08; font-weight: 500; letter-spacing: -0.035em; position: relative; }
-.dark-card p { color: var(--dark-muted); margin: 0; font-size: 15px; line-height: 1.65; position: relative; }
-@media (max-width: 600px) { .dark-card { padding: 28px 22px; } }
-.dark-card .dither { position: absolute; right: -30px; bottom: -30px; width: 75%; height: 75%; opacity: .55; pointer-events: none;
-  background-image: radial-gradient(circle, rgba(233,237,242,.6) 1.2px, transparent 1.5px); background-size: 7px 7px;
-  -webkit-mask-image: radial-gradient(ellipse at 85% 85%, #000 0%, transparent 70%); mask-image: radial-gradient(ellipse at 85% 85%, #000 0%, transparent 70%); }
-.tier { position: relative; display: grid; gap: 18px; margin: 28px 0 0; }
-.tier-row { display: grid; grid-template-columns: 150px 1fr; gap: 12px; align-items: baseline; font-size: 15px; }
-.tier-row b { font-weight: 600; }
-.tier-row span { color: var(--dark-muted); }
-.chip { display: inline-block; font-size: 11px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; background: #1baf7a; color: #011627; padding: 2px 7px; border-radius: 4px; position: relative; }
-.dark-card pre { position: relative; margin: 0; background: rgba(255,255,255,.07); border-radius: 10px; padding: 16px 18px; font: 13px/1.75 "JetBrains Mono", monospace; color: var(--dark-ink); white-space: pre-wrap; }
-.changelog { background: var(--soft); border-radius: 18px; padding: 32px 32px 12px; }
-.changelog h3 { margin: 0 0 24px; font-size: 24px; font-weight: 500; letter-spacing: -0.03em; }
-.tl { list-style: none; margin: 0 0 0 6px; padding: 0 0 0 20px; border-left: 2px solid var(--line); }
-.tl li { position: relative; padding: 0 0 24px 8px; display: grid; gap: 4px; }
-.tl li::before { content: ""; position: absolute; left: -28px; top: 6px; width: 12px; height: 12px; border-radius: 50%; background: var(--ink); }
-.tl .m { font-size: 13px; color: var(--ink-2); }
-.tl .t { font-weight: 500; }
-.tl .d { font-size: 15px; color: var(--ink-2); }
-
-section.block { margin-top: 104px; }
-@media (max-width: 900px) { section.block { margin-top: 72px; } }
-section.block > h2 { font-size: 32px; font-weight: 500; letter-spacing: -0.035em; margin: 0 0 12px; }
-section.block > p.sub { color: var(--ink-2); margin: 0 0 28px; max-width: 720px; }
-.scroll { overflow-x: auto; }
-table { border-collapse: collapse; width: 100%; font-size: 14px; font-variant-numeric: tabular-nums; }
-th, td { padding: 13px 14px; text-align: right; border-bottom: 1px solid var(--grid); white-space: nowrap; }
-th { color: var(--ink-3); font-weight: 500; font-size: 12px; text-transform: uppercase; letter-spacing: .04em; }
-th.l, td.l { text-align: left; }
-td.heat { text-align: center; border: 2px solid var(--panel); border-radius: 6px; font-weight: 500; }
-.tag { font-size: 11px; padding: 1px 6px; border-radius: 6px; background: var(--soft); color: var(--ink-2); margin-left: 6px; }
-.ready { display: inline-block; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 999px; white-space: nowrap; }
-.ready.delegable { background: rgba(12,163,12,.12); color: var(--good); }
-.ready.supervised { background: rgba(42,120,214,.12); color: var(--accent); }
-.ready.not-ready { background: var(--soft); color: var(--ink-3); }
-.bars { display: grid; grid-template-columns: minmax(140px, 240px) 1fr 1fr 1fr; gap: 14px 24px; align-items: center; font-size: 14px; }
-.bars .h { font-size: 12px; color: var(--ink-3); text-transform: uppercase; letter-spacing: .04em; }
-.mini { position: relative; height: 22px; background: var(--soft); border-radius: 5px; }
-.mini > span { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 5px; }
-.mini > b { position: absolute; right: 6px; top: 0; font-size: 12px; font-weight: 500; line-height: 22px; }
-.matrix th.rot { writing-mode: vertical-rl; transform: rotate(180deg); text-align: left; height: 170px; vertical-align: bottom; text-transform: none; letter-spacing: 0; }
-footer { margin: 128px 0 64px; padding-top: 36px; border-top: 1px solid var(--line); color: var(--ink-2); font-size: 14px; display: grid; grid-template-columns: 1fr 1fr; gap: 48px; }
-@media (max-width: 800px) { footer { grid-template-columns: 1fr; } }
-footer dl { display: grid; grid-template-columns: max-content 1fr; gap: 8px 20px; margin: 14px 0 0; }
-footer dt { color: var(--ink-3); }
-footer dd { margin: 0; word-break: break-word; color: var(--ink); }
-#tip { position: fixed; pointer-events: none; z-index: 9; background: var(--tip-bg); color: var(--tip-fg); padding: 8px 10px; border-radius: 8px; font-size: 12px; line-height: 1.45; max-width: 300px; opacity: 0; transition: opacity .08s; }
-.empty { color: var(--ink-3); font-size: 13px; padding: 40px 0; text-align: center; }
-</style>
-</head>
-<body>
-<div class="wrap">
-  <nav class="nav" aria-label="Main">
-    <a class="brand" href="#top" aria-label="OpenWork Bench home"><svg class="brandmark" id="brandmark" aria-hidden="true"></svg></a>
-    <div class="links">
-      <a href="#leaderboard">Leaderboard</a><a href="#readiness">Readiness</a><a href="#categories">Categories</a><a href="#results">Results</a><a href="#tasks">Tasks</a><a href="#method">Method</a>
-    </div>
-    <div class="actions">
-      <a class="btn soft" href={docs()}>Docs</a>
-      <a class="btn soft gh" href="https://github.com/different-ai/openwork-bench">GitHub</a>
-      <a class="btn dark" href={docs("methodology")}>Methodology</a>
-      <button class="btn soft icon-btn" id="theme" type="button" aria-label="Toggle dark mode">◐</button>
-    </div>
-  </nav>
-
+<Site title="OpenWork Bench" description={description} active="leaderboard" footer={false}>
   <header class="hero" id="top">
     <div>
       <p class="eyebrow">Open models · Real work · Earned trust</p>
-      <svg class="wordmark" id="wordmark" role="img" aria-label="OpenWork Bench"></svg>
+      <Wordmark class="wordmark" label="OpenWork Bench" />
       <h1>Which open models can you trust with real work?</h1>
       <p class="lede">Open-weight models take on everyday office work — email, calendar, documents, spreadsheets, CRM and chat — in a real agent app. Each is scored on quality, cost, speed and safety, then held to a clear bar for trust. <a href={docs("methodology")}>How it works</a></p>
     </div>
@@ -314,7 +122,6 @@ uv run owb world plan</pre>
       <p>Maintained by the OpenWork team under public <a href={docs("fair-play")}>fair-play rules</a>.</p>
     </div>
   </footer>
-</div>
 <div id="tip" role="tooltip"></div>
 
 <script is:inline id="owb-data" type="application/json" set:html={data}></script>
@@ -329,12 +136,15 @@ uv run owb world plan</pre>
   const hasOpen = DATA.subjects.some((s) => s.board === "open-weights");
   const hasReal = DATA.subjects.some((s) => s.type === "model" || s.type === "product");
   const state = { board: hasOpen ? "open" : "all", harness: hasOpen ? "openwork" : "both", showTest: !hasReal };
-  try { const t = localStorage.getItem("owb-theme"); if (t) document.documentElement.dataset.theme = t; } catch (e) {}
 
   const fmt = (v, d = 1) => (v == null || Number.isNaN(v) ? "–" : Number(v).toFixed(d));
   const money = (v) => (v == null ? "n/a" : v < 0.01 ? "$" + v.toFixed(4) : "$" + v.toFixed(v < 1 ? 3 : 2));
   const mins = (s) => (s == null ? "–" : (s / 60).toFixed(s < 60 ? 2 : 1));
   const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+  const BASE = document.documentElement.dataset.base || "";
+  const slug = (id) => String(id).toLowerCase().replace(/[^a-z0-9.-]+/g, "-");
+  const modelHref = (s) => `${BASE}/models/${slug(s.id)}/`;
+  const taskHref = (t) => `${BASE}/tasks/${slug(t.id)}/`;
   const el = (tag, attrs = {}, parent) => { const n = document.createElementNS(NS, tag); for (const [k, v] of Object.entries(attrs)) n.setAttribute(k, v); if (parent) parent.appendChild(n); return n; };
   const famOf = (s) => (s.type === "reference" ? "reference" : s.simulated ? "simulated" : s.anchor ? "anchor" : s.family || "other");
   const color = (s) => {
@@ -348,24 +158,6 @@ uv run owb world plan</pre>
   const name = (s) => s.label + (s.anchor ? " (closed, for reference)" : "");
   const badge = (s) => (s.readiness ? `<span class="ready ${esc(s.readiness.id)}" title="${esc(s.readiness.reason || "")}">${esc(s.readiness.label)}</span>` : "");
 
-  // A 5x7 raster font for the wordmark, a nod to OpenWork's pixel lettering.
-  const GLYPHS = {
-    O: ["01110","10001","10001","10001","10001","10001","01110"], P: ["11110","10001","10001","11110","10000","10000","10000"],
-    E: ["11111","10000","10000","11110","10000","10000","11111"], N: ["10001","11001","10101","10011","10001","10001","10001"],
-  };
-  // The pixel OPEN followed by Work Bench, in the hero and in the header pill.
-  function drawWordmark(svg) {
-    let x = 0;
-    for (const ch of "OPEN") {
-      GLYPHS[ch].forEach((row, y) => [...row].forEach((b, i) => { if (b === "1") el("rect", { x: x + i + 0.07, y: y + 0.07, width: 0.86, height: 0.86, rx: 0.14, fill: "currentColor" }, svg); }));
-      x += 6;
-    }
-    const t = el("text", { x: x + 0.4, y: 6.55, style: "font: 500 9.2px Inter, sans-serif; letter-spacing: -0.4px; fill: currentColor" }, svg);
-    t.textContent = "Work";
-    const t2 = el("text", { x: x + 25.5, y: 6.55, style: "font: 400 9.2px Inter, sans-serif; letter-spacing: -0.4px; fill: currentColor; opacity: .38" }, svg);
-    t2.textContent = "Bench";
-    svg.setAttribute("viewBox", `0 -0.6 ${x + 52} 8.2`);
-  }
 
   const tip = document.getElementById("tip");
   document.addEventListener("mousemove", (e) => {
@@ -417,7 +209,7 @@ uv run owb world plan</pre>
       const v = vals[i], cx = m.l + bw * i + bw / 2, top = y(v), h = Math.max(2, H - m.b - top);
       const x0 = cx - barW / 2, r = Math.min(4, barW / 4, h / 2);
       el("path", { d: `M${x0},${top + h} V${top + r} Q${x0},${top} ${x0 + r},${top} H${x0 + barW - r} Q${x0 + barW},${top} ${x0 + barW},${top + r} V${top + h} Z`,
-        fill: color(s), "data-tip": tipFor(s, opts.tip(v, s)) }, svg);
+        fill: color(s), "data-tip": tipFor(s, opts.tip(v, s)) }, el("a", { href: modelHref(s), "aria-label": s.label }, svg));
       const label = opts.label(v);
       const inside = h > 26 && barW >= 24 && famOf(s) !== "simulated";
       el("text", { x: cx, y: inside ? top + 15 : top - 5, "text-anchor": "middle", class: inside ? "val-in" : "val" }, svg).textContent = label;
@@ -499,7 +291,8 @@ uv run owb world plan</pre>
 
   function updates() {
     const items = (DATA.changelog || []).slice(0, 2);
-    document.getElementById("updates").innerHTML = items.map((c) => `<a class="update" href="https://github.com/different-ai/openwork-bench"><span class="k">${esc(c.kind)}</span><span class="t">${esc(c.title)}</span><span class="d">${esc(c.text)}</span><span class="arrow" aria-hidden="true">↗</span></a>`).join("");
+    const page = { Harness: "openwork-desktop", Models: "open-weights", Index: "methodology" };
+    document.getElementById("updates").innerHTML = items.map((c) => `<a class="update" href="${BASE}/docs/${page[c.kind] ? page[c.kind] + "/" : ""}"><span class="k">${esc(c.kind)}</span><span class="t">${esc(c.title)}</span><span class="d">${esc(c.text)}</span><span class="arrow" aria-hidden="true">↗</span></a>`).join("");
     document.getElementById("changelog").innerHTML = (DATA.changelog || []).map((c) => `<li><div class="m">${esc(c.kind)} · ${esc(c.date)}</div><div class="t">${esc(c.title)}</div><div class="d">${esc(c.text)}</div></li>`).join("") || '<li><div class="d">No changes yet.</div></li>';
   }
 
@@ -521,7 +314,7 @@ uv run owb world plan</pre>
     const cats = DATA.index.categories, ct = TARGETS.category;
     let h = `<thead><tr><th class=l>Subject</th><th class=l>Readiness</th><th>Index</th>${Object.values(cats).map((c) => `<th>${esc(c.label)}</th>`).join("")}</tr></thead><tbody>`;
     for (const s of visible()) {
-      h += `<tr><td class=l>${esc(name(s))}${s.simulated ? '<span class="tag">sim</span>' : ""}</td><td class=l>${badge(s)}</td><td><b>${fmt(s.index)}</b></td>`;
+      h += `<tr><td class=l><a href="${modelHref(s)}">${esc(name(s))}</a>${s.simulated ? '<span class="tag">sim</span>' : ""}</td><td class=l>${badge(s)}</td><td><b>${fmt(s.index)}</b></td>`;
       for (const c of Object.keys(cats)) {
         const v = s.categories[c], hit = ct != null && v != null && v >= ct;
         h += `<td class="heat" style="background:${seq(v)};color:${ink(v)}" data-tip="<b>${esc(s.label)}</b><br>${esc(cats[c].label)}: ${fmt(v)}${ct != null ? (hit ? " · meets" : " · below") + " the " + ct + " target" : ""}">${fmt(v, 0)}${hit ? " ✓" : ""}</td>`;
@@ -536,7 +329,7 @@ uv run owb world plan</pre>
     let h = '<div class="bars"><div class="h">Subject</div><div class="h">pass@1</div><div class="h">pass^k</div><div class="h">Unsafe attempts</div>';
     for (const s of visible()) {
       const c = famOf(s) === "simulated" ? "var(--f3)" : color(s);
-      h += `<div>${esc(short(s))}</div>${bar(s.pass_at_1, c, "pass@1")}${bar(s.pass_hat_k, c, "pass^" + s.k)}${bar(s.safety_rate, "var(--critical)", "Unsafe")}`;
+      h += `<div><a href="${modelHref(s)}">${esc(short(s))}</a></div>${bar(s.pass_at_1, c, "pass@1")}${bar(s.pass_hat_k, c, "pass^" + s.k)}${bar(s.safety_rate, "var(--critical)", "Unsafe")}`;
     }
     document.getElementById("relChart").innerHTML = h + "</div>";
   }
@@ -546,16 +339,16 @@ uv run owb world plan</pre>
     visible().forEach((s, i) => {
       const ow = s.open_weights || {};
       const weights = ow.hf_repo ? `<a href="https://huggingface.co/${esc(ow.hf_repo)}/tree/${esc(ow.revision || "main")}">${esc(ow.license || "open")}</a>` : s.anchor ? "closed" : "–";
-      h += `<tr><td>${i + 1}</td><td class=l>${esc(name(s))}</td><td class=l>${badge(s)}</td><td class=l>${esc(s.harness || s.type)}</td><td><b>${fmt(s.index)}</b></td><td>${s.ci ? fmt(s.ci[0]) + "–" + fmt(s.ci[1]) : "–"}</td><td>${fmt(s.pass_at_1 * 100, 0)}%</td><td>${fmt(s.pass_hat_k * 100, 0)}%</td><td>${fmt(s.safety_rate * 100, 0)}%</td><td>${money(s.cost_per_task)}</td><td>${s.type === "reference" ? "–" : mins(s.time_per_task)}</td><td>${s.tokens_per_task ? s.tokens_per_task.toLocaleString() : "–"}</td><td>${s.value_per_dollar ? s.value_per_dollar.toLocaleString() + "×" : "–"}</td><td>${s.type === "reference" || !s.speedup_vs_expert ? "–" : s.speedup_vs_expert + "×"}</td><td>${fmt(s.coverage * 100, 0)}%</td><td class=l>${weights}</td></tr>`;
+      h += `<tr><td>${i + 1}</td><td class=l><a href="${modelHref(s)}">${esc(name(s))}</a></td><td class=l>${badge(s)}</td><td class=l>${esc(s.harness || s.type)}</td><td><b>${fmt(s.index)}</b></td><td>${s.ci ? fmt(s.ci[0]) + "–" + fmt(s.ci[1]) : "–"}</td><td>${fmt(s.pass_at_1 * 100, 0)}%</td><td>${fmt(s.pass_hat_k * 100, 0)}%</td><td>${fmt(s.safety_rate * 100, 0)}%</td><td>${money(s.cost_per_task)}</td><td>${s.type === "reference" ? "–" : mins(s.time_per_task)}</td><td>${s.tokens_per_task ? s.tokens_per_task.toLocaleString() : "–"}</td><td>${s.value_per_dollar ? s.value_per_dollar.toLocaleString() + "×" : "–"}</td><td>${s.type === "reference" || !s.speedup_vs_expert ? "–" : s.speedup_vs_expert + "×"}</td><td>${fmt(s.coverage * 100, 0)}%</td><td class=l>${weights}</td></tr>`;
     });
     document.getElementById("mainTable").innerHTML = h + "</tbody>";
   }
 
   function matrix() {
     const subs = visible(), cats = DATA.index.categories;
-    let h = `<thead><tr><th class=l>Task</th><th class=l>Category</th><th>Expert</th>${subs.map((s) => `<th class="rot">${esc(short(s))}</th>`).join("")}</tr></thead><tbody>`;
+    let h = `<thead><tr><th class=l>Task</th><th class=l>Category</th><th>Expert</th>${subs.map((s) => `<th class="rot"><a href="${modelHref(s)}">${esc(short(s))}</a></th>`).join("")}</tr></thead><tbody>`;
     for (const t of DATA.tasks) {
-      h += `<tr><td class=l data-tip="${esc(t.occupation)} · ${esc(t.difficulty)} · ${esc(t.horizon)}">${esc(t.title)}</td><td class=l>${esc(cats[t.category]?.label || t.category)}</td><td>${Math.round(t.expert_minutes)}m</td>`;
+      h += `<tr><td class=l data-tip="${esc(t.occupation)} · ${esc(t.difficulty)} · ${esc(t.horizon)}"><a href="${taskHref(t)}">${esc(t.title)}</a></td><td class=l>${esc(cats[t.category]?.label || t.category)}</td><td>${Math.round(t.expert_minutes)}m</td>`;
       for (const s of subs) {
         const r = s.tasks[t.id], v = r ? r.score * 100 : null;
         h += `<td class="heat" style="background:${seq(v)};color:${ink(v)}" data-tip="<b>${esc(s.label)}</b><br>${esc(t.title)}<br>score ${fmt(v, 0)} · solved ${r ? fmt(r.success_rate * 100, 0) + "%" : "–"} of ${r ? r.n : 0}">${fmt(v, 0)}</td>`;
@@ -596,17 +389,8 @@ uv run owb world plan</pre>
   document.querySelectorAll("[data-board]").forEach((b) => b.addEventListener("click", () => { state.board = b.dataset.board; render(); }));
   document.querySelectorAll("[data-harness]").forEach((b) => b.addEventListener("click", () => { state.harness = b.dataset.harness; render(); }));
   document.getElementById("showTest").addEventListener("change", (e) => { state.showTest = e.target.checked; render(); });
-  document.getElementById("theme").addEventListener("click", () => {
-    const dark = getComputedStyle(document.documentElement).colorScheme.includes("dark");
-    const next = dark ? "light" : "dark";
-    document.documentElement.dataset.theme = next;
-    try { localStorage.setItem("owb-theme", next); } catch (e) {}
-  });
   let rt; window.addEventListener("resize", () => { clearTimeout(rt); rt = setTimeout(render, 120); });
-  drawWordmark(document.getElementById("wordmark"));
-  drawWordmark(document.getElementById("brandmark"));
   updates(); meta(); render();
 })();
 </script>
-</body>
-</html>
+</Site>

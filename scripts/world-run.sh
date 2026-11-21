@@ -31,8 +31,10 @@ p = plan({**spec, "bench": {**spec["bench"], **{k: v for k, v in stage.items() i
 desk = [r["subject"] for r in p["subjects"] if r["harness"] == "openwork-desktop"]
 ctrl = [r["subject"] for r in p["subjects"] if r["harness"] != "openwork-desktop"]
 tasks, reps, par = stage.get("tasks", "all"), stage.get("repeats", 3), spec["bench"].get("parallel_sessions", 1)
-print(f"uv run owb run {' '.join(desk)} --tasks {tasks} --repeats {reps} --openwork-cdp $CDP --workspace-root $WS_ROOT --workers {par} --out runs/{sys.argv[2]}")
-if ctrl: print(f"uv run owb run {' '.join(ctrl)} --tasks {tasks} --repeats {reps} --out runs/{sys.argv[2]}")
+limit = spec.get("budget", {}).get("max_model_usd", 40)
+guard = f"--max-usd {limit} --spend-ledger runs/spend.json"
+print(f"uv run owb run {' '.join(desk)} --tasks {tasks} --repeats {reps} --openwork-cdp $CDP --workspace-root $WS_ROOT --workers {par} --out runs/{sys.argv[2]} {guard}")
+if ctrl: print(f"uv run owb run {' '.join(ctrl)} --tasks {tasks} --repeats {reps} --out runs/{sys.argv[2]} {guard}")
 PY
     CDP="$CDP" WS_ROOT="$WS_ROOT" bash -euo pipefail /tmp/owb-stage.sh
     uv run owb leaderboard --runs "runs/$stage" --out "runs/$stage/leaderboard.json" | tail -20

@@ -47,3 +47,28 @@ def test_runs_are_reproducible_and_regradable(tmp_path, bundles):
     manifest = json.loads((a / "manifest.json").read_text())
     assert manifest["status"] == "complete" and manifest["suite_fingerprint"]
     assert (a / "trajectories").is_dir()
+
+
+def test_spend_limit_stops_new_attempts(tmp_path, bundles):
+    from openwork_bench.runner import SpendLimit
+
+    subjects = load_subjects()
+    ledger = tmp_path / "spend.json"
+    limit = SpendLimit(0.05, ledger)
+    run = run_subject(
+        subjects["sim-frontier"],
+        bundles,
+        tmp_path / "a",
+        repeats=3,
+        workers=1,
+        index_version="v0.1",
+        spend=limit,
+    )
+    rows = load_rows([run])
+    assert limit.reached and len(rows) < len(bundles) * 3
+    assert json.loads((run / "manifest.json").read_text())["status"] == "stopped_spend_limit"
+    again = SpendLimit(0.05, ledger)  # a later run on the same ledger starts nothing
+    run2 = run_subject(
+        subjects["sim-budget"], bundles, tmp_path / "b", repeats=1, index_version="v0.1", spend=again
+    )
+    assert load_rows([run2]) == []

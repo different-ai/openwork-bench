@@ -37,7 +37,7 @@ class OwbAgent(Agent):
                 if steps >= budgets.max_steps:
                     status = "budget_steps"
                     break
-                if usage.total >= budgets.max_tokens:
+                if usage.budgeted >= budgets.max_tokens:
                     status = "budget_tokens"
                     break
                 if time.monotonic() - started > budgets.timeout_s:

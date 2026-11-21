@@ -157,6 +157,17 @@ def cmd_run(args: argparse.Namespace) -> int:
         if v
     }
     repeats = args.repeats or int(cfg.get("repeats", 3))
+    spend = None
+    if getattr(args, "max_usd", None):
+        from .runner import SpendLimit
+
+        spend = SpendLimit(args.max_usd, Path(args.spend_ledger) if args.spend_ledger else None)
+        if spend.reached:
+            print(
+                f"Spend limit reached: ${spend.spent:.2f} of ${spend.limit:.2f}. Nothing started.",
+                file=sys.stderr,
+            )
+            return 3
     for sid in args.subjects:
         if sid not in subjects:
             print(f"Unknown subject {sid!r}. See `owb subjects`.", file=sys.stderr)
@@ -183,9 +194,15 @@ def cmd_run(args: argparse.Namespace) -> int:
             scoring=ScoringConfig.from_dict(cfg.get("scoring")),
             judge_panel=panel,
             progress=None if args.quiet else progress,
+            spend=spend,
         )
         m = json.loads((run_dir / "manifest.json").read_text())
         print(f"  → {run_dir}  mean score {m['summary']['mean_score']:.3f}  errors {m['summary']['errors']}")
+        if spend:
+            print(f"  spend so far ${spend.spent:.4f} of ${spend.limit:.2f}")
+            if spend.reached:
+                print("Spend limit reached; stopping.", file=sys.stderr)
+                return 3
     return 0
 
 
@@ -401,6 +418,10 @@ def build_parser() -> argparse.ArgumentParser:
     r.add_argument("--judges", default="", help="Comma-separated subject ids to use as rubric judges")
     r.add_argument("--include-private", action="store_true")
     r.add_argument("--quiet", action="store_true")
+    r.add_argument(
+        "--max-usd", type=float, help="Stop starting attempts once recorded model spend reaches this"
+    )
+    r.add_argument("--spend-ledger", help="File that carries spend across runs (e.g. runs/spend.json)")
     r.add_argument(
         "--openwork-url", help="OpenWork server URL for openwork-desktop subjects (or OPENWORK_URL)"
     )

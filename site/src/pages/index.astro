@@ -68,8 +68,8 @@ code, .mono { font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo
 @media (max-width: 600px) { .wrap { padding: 0 16px; } }
 
 .nav { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 24px 0; }
-.brand { display: inline-flex; align-items: center; gap: 10px; background: var(--ink); color: var(--bg); padding: 8px 16px 8px 12px; border-radius: 999px; text-decoration: none; font-weight: 500; letter-spacing: -0.01em; white-space: nowrap; }
-.brand svg { display: block; }
+.brand { display: inline-flex; align-items: center; background: var(--ink); color: var(--bg); padding: 12px 18px; border-radius: 999px; text-decoration: none; }
+.brandmark { display: block; height: 15px; width: auto; }
 .links { display: flex; gap: 2px; background: var(--pill); padding: 4px; border-radius: 999px; }
 .links a { text-decoration: none; padding: 6px 14px; border-radius: 999px; font-size: 14px; color: var(--ink); }
 .links a:hover { background: var(--panel); }
@@ -81,11 +81,10 @@ code, .mono { font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo
 @media (max-width: 1180px) { .links { display: none; } }
 .nav { flex-wrap: nowrap; } .actions { flex: none; }
 @media (max-width: 560px) {
-  .brand { width: 44px; height: 44px; padding: 0; justify-content: center; }
-  .brand svg { width: 20px; height: 26px; }
-  .brand .brand-name, .actions .btn.gh { display: none; }
+  .brand { padding: 12px 16px; }
+  .brandmark { height: 14px; }
+  .actions .btn.gh, .actions .btn.dark { display: none; }
 }
-@media (max-width: 360px) { .actions .btn.dark { display: none; } }
 
 .hero { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); gap: 80px; padding: 56px 0 80px; align-items: end; }
 @media (max-width: 900px) { .hero { grid-template-columns: 1fr; gap: 40px; padding: 32px 0 56px; } }
@@ -190,7 +189,7 @@ footer dd { margin: 0; word-break: break-word; color: var(--ink); }
 <body>
 <div class="wrap">
   <nav class="nav" aria-label="Main">
-    <a class="brand" href="#top" aria-label="OpenWork Bench home"><svg id="mark" width="17" height="22" viewBox="-0.15 -0.1 6.5 8.5" aria-hidden="true"></svg><span class="brand-name">OpenWork Bench</span></a>
+    <a class="brand" href="#top" aria-label="OpenWork Bench home"><svg class="brandmark" id="brandmark" aria-hidden="true"></svg></a>
     <div class="links">
       <a href="#leaderboard">Leaderboard</a><a href="#readiness">Readiness</a><a href="#categories">Categories</a><a href="#results">Results</a><a href="#tasks">Tasks</a><a href="#method">Method</a>
     </div>
@@ -354,8 +353,8 @@ uv run owb world plan</pre>
     O: ["01110","10001","10001","10001","10001","10001","01110"], P: ["11110","10001","10001","11110","10000","10000","10000"],
     E: ["11111","10000","10000","11110","10000","10000","11111"], N: ["10001","11001","10101","10011","10001","10001","10001"],
   };
-  function drawWordmark() {
-    const svg = document.getElementById("wordmark");
+  // The pixel OPEN followed by Work Bench, in the hero and in the header pill.
+  function drawWordmark(svg) {
     let x = 0;
     for (const ch of "OPEN") {
       GLYPHS[ch].forEach((row, y) => [...row].forEach((b, i) => { if (b === "1") el("rect", { x: x + i + 0.07, y: y + 0.07, width: 0.86, height: 0.86, rx: 0.14, fill: "currentColor" }, svg); }));
@@ -366,15 +365,6 @@ uv run owb world plan</pre>
     const t2 = el("text", { x: x + 25.5, y: 6.55, style: "font: 400 9.2px Inter, sans-serif; letter-spacing: -0.4px; fill: currentColor; opacity: .38" }, svg);
     t2.textContent = "Bench";
     svg.setAttribute("viewBox", `0 -0.6 ${x + 52} 8.2`);
-    // The mark: the wordmark's pixel O as a solid block. Its sides are the same pixels stepped back in
-    // one faint group, so they read as one even shade behind the front face.
-    const m = document.getElementById("mark");
-    const pixels = (g, d) => GLYPHS.O.forEach((row, py) => [...row].forEach((b, px) => {
-      if (b === "1") el("rect", { x: px + d + 0.06, y: py + d + 0.06, width: 0.88, height: 0.88, rx: 0.16, fill: "currentColor" }, g);
-    }));
-    const sides = el("g", { opacity: 0.34 }, m);
-    for (let k = 11; k >= 1; k--) pixels(sides, k / 10);
-    pixels(m, 0);
   }
 
   const tip = document.getElementById("tip");
@@ -613,7 +603,9 @@ uv run owb world plan</pre>
     try { localStorage.setItem("owb-theme", next); } catch (e) {}
   });
   let rt; window.addEventListener("resize", () => { clearTimeout(rt); rt = setTimeout(render, 120); });
-  drawWordmark(); updates(); meta(); render();
+  drawWordmark(document.getElementById("wordmark"));
+  drawWordmark(document.getElementById("brandmark"));
+  updates(); meta(); render();
 })();
 </script>
 </body>

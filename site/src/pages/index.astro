@@ -1,0 +1,587 @@
+---
+// The leaderboard. Its data is public/leaderboard.json, written before `astro build` by
+// `owb demo` (offline) or `owb leaderboard --out site/public/leaderboard.json`.
+import fs from 'node:fs';
+import path from 'node:path';
+
+const file = path.resolve('public/leaderboard.json');
+if (!fs.existsSync(file)) {
+  throw new Error('site/public/leaderboard.json is missing: run `uv run owb demo` or `uv run owb leaderboard --out site/public/leaderboard.json` first.');
+}
+// Compact, with "</" escaped so the JSON can never close the <script> tag it is embedded in.
+const data = JSON.stringify(JSON.parse(fs.readFileSync(file, 'utf8'))).replace(/<\//g, '<\\/');
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const docs = (page?: string) => `${base}/docs/${page ? `${page}/` : ''}`;
+---
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>OpenWork Bench</title>
+<meta name="description" content="An open benchmark of open-weight AI models on real knowledge work: which ones you can trust, at what cost, speed and risk.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style is:global>
+:root {
+  color-scheme: light;
+  --bg: #fcfdfe; --panel: #ffffff; --soft: #f3f5f8; --pill: #e9edf2; --line: #e3e7ed; --grid: #eceff3;
+  --ink: #011627; --ink-2: #5e6877; --ink-3: #8a93a0;
+  --dark: #011627; --dark-ink: #e9edf2; --dark-muted: #9fb0c2;
+  --f1: #2a78d6; --f2: #eb6834; --f3: #1baf7a; --f4: #eda100; --f5: #e87ba4; --f6: #008300; --f7: #6250d6; --f8: #e34948;
+  --neutral: #9aa3ae; --good: #0ca30c; --critical: #d03b3b; --accent: #2a78d6;
+  --s0: #f3f5f8; --s1: #cde2fb; --s2: #9ec5f4; --s3: #6da7ec; --s4: #3987e5; --s5: #256abf; --s6: #184f95; --s7: #0d366b; --s-ink-hi: #ffffff;
+  --tip-bg: #011627; --tip-fg: #ffffff;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --bg: #07111b; --panel: #0c1824; --soft: #13202e; --pill: #182736; --line: #1f2f40; --grid: #172534;
+    --ink: #e9edf2; --ink-2: #a3afbd; --ink-3: #6f7d8c;
+    --dark: #0f2235; --dark-ink: #e9edf2; --dark-muted: #9fb0c2;
+    --f1: #3987e5; --f2: #d95926; --f3: #199e70; --f4: #c98500; --f5: #d55181; --f6: #0ca30c; --f7: #9085e9; --f8: #e66767;
+    --neutral: #6f7d8c; --accent: #5598e7;
+    --s0: #13202e; --s1: #0d366b; --s2: #104281; --s3: #184f95; --s4: #1c5cab; --s5: #256abf; --s6: #3987e5; --s7: #6da7ec; --s-ink-hi: #011627;
+    --tip-bg: #e9edf2; --tip-fg: #011627;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #07111b; --panel: #0c1824; --soft: #13202e; --pill: #182736; --line: #1f2f40; --grid: #172534;
+  --ink: #e9edf2; --ink-2: #a3afbd; --ink-3: #6f7d8c;
+  --dark: #0f2235; --dark-ink: #e9edf2; --dark-muted: #9fb0c2;
+  --f1: #3987e5; --f2: #d95926; --f3: #199e70; --f4: #c98500; --f5: #d55181; --f6: #0ca30c; --f7: #9085e9; --f8: #e66767;
+  --neutral: #6f7d8c; --accent: #5598e7;
+  --s0: #13202e; --s1: #0d366b; --s2: #104281; --s3: #184f95; --s4: #1c5cab; --s5: #256abf; --s6: #3987e5; --s7: #6da7ec; --s-ink-hi: #011627;
+  --tip-bg: #e9edf2; --tip-fg: #011627;
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body { margin: 0; overflow-x: hidden; background: var(--bg); color: var(--ink); font: 15px/1.5 Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif; font-feature-settings: "cv11", "ss01"; }
+a { color: inherit; }
+code, .mono { font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.92em; }
+.wrap { max-width: 1240px; margin: 0 auto; padding: 0 16px; }
+
+.nav { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 18px 0; }
+.brand { display: inline-flex; align-items: center; gap: 10px; background: var(--ink); color: var(--bg); padding: 8px 16px 8px 12px; border-radius: 999px; text-decoration: none; font-weight: 500; letter-spacing: -0.01em; white-space: nowrap; }
+.brand svg { display: block; }
+.links { display: flex; gap: 2px; background: var(--pill); padding: 4px; border-radius: 999px; }
+.links a { text-decoration: none; padding: 6px 14px; border-radius: 999px; font-size: 14px; color: var(--ink); }
+.links a:hover { background: var(--panel); }
+.actions { display: flex; gap: 8px; align-items: center; }
+.btn { display: inline-flex; align-items: center; gap: 6px; text-decoration: none; border-radius: 999px; padding: 8px 16px; font-size: 14px; border: 0; cursor: pointer; font-family: inherit; white-space: nowrap; }
+.btn.dark { background: var(--ink); color: var(--bg); }
+.btn.soft { background: var(--pill); color: var(--ink); }
+.icon-btn { width: 36px; height: 36px; justify-content: center; padding: 0; }
+@media (max-width: 1180px) { .links { display: none; } }
+.nav { flex-wrap: nowrap; } .actions { flex: none; }
+@media (max-width: 560px) { .actions .btn.soft:not(.icon-btn) { display: none; } }
+@media (max-width: 440px) { .actions .btn.dark { display: none; } }
+
+.hero { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); gap: 56px; padding: 22px 0 30px; align-items: end; }
+@media (max-width: 900px) { .hero { grid-template-columns: 1fr; gap: 28px; } }
+.eyebrow { font-size: 13px; color: var(--ink-2); margin: 0 0 12px; }
+.wordmark { display: block; width: min(100%, 520px); height: auto; margin: 0 0 16px; color: var(--ink); }
+.hero h1 { font-size: clamp(22px, 2.4vw, 30px); line-height: 1.15; font-weight: 500; letter-spacing: -0.035em; margin: 0 0 8px; max-width: 640px; }
+.hero p.lede { font-size: 15px; line-height: 1.5; color: var(--ink-2); margin: 0; max-width: 600px; }
+.hero .cta { display: flex; gap: 10px; flex-wrap: wrap; }
+.updates { border-top: 1px solid var(--line); margin-top: 8px; }
+.update { display: grid; grid-template-columns: 1fr auto; gap: 2px 12px; padding: 14px 0; border-bottom: 1px solid var(--line); text-decoration: none; }
+.update .k { font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--accent); grid-column: 1; }
+.update .t { font-weight: 500; font-size: 17px; letter-spacing: -0.01em; grid-column: 1; }
+.update .d { color: var(--ink-2); font-size: 14px; grid-column: 1; }
+.update .arrow { grid-column: 2; grid-row: 1 / span 3; width: 30px; height: 30px; border-radius: 8px; background: var(--soft); display: grid; place-items: center; font-size: 14px; }
+
+.toolbar { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin: 0 0 16px; }
+.seg { display: inline-flex; background: var(--pill); padding: 4px; border-radius: 999px; gap: 2px; }
+.seg button { border: 0; background: transparent; color: var(--ink-2); padding: 8px 18px; border-radius: 999px; font: 500 14px Inter, sans-serif; cursor: pointer; }
+.seg button[aria-pressed="true"] { background: var(--ink); color: var(--bg); }
+.seg.small button { padding: 5px 12px; font-size: 13px; }
+.seg.small button[aria-pressed="true"] { background: var(--panel); color: var(--ink); box-shadow: 0 0 0 1px var(--line); }
+.tool-r { display: flex; gap: 10px; align-items: center; font-size: 13px; color: var(--ink-2); flex-wrap: wrap; }
+.tool-r label { display: inline-flex; align-items: center; gap: 6px; cursor: pointer; }
+.notice { margin: 0 0 16px; padding: 12px 16px; border-radius: 12px; background: var(--soft); color: var(--ink-2); font-size: 14px; }
+.notice b { color: var(--ink); font-weight: 600; }
+
+.cards3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+@media (max-width: 1080px) { .cards3 { grid-template-columns: 1fr; } }
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 20px 20px 12px; min-width: 0; }
+.card h3 { display: flex; align-items: center; gap: 10px; margin: 0; font-size: 22px; font-weight: 500; letter-spacing: -0.03em; }
+.card h3 .px { width: 14px; height: 14px; flex: none; }
+.card .sub { margin: 6px 0 8px; font-size: 13px; color: var(--ink-2); }
+.chart { width: 100%; overflow: hidden; }
+svg text { fill: var(--ink-2); font: 11px Inter, sans-serif; }
+svg .lbl { fill: var(--ink); font-size: 11px; }
+svg .val { fill: var(--ink); font: 500 11px Inter, sans-serif; font-variant-numeric: tabular-nums; }
+svg .val-in { fill: #fff; font: 500 11px Inter, sans-serif; font-variant-numeric: tabular-nums; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 12px; color: var(--ink-2); margin: 14px 0 0; }
+.legend i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 6px; vertical-align: -1px; }
+
+.feature { display: grid; grid-template-columns: 1fr 1fr 1.15fr; gap: 16px; margin-top: 16px; }
+@media (max-width: 1080px) { .feature { grid-template-columns: 1fr; } }
+.dark-card { position: relative; overflow: hidden; background: var(--dark); color: var(--dark-ink); border-radius: 14px; padding: 28px; min-height: 360px; display: flex; flex-direction: column; justify-content: space-between; gap: 20px; }
+.dark-card h3 { margin: 0; font-size: 30px; line-height: 1.08; font-weight: 500; letter-spacing: -0.035em; position: relative; }
+.dark-card p { color: var(--dark-muted); margin: 0; font-size: 14px; position: relative; }
+.dark-card .dither { position: absolute; right: -30px; bottom: -30px; width: 75%; height: 75%; opacity: .55; pointer-events: none;
+  background-image: radial-gradient(circle, rgba(233,237,242,.6) 1.2px, transparent 1.5px); background-size: 7px 7px;
+  -webkit-mask-image: radial-gradient(ellipse at 85% 85%, #000 0%, transparent 70%); mask-image: radial-gradient(ellipse at 85% 85%, #000 0%, transparent 70%); }
+.tier { position: relative; display: grid; gap: 12px; margin: 20px 0 0; }
+.tier-row { display: grid; grid-template-columns: 140px 1fr; gap: 10px; align-items: baseline; font-size: 14px; }
+.tier-row b { font-weight: 600; }
+.tier-row span { color: var(--dark-muted); }
+.chip { display: inline-block; font-size: 11px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; background: #1baf7a; color: #011627; padding: 2px 7px; border-radius: 4px; position: relative; }
+.dark-card pre { position: relative; margin: 0; background: rgba(255,255,255,.07); border-radius: 10px; padding: 12px 14px; font: 12.5px/1.65 "JetBrains Mono", monospace; color: var(--dark-ink); white-space: pre-wrap; }
+.changelog { background: var(--soft); border-radius: 14px; padding: 24px 24px 8px; }
+.changelog h3 { margin: 0 0 16px; font-size: 22px; font-weight: 500; letter-spacing: -0.03em; }
+.tl { list-style: none; margin: 0 0 0 6px; padding: 0 0 0 18px; border-left: 2px solid var(--line); }
+.tl li { position: relative; padding: 0 0 18px 6px; }
+.tl li::before { content: ""; position: absolute; left: -26px; top: 5px; width: 12px; height: 12px; border-radius: 50%; background: var(--ink); }
+.tl .m { font-size: 13px; color: var(--ink-2); }
+.tl .t { font-weight: 500; }
+.tl .d { font-size: 14px; color: var(--ink-2); }
+
+section.block { margin-top: 56px; }
+section.block > h2 { font-size: 30px; font-weight: 500; letter-spacing: -0.035em; margin: 0 0 6px; }
+section.block > p.sub { color: var(--ink-2); margin: 0 0 16px; max-width: 780px; }
+.scroll { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: 13px; font-variant-numeric: tabular-nums; }
+th, td { padding: 9px 10px; text-align: right; border-bottom: 1px solid var(--grid); white-space: nowrap; }
+th { color: var(--ink-3); font-weight: 500; font-size: 12px; text-transform: uppercase; letter-spacing: .04em; }
+th.l, td.l { text-align: left; }
+td.heat { text-align: center; border: 2px solid var(--panel); border-radius: 6px; font-weight: 500; }
+.tag { font-size: 11px; padding: 1px 6px; border-radius: 6px; background: var(--soft); color: var(--ink-2); margin-left: 6px; }
+.ready { display: inline-block; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 999px; white-space: nowrap; }
+.ready.delegable { background: rgba(12,163,12,.12); color: var(--good); }
+.ready.supervised { background: rgba(42,120,214,.12); color: var(--accent); }
+.ready.not-ready { background: var(--soft); color: var(--ink-3); }
+.bars { display: grid; grid-template-columns: minmax(140px, 240px) 1fr 1fr 1fr; gap: 8px 16px; align-items: center; font-size: 13px; }
+.bars .h { font-size: 12px; color: var(--ink-3); text-transform: uppercase; letter-spacing: .04em; }
+.mini { position: relative; height: 18px; background: var(--soft); border-radius: 5px; }
+.mini > span { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 5px; }
+.mini > b { position: absolute; right: 6px; top: 0; font-size: 11px; font-weight: 500; line-height: 18px; }
+.matrix th.rot { writing-mode: vertical-rl; transform: rotate(180deg); text-align: left; height: 170px; vertical-align: bottom; text-transform: none; letter-spacing: 0; }
+footer { margin: 64px 0 40px; padding-top: 24px; border-top: 1px solid var(--line); color: var(--ink-2); font-size: 13px; display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+@media (max-width: 800px) { footer { grid-template-columns: 1fr; } }
+footer dl { display: grid; grid-template-columns: max-content 1fr; gap: 4px 14px; margin: 8px 0 0; }
+footer dt { color: var(--ink-3); }
+footer dd { margin: 0; word-break: break-word; color: var(--ink); }
+#tip { position: fixed; pointer-events: none; z-index: 9; background: var(--tip-bg); color: var(--tip-fg); padding: 8px 10px; border-radius: 8px; font-size: 12px; line-height: 1.45; max-width: 300px; opacity: 0; transition: opacity .08s; }
+.empty { color: var(--ink-3); font-size: 13px; padding: 40px 0; text-align: center; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav class="nav" aria-label="Main">
+    <a class="brand" href="#top" aria-label="OpenWork Bench home"><svg id="mark" width="18" height="18" viewBox="0 0 9 9" aria-hidden="true"></svg>OpenWork Bench</a>
+    <div class="links">
+      <a href="#leaderboard">Leaderboard</a><a href="#readiness">Readiness</a><a href="#categories">Categories</a><a href="#results">Results</a><a href="#tasks">Tasks</a><a href="#method">Method</a>
+    </div>
+    <div class="actions">
+      <a class="btn soft" href={docs()}>Docs</a>
+      <a class="btn soft" href="https://github.com/different-ai/openwork-bench">GitHub</a>
+      <a class="btn dark" href={docs("methodology")}>Methodology</a>
+      <button class="btn soft icon-btn" id="theme" type="button" aria-label="Toggle dark mode">◐</button>
+    </div>
+  </nav>
+
+  <header class="hero" id="top">
+    <div>
+      <p class="eyebrow">Open models · Real work · Earned trust</p>
+      <svg class="wordmark" id="wordmark" role="img" aria-label="OpenWork Bench"></svg>
+      <h1>Which open models can you trust with real work?</h1>
+      <p class="lede">Open-weight models take on everyday office work — email, calendar, documents, spreadsheets, CRM and chat — in a real agent app. Each is scored on quality, cost, speed and safety, then held to a clear bar for trust. <a href={docs("methodology")}>How it works</a></p>
+    </div>
+    <div class="updates" id="updates"></div>
+  </header>
+
+  <div id="leaderboard">
+    <div class="toolbar">
+      <div class="seg" role="group" aria-label="Board">
+        <button type="button" data-board="open" aria-pressed="true">Open weights</button>
+        <button type="button" data-board="all" aria-pressed="false">All subjects</button>
+      </div>
+      <div class="tool-r">
+        Harness
+        <div class="seg small" role="group" aria-label="Harness">
+          <button type="button" data-harness="openwork" aria-pressed="true" title="Tasks run in a desktop agent app (OpenWork)">Agent app</button>
+          <button type="button" data-harness="control" aria-pressed="false" title="The same models in a plain tool-calling loop">Plain loop</button>
+          <button type="button" data-harness="both" aria-pressed="false">Both</button>
+        </div>
+        <label><input type="checkbox" id="showTest" checked> Test subjects</label>
+      </div>
+    </div>
+    <div class="notice" id="notice" hidden></div>
+    <div class="cards3">
+      <div class="card">
+        <h3><svg class="px" viewBox="0 0 2 2" aria-hidden="true"><rect width="2" height="2" fill="var(--f7)"/></svg>Knowledge Work</h3>
+        <p class="sub">Work index, 0–100 · higher is better · dashed lines are trust targets</p>
+        <div class="chart" id="indexChart"></div>
+      </div>
+      <div class="card">
+        <h3><svg class="px" viewBox="0 0 2 2" aria-hidden="true"><rect width="2" height="2" fill="var(--f4)"/></svg>Time per Task</h3>
+        <p class="sub">Wall-clock minutes per task attempt · lower is better</p>
+        <div class="chart" id="timeChart"></div>
+      </div>
+      <div class="card">
+        <h3><svg class="px" viewBox="0 0 2 2" aria-hidden="true"><rect width="2" height="2" fill="var(--f2)"/></svg>Cost per Task</h3>
+        <p class="sub">USD per task attempt, billed or list price · lower is better</p>
+        <div class="chart" id="costChart"></div>
+      </div>
+    </div>
+    <div class="legend" id="familyLegend"></div>
+  </div>
+
+  <div class="feature" id="readiness">
+    <div class="dark-card">
+      <div class="dither"></div>
+      <div>
+        <h3>Which can you trust?</h3>
+        <div class="tier" id="tiers"></div>
+      </div>
+      <p id="tierNote"></p>
+    </div>
+    <div class="dark-card">
+      <div class="dither"></div>
+      <div><span class="chip">Reproduce</span><h3 style="margin-top:14px">Run any row yourself</h3></div>
+      <div style="display:grid; gap:14px; position:relative">
+        <pre>uv run owb models verify
+uv run owb run glm-5.3@owb-agent
+uv run owb world plan</pre>
+        <p>Weights pinned to a Hugging Face revision, serving pinned per call, every trajectory published.</p>
+      </div>
+    </div>
+    <div class="changelog">
+      <h3>Changelog</h3>
+      <ul class="tl" id="changelog"></ul>
+    </div>
+  </div>
+
+  <section class="block">
+    <h2>Quality vs. cost</h2>
+    <p class="sub">Index against cost per task (log scale). The shaded corner holds subjects that are both better and cheaper than the median.</p>
+    <div class="card"><div class="chart" id="scatterCost"></div></div>
+  </section>
+
+  <section class="block" id="categories">
+    <h2>Categories</h2>
+    <p class="sub">Mean task score per category, 0–100. ✓ marks a category at or above its target.</p>
+    <div class="card scroll"><table id="catTable"></table></div>
+  </section>
+
+  <section class="block">
+    <h2>Reliability and safety</h2>
+    <p class="sub">pass@1: share of attempts fully correct. pass^k: share of tasks solved on every one of k repeats. Unsafe: share of attempts that deleted without being asked, emailed an unknown outside address, or crossed a task's red line. Those attempts score 0.</p>
+    <div class="card" id="relChart"></div>
+  </section>
+
+  <section class="block" id="results">
+    <h2>All results</h2>
+    <p class="sub">Value per $ = expert labour cost of the work delivered ÷ agent cost. Speed-up = expert time ÷ agent time.</p>
+    <div class="card scroll"><table id="mainTable"></table></div>
+  </section>
+
+  <section class="block" id="tasks">
+    <h2>Per-task scores</h2>
+    <p class="sub">Mean score across repeats for each task. Hover a cell for details.</p>
+    <div class="card scroll"><table class="matrix" id="matrix"></table></div>
+  </section>
+
+  <footer id="method">
+    <div>
+      <b style="color:var(--ink)">Method</b>
+      <dl id="meta"></dl>
+    </div>
+    <div>
+      <b style="color:var(--ink)">Open data</b>
+      <p>Tasks, harness, graders and scoring: <a href="https://github.com/different-ai/openwork-bench">github.com/different-ai/openwork-bench</a>. Published tasks and every run log: <a href="https://huggingface.co/datasets/different-ai/openwork-bench-tasks">tasks</a> · <a href="https://huggingface.co/datasets/different-ai/openwork-bench-results">results</a> on Hugging Face.</p>
+      <p>Maintained by the OpenWork team under public <a href={docs("fair-play")}>fair-play rules</a>.</p>
+    </div>
+  </footer>
+</div>
+<div id="tip" role="tooltip"></div>
+
+<script is:inline id="owb-data" type="application/json" set:html={data}></script>
+<script is:inline>
+(function () {
+  "use strict";
+  const DATA = JSON.parse(document.getElementById("owb-data").textContent);
+  const NS = "http://www.w3.org/2000/svg";
+  const FAMILIES = ["moonshot", "zhipu", "deepseek", "qwen", "mistral", "meta", "minimax", "nvidia"];
+  const FAMILY_LABEL = { moonshot: "Moonshot", zhipu: "Z.ai", deepseek: "DeepSeek", qwen: "Qwen", mistral: "Mistral", meta: "Meta", minimax: "MiniMax", nvidia: "NVIDIA", anchor: "Closed anchor", simulated: "Simulated test agent", reference: "Reference" };
+  const TARGETS = DATA.index.targets || {};
+  const hasOpen = DATA.subjects.some((s) => s.board === "open-weights");
+  const hasReal = DATA.subjects.some((s) => s.type === "model" || s.type === "product");
+  const state = { board: hasOpen ? "open" : "all", harness: hasOpen ? "openwork" : "both", showTest: !hasReal };
+  try { const t = localStorage.getItem("owb-theme"); if (t) document.documentElement.dataset.theme = t; } catch (e) {}
+
+  const fmt = (v, d = 1) => (v == null || Number.isNaN(v) ? "–" : Number(v).toFixed(d));
+  const money = (v) => (v == null ? "n/a" : v < 0.01 ? "$" + v.toFixed(4) : "$" + v.toFixed(v < 1 ? 3 : 2));
+  const mins = (s) => (s == null ? "–" : (s / 60).toFixed(s < 60 ? 2 : 1));
+  const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+  const el = (tag, attrs = {}, parent) => { const n = document.createElementNS(NS, tag); for (const [k, v] of Object.entries(attrs)) n.setAttribute(k, v); if (parent) parent.appendChild(n); return n; };
+  const famOf = (s) => (s.type === "reference" ? "reference" : s.simulated ? "simulated" : s.anchor ? "anchor" : s.family || "other");
+  const color = (s) => {
+    const f = famOf(s), i = FAMILIES.indexOf(f);
+    if (i >= 0) return `var(--f${i + 1})`;
+    if (f === "anchor") return "var(--ink)";
+    if (f === "simulated") return "url(#hatch)";
+    return "var(--neutral)";
+  };
+  const short = (s) => s.label.replace(/^Simulated: /, "Sim: ").replace(/\s*\(.*?\)\s*/g, " ").trim();
+  const name = (s) => s.label + (s.anchor ? " (closed, for reference)" : "");
+  const badge = (s) => (s.readiness ? `<span class="ready ${esc(s.readiness.id)}" title="${esc(s.readiness.reason || "")}">${esc(s.readiness.label)}</span>` : "");
+
+  // A 5x7 raster font for the wordmark, a nod to OpenWork's pixel lettering.
+  const GLYPHS = {
+    O: ["01110","10001","10001","10001","10001","10001","01110"], P: ["11110","10001","10001","11110","10000","10000","10000"],
+    E: ["11111","10000","10000","11110","10000","10000","11111"], N: ["10001","11001","10101","10011","10001","10001","10001"],
+  };
+  function drawWordmark() {
+    const svg = document.getElementById("wordmark");
+    let x = 0;
+    for (const ch of "OPEN") {
+      GLYPHS[ch].forEach((row, y) => [...row].forEach((b, i) => { if (b === "1") el("rect", { x: x + i + 0.07, y: y + 0.07, width: 0.86, height: 0.86, rx: 0.14, fill: "currentColor" }, svg); }));
+      x += 6;
+    }
+    const t = el("text", { x: x + 0.4, y: 6.55, style: "font: 500 9.2px Inter, sans-serif; letter-spacing: -0.4px; fill: currentColor" }, svg);
+    t.textContent = "Work";
+    const t2 = el("text", { x: x + 25.5, y: 6.55, style: "font: 400 9.2px Inter, sans-serif; letter-spacing: -0.4px; fill: currentColor; opacity: .38" }, svg);
+    t2.textContent = "Bench";
+    svg.setAttribute("viewBox", `0 -0.6 ${x + 52} 8.2`);
+    const m = document.getElementById("mark");
+    [[1,1],[2,1],[3,1],[5,1],[6,1],[7,1],[1,2],[1,3],[1,5],[1,6],[1,7],[2,7],[3,7],[7,2],[7,3],[5,7],[6,7],[7,7],[7,5],[7,6],[4,4]]
+      .forEach(([px, py]) => el("rect", { x: px, y: py, width: 0.9, height: 0.9, fill: "currentColor" }, m));
+  }
+
+  const tip = document.getElementById("tip");
+  document.addEventListener("mousemove", (e) => {
+    const t = e.target.closest ? e.target.closest("[data-tip]") : null;
+    if (!t) { tip.style.opacity = 0; return; }
+    tip.innerHTML = t.getAttribute("data-tip");
+    tip.style.left = Math.min(window.innerWidth - tip.offsetWidth - 12, e.clientX + 14) + "px";
+    tip.style.top = Math.min(window.innerHeight - tip.offsetHeight - 12, e.clientY + 14) + "px";
+    tip.style.opacity = 1;
+  });
+
+  function visible() {
+    return DATA.subjects.filter((s) => {
+      if (s.simulated || s.type === "reference") return state.showTest;
+      if (state.board === "open" && !(s.board === "open-weights" || s.anchor)) return false;
+      if (state.harness === "openwork" && s.type !== "product" && !s.anchor) return false;
+      if (state.harness === "control" && s.type !== "model" && !s.anchor) return false;
+      return true;
+    });
+  }
+  function tipFor(s, extra) {
+    const ow = s.open_weights || {};
+    return `<b>${esc(name(s))}</b>${s.readiness ? "<br>" + esc(s.readiness.label) : ""}<br>${extra}${ow.hf_repo ? `<br>Weights ${esc(ow.hf_repo)} @ ${esc((ow.revision || "").slice(0, 10))} · ${esc(ow.license || "")}` : ""}${s.served_by && s.served_by.length ? "<br>Served by " + esc(s.served_by.join(", ")) : ""}`;
+  }
+  function defs(svg) {
+    const d = el("defs", {}, svg);
+    const p = el("pattern", { id: "hatch", width: 5, height: 5, patternUnits: "userSpaceOnUse", patternTransform: "rotate(45)" }, d);
+    el("rect", { width: 5, height: 5, fill: "var(--f3)", opacity: 0.3 }, p);
+    el("line", { x1: 0, y1: 0, x2: 0, y2: 5, stroke: "var(--f3)", "stroke-width": 3 }, p);
+  }
+
+  function columns(hostId, rows, valueOf, opts) {
+    const host = document.getElementById(hostId);
+    host.innerHTML = "";
+    if (!rows.length) { host.innerHTML = `<p class="empty">${opts.empty}</p>`; return; }
+    const W = Math.max(280, host.clientWidth), H = 360, m = { l: 44, r: 8, t: 22, b: 118 };
+    const svg = el("svg", { width: W, height: H, viewBox: `0 0 ${W} ${H}`, role: "img", "aria-label": opts.aria }, host);
+    defs(svg);
+    const vals = rows.map(valueOf);
+    const max = opts.max ?? Math.max(...vals) * 1.15;
+    const bw = (W - m.l - m.r) / rows.length, barW = Math.max(8, Math.min(34, bw * 0.72));
+    const y = (v) => m.t + (1 - v / max) * (H - m.t - m.b);
+    for (let i = 1; i <= 4; i++) el("line", { x1: m.l, x2: W - m.r, y1: y((max / 4) * i), y2: y((max / 4) * i), stroke: "var(--grid)", "stroke-dasharray": "2 4" }, svg);
+    (opts.targets || []).forEach((t) => {
+      el("line", { x1: m.l, x2: W - m.r, y1: y(t.v), y2: y(t.v), stroke: "var(--ink-2)", "stroke-dasharray": "5 4", opacity: 0.7 }, svg);
+      el("text", { x: W - m.r, y: y(t.v) - 4, "text-anchor": "end" }, svg).textContent = t.label;
+    });
+    rows.forEach((s, i) => {
+      const v = vals[i], cx = m.l + bw * i + bw / 2, top = y(v), h = Math.max(2, H - m.b - top);
+      const x0 = cx - barW / 2, r = Math.min(4, barW / 4, h / 2);
+      el("path", { d: `M${x0},${top + h} V${top + r} Q${x0},${top} ${x0 + r},${top} H${x0 + barW - r} Q${x0 + barW},${top} ${x0 + barW},${top + r} V${top + h} Z`,
+        fill: color(s), "data-tip": tipFor(s, opts.tip(v, s)) }, svg);
+      const label = opts.label(v);
+      const inside = h > 26 && barW >= 24 && famOf(s) !== "simulated";
+      el("text", { x: cx, y: inside ? top + 15 : top - 5, "text-anchor": "middle", class: inside ? "val-in" : "val" }, svg).textContent = label;
+      const f = famOf(s), mono = { moonshot: "K", zhipu: "Z", deepseek: "D", qwen: "Q", mistral: "M", meta: "∞", minimax: "M", nvidia: "N", anchor: "A", simulated: "S", reference: "R" }[f] || "·";
+      const bx = cx - 7, by = H - m.b + 6;
+      el("rect", { x: bx, y: by, width: 14, height: 14, rx: 3, fill: color(s) === "url(#hatch)" ? "var(--f3)" : color(s), opacity: f === "simulated" ? 0.55 : 1 }, svg);
+      el("text", { x: cx, y: by + 10.5, "text-anchor": "middle", style: "font: 600 9px Inter, sans-serif; fill: #fff" }, svg).textContent = mono;
+      const lx = cx + 3, ly = H - m.b + 32, nm = short(s);
+      el("text", { x: lx, y: ly, "text-anchor": "end", class: "lbl", transform: `rotate(-50 ${lx} ${ly})` }, svg).textContent = nm.length > 20 ? nm.slice(0, 19) + "…" : nm;
+    });
+    el("line", { x1: m.l, x2: W - m.r, y1: H - m.b, y2: H - m.b, stroke: "var(--line)" }, svg);
+  }
+
+  function charts() {
+    const subs = visible().filter((s) => s.index != null);
+    const lv = (TARGETS.levels || []).filter((l) => l.index != null);
+    columns("indexChart", subs.slice().sort((a, b) => b.index - a.index), (s) => s.index, {
+      max: 100, aria: "Index scores", empty: "No subjects to show.",
+      targets: lv.map((l) => ({ v: l.index, label: l.label })),
+      label: (v) => Math.round(v),
+      tip: (v, s) => `Index ${fmt(v)}${s.ci ? ` (95% CI ${fmt(s.ci[0])}–${fmt(s.ci[1])})` : ""} · pass^${s.k} ${Math.round(s.pass_hat_k * 100)}%`,
+    });
+    const real = subs.filter((s) => s.type !== "reference");
+    columns("timeChart", real.filter((s) => s.time_per_task).sort((a, b) => a.time_per_task - b.time_per_task), (s) => s.time_per_task / 60, {
+      aria: "Time per task", empty: "No timing data for these subjects yet.",
+      label: (v) => (v < 1 ? v.toFixed(2) : v.toFixed(1)), tip: (v) => `${v.toFixed(2)} min per task`,
+    });
+    columns("costChart", real.filter((s) => s.cost_per_task != null).sort((a, b) => a.cost_per_task - b.cost_per_task), (s) => s.cost_per_task, {
+      aria: "Cost per task", empty: "No cost data for these subjects yet.",
+      label: (v) => money(v), tip: (v, s) => `${money(v)} per task (${esc(s.cost_source || "list price")})`,
+    });
+    const fams = [...new Set(subs.map(famOf))];
+    document.getElementById("familyLegend").innerHTML = fams.map((f) => {
+      const i = FAMILIES.indexOf(f);
+      const sw = i >= 0 ? `var(--f${i + 1})` : f === "anchor" ? "var(--ink)" : f === "simulated" ? "var(--f3); opacity:.55" : "var(--neutral)";
+      return `<span><i style="background:${sw}"></i>${esc(FAMILY_LABEL[f] || f)}</span>`;
+    }).join("");
+  }
+
+  function scatter() {
+    const host = document.getElementById("scatterCost");
+    host.innerHTML = "";
+    const subs = visible().filter((s) => s.index != null && s.cost_per_task > 0 && s.type !== "reference");
+    if (!subs.length) { host.innerHTML = '<p class="empty">No cost data for these subjects yet.</p>'; return; }
+    const W = Math.max(300, host.clientWidth), H = 360, m = { l: 44, r: 20, t: 16, b: 36 };
+    const xs = subs.map((s) => s.cost_per_task);
+    let lo = Math.log10(Math.min(...xs)), hi = Math.log10(Math.max(...xs));
+    if (hi - lo < 0.5) { lo -= 0.25; hi += 0.25; }
+    lo = Math.floor(lo * 2) / 2 - 0.1; hi = Math.ceil(hi * 2) / 2 + 0.1;
+    const yLo = Math.max(0, Math.floor(Math.min(...subs.map((s) => s.index)) / 10) * 10 - 10);
+    const x = (v) => m.l + ((Math.log10(v) - lo) / (hi - lo)) * (W - m.l - m.r);
+    const y = (v) => m.t + (1 - (v - yLo) / (100 - yLo)) * (H - m.t - m.b);
+    const svg = el("svg", { width: W, height: H, viewBox: `0 0 ${W} ${H}`, role: "img", "aria-label": "Index vs cost" }, host);
+    defs(svg);
+    const medX = xs.slice().sort((a, b) => a - b)[Math.floor(xs.length / 2)], medY = subs.map((s) => s.index).sort((a, b) => a - b)[Math.floor(subs.length / 2)];
+    el("rect", { x: m.l, y: m.t, width: Math.max(0, x(medX) - m.l), height: Math.max(0, y(medY) - m.t), fill: "var(--soft)" }, svg);
+    el("text", { x: m.l + 8, y: m.t + 16 }, svg).textContent = "Better and cheaper";
+    for (let g = Math.ceil(yLo / 10) * 10; g <= 100; g += 10) { el("line", { x1: m.l, x2: W - m.r, y1: y(g), y2: y(g), stroke: "var(--grid)" }, svg); el("text", { x: m.l - 8, y: y(g) + 4, "text-anchor": "end" }, svg).textContent = g; }
+    for (let p = Math.ceil(lo); p <= Math.floor(hi); p++) { el("line", { x1: x(10 ** p), x2: x(10 ** p), y1: m.t, y2: H - m.b, stroke: "var(--grid)" }, svg); el("text", { x: x(10 ** p), y: H - m.b + 18, "text-anchor": "middle" }, svg).textContent = "$" + (10 ** p >= 1 ? 10 ** p : (10 ** p).toPrecision(1)); }
+    const placed = [];
+    subs.forEach((s) => {
+      const cx = x(s.cost_per_task), cy = y(s.index);
+      el("circle", { cx, cy, r: 7, fill: color(s), stroke: "var(--panel)", "stroke-width": 2, "data-tip": tipFor(s, `Index ${fmt(s.index)} · ${money(s.cost_per_task)} per task`) }, svg);
+      let ly = cy - 10; while (placed.some((p) => Math.abs(p.y - ly) < 13 && Math.abs(p.x - cx) < 120)) ly -= 13; placed.push({ x: cx, y: ly });
+      const end = cx > W - 140;
+      el("text", { x: cx + (end ? -10 : 10), y: ly, "text-anchor": end ? "end" : "start", class: "lbl" }, svg).textContent = short(s);
+    });
+  }
+
+  function updates() {
+    const items = (DATA.changelog || []).slice(0, 2);
+    document.getElementById("updates").innerHTML = items.map((c) => `<a class="update" href="https://github.com/different-ai/openwork-bench"><span class="k">${esc(c.kind)}</span><span class="t">${esc(c.title)}</span><span class="d">${esc(c.text)}</span><span class="arrow" aria-hidden="true">↗</span></a>`).join("");
+    document.getElementById("changelog").innerHTML = (DATA.changelog || []).map((c) => `<li><div class="m">${esc(c.kind)} · ${esc(c.date)}</div><div class="t">${esc(c.title)}</div><div class="d">${esc(c.text)}</div></li>`).join("") || '<li><div class="d">No changes yet.</div></li>';
+  }
+
+  function tiers() {
+    const subs = visible().filter((s) => s.readiness);
+    const levels = TARGETS.levels || [];
+    document.getElementById("tiers").innerHTML = levels.map((l) => {
+      const names = subs.filter((s) => s.readiness.id === l.id).map(short);
+      return `<div class="tier-row"><b>${esc(l.label)}</b><span>${names.length ? esc(names.join(", ")) : "—"}</span></div>`;
+    }).join("");
+    const d = levels.find((l) => l.id === "delegable");
+    document.getElementById("tierNote").textContent = d ? `Delegable: index ≥ ${d.index}, solved on every repeat for ≥ ${Math.round(d.pass_hat_k * 100)}% of tasks, unsafe ≤ ${Math.round(d.safety_rate_max * 100)}%, no category below ${d.category_min}. A full run of every task is required.` : "";
+  }
+
+  const seq = (v) => (v == null ? "var(--s0)" : `var(--s${Math.max(0, Math.min(7, Math.round((v / 100) * 7)))})`);
+  const ink = (v) => (v != null && v >= 64 ? "var(--s-ink-hi)" : "var(--ink)");
+
+  function catTable() {
+    const cats = DATA.index.categories, ct = TARGETS.category;
+    let h = `<thead><tr><th class=l>Subject</th><th class=l>Readiness</th><th>Index</th>${Object.values(cats).map((c) => `<th>${esc(c.label)}</th>`).join("")}</tr></thead><tbody>`;
+    for (const s of visible()) {
+      h += `<tr><td class=l>${esc(name(s))}${s.simulated ? '<span class="tag">sim</span>' : ""}</td><td class=l>${badge(s)}</td><td><b>${fmt(s.index)}</b></td>`;
+      for (const c of Object.keys(cats)) {
+        const v = s.categories[c], hit = ct != null && v != null && v >= ct;
+        h += `<td class="heat" style="background:${seq(v)};color:${ink(v)}" data-tip="<b>${esc(s.label)}</b><br>${esc(cats[c].label)}: ${fmt(v)}${ct != null ? (hit ? " · meets" : " · below") + " the " + ct + " target" : ""}">${fmt(v, 0)}${hit ? " ✓" : ""}</td>`;
+      }
+      h += "</tr>";
+    }
+    document.getElementById("catTable").innerHTML = h + "</tbody>";
+  }
+
+  function relChart() {
+    const bar = (v, c, l) => `<div class="mini" data-tip="${l}: ${fmt(v * 100, 0)}%"><span style="width:${Math.max(0, v * 100)}%;background:${c}"></span><b>${fmt(v * 100, 0)}%</b></div>`;
+    let h = '<div class="bars"><div class="h">Subject</div><div class="h">pass@1</div><div class="h">pass^k</div><div class="h">Unsafe attempts</div>';
+    for (const s of visible()) {
+      const c = famOf(s) === "simulated" ? "var(--f3)" : color(s);
+      h += `<div>${esc(short(s))}</div>${bar(s.pass_at_1, c, "pass@1")}${bar(s.pass_hat_k, c, "pass^" + s.k)}${bar(s.safety_rate, "var(--critical)", "Unsafe")}`;
+    }
+    document.getElementById("relChart").innerHTML = h + "</div>";
+  }
+
+  function mainTable() {
+    let h = "<thead><tr><th>#</th><th class=l>Subject</th><th class=l>Readiness</th><th class=l>Harness</th><th>Index</th><th>95% CI</th><th>pass@1</th><th>pass^k</th><th>Unsafe</th><th>$/task</th><th>Min/task</th><th>Tokens/task</th><th>Value per $</th><th>Speed-up</th><th>Coverage</th><th class=l>Weights</th></tr></thead><tbody>";
+    visible().forEach((s, i) => {
+      const ow = s.open_weights || {};
+      const weights = ow.hf_repo ? `<a href="https://huggingface.co/${esc(ow.hf_repo)}/tree/${esc(ow.revision || "main")}">${esc(ow.license || "open")}</a>` : s.anchor ? "closed" : "–";
+      h += `<tr><td>${i + 1}</td><td class=l>${esc(name(s))}</td><td class=l>${badge(s)}</td><td class=l>${esc(s.harness || s.type)}</td><td><b>${fmt(s.index)}</b></td><td>${s.ci ? fmt(s.ci[0]) + "–" + fmt(s.ci[1]) : "–"}</td><td>${fmt(s.pass_at_1 * 100, 0)}%</td><td>${fmt(s.pass_hat_k * 100, 0)}%</td><td>${fmt(s.safety_rate * 100, 0)}%</td><td>${money(s.cost_per_task)}</td><td>${s.type === "reference" ? "–" : mins(s.time_per_task)}</td><td>${s.tokens_per_task ? s.tokens_per_task.toLocaleString() : "–"}</td><td>${s.value_per_dollar ? s.value_per_dollar.toLocaleString() + "×" : "–"}</td><td>${s.type === "reference" || !s.speedup_vs_expert ? "–" : s.speedup_vs_expert + "×"}</td><td>${fmt(s.coverage * 100, 0)}%</td><td class=l>${weights}</td></tr>`;
+    });
+    document.getElementById("mainTable").innerHTML = h + "</tbody>";
+  }
+
+  function matrix() {
+    const subs = visible(), cats = DATA.index.categories;
+    let h = `<thead><tr><th class=l>Task</th><th class=l>Category</th><th>Expert</th>${subs.map((s) => `<th class="rot">${esc(short(s))}</th>`).join("")}</tr></thead><tbody>`;
+    for (const t of DATA.tasks) {
+      h += `<tr><td class=l data-tip="${esc(t.occupation)} · ${esc(t.difficulty)} · ${esc(t.horizon)}">${esc(t.title)}</td><td class=l>${esc(cats[t.category]?.label || t.category)}</td><td>${Math.round(t.expert_minutes)}m</td>`;
+      for (const s of subs) {
+        const r = s.tasks[t.id], v = r ? r.score * 100 : null;
+        h += `<td class="heat" style="background:${seq(v)};color:${ink(v)}" data-tip="<b>${esc(s.label)}</b><br>${esc(t.title)}<br>score ${fmt(v, 0)} · solved ${r ? fmt(r.success_rate * 100, 0) + "%" : "–"} of ${r ? r.n : 0}">${fmt(v, 0)}</td>`;
+      }
+      h += "</tr>";
+    }
+    document.getElementById("matrix").innerHTML = h + "</tbody>";
+  }
+
+  function meta() {
+    const ix = DATA.index, src = DATA.sources || {};
+    const rows = [
+      ["Index", `${esc(ix.name)} ${esc(ix.version)} (${esc(ix.status)})`],
+      ["Tasks", `${DATA.tasks.length} tasks · ${esc((ix.splits || []).join(", "))}`],
+      ["Repeats", esc(ix.repeats)],
+      ["Scoring", `critical miss caps a task at ${fmt((ix.scoring.critical_cap ?? 0.25) * 100, 0)}% · unsafe attempt scores 0`],
+      ["Results", esc(src.results_repo ? `${src.results_repo}@${src.results_revision || "main"}` : (src.paths || []).join(", ") || "local runs")],
+      ["Errata", esc((DATA.errata_applied || []).join(", ") || "none")],
+      ["Generated", `${esc(DATA.generated_at)} · owb ${esc(DATA.owb_version)}`],
+    ];
+    document.getElementById("meta").innerHTML = rows.map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join("");
+  }
+
+  function notice() {
+    const n = document.getElementById("notice");
+    if (!hasReal) { n.hidden = false; n.innerHTML = "<b>Sample data.</b> No model results are published yet. These rows come from reference and simulated test subjects that exercise the pipeline offline."; }
+    else if (DATA.subjects.some((s) => s.simulated) && state.showTest) { n.hidden = false; n.innerHTML = "<b>Includes test subjects.</b> Simulated rows come from a seeded test agent, not a real model."; }
+    else n.hidden = true;
+  }
+
+  function syncButtons() {
+    document.querySelectorAll("[data-board]").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.board === state.board)));
+    document.querySelectorAll("[data-harness]").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.harness === state.harness)));
+    document.getElementById("showTest").checked = state.showTest;
+  }
+  function render() { syncButtons(); notice(); charts(); tiers(); scatter(); catTable(); relChart(); mainTable(); matrix(); }
+
+  document.querySelectorAll("[data-board]").forEach((b) => b.addEventListener("click", () => { state.board = b.dataset.board; render(); }));
+  document.querySelectorAll("[data-harness]").forEach((b) => b.addEventListener("click", () => { state.harness = b.dataset.harness; render(); }));
+  document.getElementById("showTest").addEventListener("change", (e) => { state.showTest = e.target.checked; render(); });
+  document.getElementById("theme").addEventListener("click", () => {
+    const dark = getComputedStyle(document.documentElement).colorScheme.includes("dark");
+    const next = dark ? "light" : "dark";
+    document.documentElement.dataset.theme = next;
+    try { localStorage.setItem("owb-theme", next); } catch (e) {}
+  });
+  let rt; window.addEventListener("resize", () => { clearTimeout(rt); rt = setTimeout(render, 120); });
+  drawWordmark(); updates(); meta(); render();
+})();
+</script>
+</body>
+</html>

@@ -94,6 +94,34 @@ def bootstrap_ci(
     )
 
 
+def readiness(subject: dict[str, Any], targets: dict[str, Any] | None) -> dict[str, Any] | None:
+    """The highest target level a subject meets. Requires a complete run of every task."""
+    if not targets or not targets.get("levels"):
+        return None
+    levels = targets["levels"]
+    if subject.get("index") is None or not subject.get("complete"):
+        last = levels[-1]
+        return {
+            "id": last["id"],
+            "label": last["label"],
+            "reason": "incomplete run" if subject.get("index") is not None else "no score",
+        }
+    cats = [v for v in (subject.get("categories") or {}).values() if v is not None]
+    for lvl in levels:
+        checks = []
+        if "index" in lvl:
+            checks.append(subject["index"] >= lvl["index"])
+        if "pass_hat_k" in lvl:
+            checks.append(subject["pass_hat_k"] >= lvl["pass_hat_k"])
+        if "safety_rate_max" in lvl:
+            checks.append(subject["safety_rate"] <= lvl["safety_rate_max"])
+        if "category_min" in lvl:
+            checks.append(bool(cats) and min(cats) >= lvl["category_min"])
+        if all(checks):
+            return {"id": lvl["id"], "label": lvl["label"]}
+    return {"id": levels[-1]["id"], "label": levels[-1]["label"]}
+
+
 def build_leaderboard(
     rows: list[dict[str, Any]],
     bundles: list[TaskBundle],
@@ -175,6 +203,13 @@ def build_leaderboard(
                 "model": first.get("model"),
                 "harness": first.get("harness"),
                 "simulated": bool(first.get("simulated")),
+                "board": first.get("board"),
+                "family": first.get("family"),
+                "anchor": bool(first.get("anchor")),
+                "tier": first.get("tier"),
+                "open_weights": first.get("open_weights"),
+                "served_by": sorted({p for r in srows for p in (r.get("served_by") or [])}),
+                "cost_source": first.get("cost_source"),
                 "index": round(index, 2) if index is not None else None,
                 "ci": list(ci) if ci else None,
                 "complete": set(per_task) == set(tasks),
@@ -205,6 +240,8 @@ def build_leaderboard(
             }
         )
     subjects_out.sort(key=lambda s: (s["index"] is None, -(s["index"] or 0)))
+    for s in subjects_out:
+        s["readiness"] = readiness(s, cfg.get("targets"))
 
     return {
         "index": {
@@ -217,7 +254,20 @@ def build_leaderboard(
                 c: {"label": CATEGORIES.get(c, c), "weight": round(w, 4)} for c, w in weights.items()
             },
             "splits": splits,
+            "targets": cfg.get("targets"),
         },
+        "changelog": [
+            *[
+                {
+                    "date": str(e.get("date", "")),
+                    "kind": "Errata",
+                    "title": e.get("id", ""),
+                    "text": e.get("summary", ""),
+                }
+                for e in errata
+            ],
+            *[{**c, "date": str(c.get("date", ""))} for c in cfg.get("changelog", [])],
+        ],
         "generated_at": datetime.now(UTC).isoformat(timespec="seconds"),
         "owb_version": __version__,
         "sources": sources or {},

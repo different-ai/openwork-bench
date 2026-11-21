@@ -1,0 +1,57 @@
+# OpenWork Bench world run.
+#
+# One file describes a complete benchmark run in an OpenWork world sandbox: which OpenWork build,
+# where it runs, which models and harnesses, how many repeats, and the spend ceiling.
+# `owb world plan --world worlds/openwork-bench.world.yaml` checks it and prices it; nothing
+# starts until an operator runs the printed steps. See docs/openwork-desktop.md.
+name: openwork-bench
+schema: 1
+
+openwork:
+  world: preview-desktop          # upstream world definition in different-ai/openwork (worlds/)
+  place: daytona                  # daytona | freestyle | local
+  ref: dev                        # pin a commit sha for an official run
+  lifetime_minutes: 240
+  resources: {cpu: 4, memory_gb: 8}
+  server:
+    url: http://127.0.0.1:8787    # OpenWork server inside the sandbox
+    token_env: OPENWORK_TOKEN
+    host_token_env: OPENWORK_HOST_TOKEN
+  workspace_root: /root/owb-workspaces
+
+bench:
+  ref: main                       # openwork-bench revision installed in the sandbox
+  board: open-weights
+  harnesses: [openwork-desktop, owb-agent]
+  tiers: [frontier, efficient]
+  anchors: [claude-opus-5-5@openwork-desktop, claude-opus-5-5]   # closed models, for reference only
+  tasks: all
+  repeats: 3
+  parallel_sessions: 2
+
+# Names only. Values come from the operator's secret store and are never written to this repo.
+secrets:
+  - name: OPENROUTER_API_KEY
+    purpose: a dedicated key with a spend cap, created for this run and revoked after
+  - name: ANTHROPIC_API_KEY
+    purpose: closed anchors only
+  - name: DAYTONA_API_KEY
+    purpose: sandbox provisioning
+  - name: HF_TOKEN
+    purpose: publishing results (Hub pull request)
+
+budget:
+  max_model_usd: 150
+  max_sandbox_hours: 12
+
+publish:
+  results_repo: different-ai/openwork-bench-results
+  open_pull_request: true
+
+# Planning assumptions used until real runs replace them with measured averages.
+estimates:
+  steps_per_task: 14
+  input_tokens_per_step: 6000
+  output_tokens_per_step: 450
+  seconds_per_step: 8
+  sandbox_usd_per_hour: 0.27

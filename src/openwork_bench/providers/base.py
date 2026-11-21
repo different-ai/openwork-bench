@@ -1,7 +1,20 @@
 from __future__ import annotations
 
+import os
 from dataclasses import dataclass, field
+from pathlib import Path
 from typing import Any
+
+
+def read_secret(env_name: str) -> str | None:
+    """A secret from the environment, or from the file named by <ENV>_FILE (mode-600, never logged)."""
+    value = os.environ.get(env_name)
+    if value:
+        return value
+    path = os.environ.get(f"{env_name}_FILE")
+    if path and Path(path).is_file():
+        return Path(path).read_text().strip() or None
+    return None
 
 
 @dataclass
@@ -44,6 +57,8 @@ class ModelReply:
     usage: Usage
     stop_reason: str
     raw: Any = None
+    billed_usd: float | None = None  # cost the provider reported for this call, when it reports one
+    served_by: str | None = None  # upstream provider that served the call (routers like OpenRouter)
 
 
 @dataclass

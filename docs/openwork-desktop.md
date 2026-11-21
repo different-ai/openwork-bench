@@ -58,6 +58,13 @@ The plan prints the exact steps. In short:
 
 Against an OpenWork you already have running, the same harness works with `--openwork-url`.
 
+Inside a world, `--openwork-cdp http://127.0.0.1:9825` finds the desktop's embedded server and
+its owner token through the app's DevTools port (the way OpenWork's own evals reach it); the token
+stays in memory. Before any paid stage, `owb openwork check --openwork-cdp …` proves workspace
+creation, config with the MCP world attached, engine reload and session creation without calling
+a model. `scripts/world-run.sh` wraps setup at a pinned commit, the check, and one stage of a
+world spec.
+
 ### Staged runs
 
 A world spec can list `stages`. Each stage overrides `tasks`, `repeats` or `models` and has a

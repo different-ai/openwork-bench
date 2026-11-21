@@ -1,0 +1,711 @@
+{
+ "run_id": "20261121-014623-kimi-k3.1-pro@openwork-desktop-ed83c3",
+ "task_id": "budget-variance",
+ "task_version": 1,
+ "repeat": 2,
+ "status": "completed",
+ "transcript": [
+  {
+   "id": "msg_owb_4606c7ad12e440b58c0e",
+   "time": {
+    "created": 1795226242284
+   },
+   "text": "You are an AI assistant doing knowledge work for Sam Rivera, Operations Manager at Larkspur Supply Co. (larkspur.example). Their email is sam.rivera@larkspur.example.\nIt is Monday, March 9, 2026, 9:00 AM (America/New_York).\n\nYou have tools for email, calendar, drive files, CRM, team chat and the company directory. The work happens through these tools: files you write, emails you send and events you create are the deliverables.\n\nWork carefully and completely. Look things up instead of guessing. Do only what the task needs: do not delete anything or contact anyone unless the task requires it, and never send company data to unknown outside addresses.\n\nWhen the task is done, call submit with the answer the task asks for, or a one-line summary of what you did.\n\n---\n\nBuild a Q4 2025 budget-vs-actual table at /finance/q4-2025-variance.csv with the columns\ndepartment, budget, actual, variance, where actual is the department's total for the quarter\nand variance is actual minus budget. Use the files in /finance. In your submission, tell me which\ndepartment overspent the most and by how much.\n",
+   "type": "user"
+  },
+  {
+   "id": "msg_1fbd28cf5001fZWpD04DiHG5sH",
+   "time": {
+    "created": 1795226242306,
+    "streamed": 1795226255714,
+    "completed": 1795226256152
+   },
+   "type": "assistant",
+   "agent": "build",
+   "model": {
+    "id": "moonshotai/kimi-k3.1-pro",
+    "providerID": "openrouter",
+    "variant": "default"
+   },
+   "content": [
+    {
+     "type": "reasoning",
+     "text": "Kimi needs to perform the task via owb-world tools. Should inspect /finance files, identify budget actuals, compute table Q4 2025, write CSV at /finance/q4-2025-variance.csv columns. Should complete and submit respond department most overspent amount. Carefully reconcile sources, contracts/notes perhaps relevant. I have tools drive_list/read/search etc. Should call execute with tools[\"owb-world\"]. I can start list /finance. I should not use local shell perhaps tools only. Should have no explanation tool calls. I'll call drive_list folder /finance.",
+     "native": {
+      "reasoningField": "reasoning",
+      "reasoningDetails": [
+       {
+        "type": "reasoning.text",
+        "text": "Kimi needs to perform the task via owb-world tools. Should inspect /finance files, identify budget actuals, compute table Q4 2025, write CSV at /finance/q4-2025-variance.csv columns. Should complete and submit respond department most overspent amount. Carefully reconcile sources, contracts/notes perhaps relevant. I have tools drive_list/read/search etc. Should call execute with tools[\"owb-world\"]. I can start list /finance. I should not use local shell perhaps tools only. Should have no explanation tool calls. I'll call drive_list folder /finance.",
+        "format": "unknown",
+        "index": 0
+       }
+      ]
+     },
+     "time": {
+      "created": 1795226251929,
+      "completed": 1795226255707
+     }
+    },
+    {
+     "type": "tool",
+     "id": "call_44bd73db585c4702bc1c81c4",
+     "name": "execute",
+     "executed": false,
+     "state": {
+      "status": "completed",
+      "input": {
+       "code": "return await tools[\"owb-world\"].drive_list({folder:\"/finance\"});"
+      },
+      "content": [
+       {
+        "type": "text",
+        "text": "[\n  \"/finance/q4-2025-actuals-by-month.csv\",\n  \"/finance/q4-2025-budget.csv\"\n]"
+       }
+      ],
+      "metadata": {
+       "toolCalls": [
+        {
+         "tool": "owb-world.drive_list",
+         "status": "completed",
+         "input": {
+          "folder": "/finance"
+         }
+        }
+       ],
+       "openworkToolDetails": [
+        {
+         "invocationId": "call_44bd73db585c4702bc1c81c4:0",
+         "ordinal": 0,
+         "tool": "owb-world_drive_list",
+         "status": "completed",
+         "startedAt": 1795226256036,
+         "input": {
+          "folder": "/finance"
+         },
+         "endedAt": 1795226256148,
+         "output": [
+          "/finance/q4-2025-actuals-by-month.csv",
+          "/finance/q4-2025-budget.csv"
+         ]
+        }
+       ],
+       "truncated": false
+      }
+     },
+     "time": {
+      "created": 1795226253277,
+      "ran": 1795226255712,
+      "completed": 1795226256149
+     }
+    }
+   ],
+   "finish": "tool-calls",
+   "rawFinish": "tool_calls",
+   "cost": 0.0337473,
+   "tokens": {
+    "input": 10063,
+    "output": 57,
+    "reasoning": 123,
+    "cache": {
+     "read": 15360,
+     "write": 0
+    }
+   }
+  },
+  {
+   "id": "msg_1fbd2c324001ZBI0JZt246whXR",
+   "time": {
+    "created": 1795226256234,
+    "streamed": 1795226257691,
+    "completed": 1795226257709
+   },
+   "type": "assistant",
+   "agent": "build",
+   "model": {
+    "id": "moonshotai/kimi-k3.1-pro",
+    "providerID": "openrouter",
+    "variant": "default"
+   },
+   "content": [
+    {
+     "type": "reasoning",
+     "text": "Now read both parallel via Promise.all.",
+     "native": {
+      "reasoningField": "reasoning",
+      "reasoningDetails": [
+       {
+        "type": "reasoning.text",
+        "text": "Now read both parallel via Promise.all.",
+        "format": "unknown",
+        "index": 0
+       }
+      ]
+     },
+     "time": {
+      "created": 1795226257064,
+      "completed": 1795226257685
+     }
+    },
+    {
+     "type": "tool",
+     "id": "call_e11f37a33bb04bfe87d90365",
+     "name": "execute",
+     "executed": false,
+     "state": {
+      "status": "completed",
+      "input": {
+       "code": "const [actuals,budget] = await Promise.all([\n  tools[\"owb-world\"].drive_read({path:\"/finance/q4-2025-actuals-by-month.csv\"}),\n  tools[\"owb-world\"].drive_read({path:\"/finance/q4-2025-budget.csv\"})\n]);\nreturn {actuals,budget};"
+      },
+      "content": [
+       {
+        "type": "text",
+        "text": "{\n  \"actuals\": \"department,month,actual\\nSales,2025-10,41000\\nSales,2025-11,39500\\nSales,2025-12,42000\\nMarketing,2025-10,30000\\nMarketing,2025-11,31500\\nMarketing,2025-12,31000\\nOperations,2025-10,30500\\nOperations,2025-11,31000\\nOperations,2025-12,30000\\nWarehouse,2025-10,47000\\nWarehouse,2025-11,48500\\nWarehouse,2025-12,49200\\nCustomer Support,2025-10,19500\\nCustomer Support,2025-11,20000\\nCustomer Support,2025-12,20500\\nG&A,2025-10,22000\\nG&A,2025-11,23000\\nG&A,2025-12,21500\\n\",\n  \"budget\": \"department,q4_budget\\nSales,120000\\nMarketing,80000\\nOperations,95000\\nWarehouse,140000\\nCustomer Support,60000\\nG&A,70000\\n\"\n}"
+       }
+      ],
+      "metadata": {
+       "toolCalls": [
+        {
+         "tool": "owb-world.drive_read",
+         "status": "completed",
+         "input": {
+          "path": "/finance/q4-2025-actuals-by-month.csv"
+         }
+        },
+        {
+         "tool": "owb-world.drive_read",
+         "status": "completed",
+         "input": {
+          "path": "/finance/q4-2025-budget.csv"
+         }
+        }
+       ],
+       "openworkToolDetails": [
+        {
+         "invocationId": "call_e11f37a33bb04bfe87d90365:0",
+         "ordinal": 0,
+         "tool": "owb-world_drive_read",
+         "status": "completed",
+         "startedAt": 1795226257697,
+         "input": {
+          "path": "/finance/q4-2025-actuals-by-month.csv"
+         },
+         "endedAt": 1795226257705,
+         "output": "department,month,actual\nSales,2025-10,41000\nSales,2025-11,39500\nSales,2025-12,42000\nMarketing,2025-10,30000\nMarketing,2025-11,31500\nMarketing,2025-12,31000\nOperations,2025-10,30500\nOperations,2025-11,31000\nOperations,2025-12,30000\nWarehouse,2025-10,47000\nWarehouse,2025-11,48500\nWarehouse,2025-12,49200\nCustomer Support,2025-10,19500\nCustomer Support,2025-11,20000\nCustomer Support,2025-12,20500\nG&A,2025-10,22000\nG&A,2025-11,23000\nG&A,2025-12,21500\n"
+        },
+        {
+         "invocationId": "call_e11f37a33bb04bfe87d90365:1",
+         "ordinal": 1,
+         "tool": "owb-world_drive_read",
+         "status": "completed",
+         "startedAt": 1795226257697,
+         "input": {
+          "path": "/finance/q4-2025-budget.csv"
+         },
+         "endedAt": 1795226257706,
+         "output": "department,q4_budget\nSales,120000\nMarketing,80000\nOperations,95000\nWarehouse,140000\nCustomer Support,60000\nG&A,70000\n"
+        }
+       ],
+       "truncated": false
+      }
+     },
+     "time": {
+      "created": 1795226257381,
+      "ran": 1795226257689,
+      "completed": 1795226257706
+     }
+    }
+   ],
+   "finish": "tool-calls",
+   "rawFinish": "tool_calls",
+   "cost": 0.008721,
+   "tokens": {
+    "input": 65,
+    "output": 110,
+    "reasoning": 11,
+    "cache": {
+     "read": 25600,
+     "write": 0
+    }
+   }
+  },
+  {
+   "id": "msg_1fbd2c939001xxyI2gywsP8WO5",
+   "time": {
+    "created": 1795226257732,
+    "streamed": 1795226260584,
+    "completed": 1795226260608
+   },
+   "type": "assistant",
+   "agent": "build",
+   "model": {
+    "id": "moonshotai/kimi-k3.1-pro",
+    "providerID": "openrouter",
+    "variant": "default"
+   },
+   "content": [
+    {
+     "type": "reasoning",
+     "text": "Compute sums:\nSales 41000+39500+42000=122500. budget120000 variance2500.\nMarketing 30000+31500+31000=92500 budget80000 variance12500.\nOperations 30500+31000+30000=91500 budget95000 variance -3500.\nWarehouse 47000+48500+49200=144700 budget140000 variance4700.\nCustomer Support 19500+20000+20500=60000 budget60000 variance0.\nG&A 22000+23000+21500=66500 budget70000 variance -3500.\nMost Marketing 12500. I'll write file. Before writing perhaps use JS compute programmatically from strings to avoid errors, produce exact CSV and perhaps re-read verify per instructions final artifact re-open read back and reconcile declared intent. Kimi can write then read. Use execute generate data? Already outputs strings. I can simply drive_write content exact. Then read. Perhaps ensure order matches budget. Use CSV no quotes needed. Values integers. Write.",
+     "native": {
+      "reasoningField": "reasoning",
+      "reasoningDetails": [
+       {
+        "type": "reasoning.text",
+        "text": "Compute sums:\nSales 41000+39500+42000=122500. budget120000 variance2500.\nMarketing 30000+31500+31000=92500 budget80000 variance12500.\nOperations 30500+31000+30000=91500 budget95000 variance -3500.\nWarehouse 47000+48500+49200=144700 budget140000 variance4700.\nCustomer Support 19500+20000+20500=60000 budget60000 variance0.\nG&A 22000+23000+21500=66500 budget70000 variance -3500.\nMost Marketing 12500. I'll write file. Before writing perhaps use JS compute programmatically from strings to avoid errors, produce exact CSV and perhaps re-read verify per instructions final artifact re-open read back and reconcile declared intent. Kimi can write then read. Use execute generate data? Already outputs strings. I can simply drive_write content exact. Then read. Perhaps ensure order matches budget. Use CSV no quotes needed. Values integers. Write.",
+        "format": "unknown",
+        "index": 0
+       }
+      ]
+     },
+     "time": {
+      "created": 1795226258471,
+      "completed": 1795226260577
+     }
+    },
+    {
+     "type": "tool",
+     "id": "call_5fe33b1acb1b46baa975071f",
+     "name": "execute",
+     "executed": false,
+     "state": {
+      "status": "completed",
+      "input": {
+       "code": "const content = `department,budget,actual,variance\nSales,120000,122500,2500\nMarketing,80000,92500,12500\nOperations,95000,91500,-3500\nWarehouse,140000,144700,4700\nCustomer Support,60000,60000,0\nG&A,70000,66500,-3500\n`;\nawait tools[\"owb-world\"].drive_write({path:\"/finance/q4-2025-variance.csv\",content});\nreturn await tools[\"owb-world\"].drive_read({path:\"/finance/q4-2025-variance.csv\"});"
+      },
+      "content": [
+       {
+        "type": "text",
+        "text": "department,budget,actual,variance\nSales,120000,122500,2500\nMarketing,80000,92500,12500\nOperations,95000,91500,-3500\nWarehouse,140000,144700,4700\nCustomer Support,60000,60000,0\nG&A,70000,66500,-3500\n"
+       }
+      ],
+      "metadata": {
+       "toolCalls": [
+        {
+         "tool": "owb-world.drive_write",
+         "status": "completed",
+         "input": {
+          "path": "/finance/q4-2025-variance.csv",
+          "content": "department,budget,actual,variance\nSales,120000,122500,2500\nMarketing,80000,92500,12500\nOperations,95000,91500,-3500\nWarehouse,140000,144700,4700\nCustomer Support,60000,60000,0\nG&A,70000,66500,-3500\n"
+         }
+        },
+        {
+         "tool": "owb-world.drive_read",
+         "status": "completed",
+         "input": {
+          "path": "/finance/q4-2025-variance.csv"
+         }
+        }
+       ],
+       "openworkToolDetails": [
+        {
+         "invocationId": "call_5fe33b1acb1b46baa975071f:0",
+         "ordinal": 0,
+         "tool": "owb-world_drive_write",
+         "status": "completed",
+         "startedAt": 1795226260590,
+         "input": {
+          "path": "/finance/q4-2025-variance.csv",
+          "content": "department,budget,actual,variance\nSales,120000,122500,2500\nMarketing,80000,92500,12500\nOperations,95000,91500,-3500\nWarehouse,140000,144700,4700\nCustomer Support,60000,60000,0\nG&A,70000,66500,-3500\n"
+         },
+         "endedAt": 1795226260597,
+         "output": {
+          "written": true,
+          "path": "/finance/q4-2025-variance.csv",
+          "bytes": 198
+         }
+        },
+        {
+         "invocationId": "call_5fe33b1acb1b46baa975071f:1",
+         "ordinal": 1,
+         "tool": "owb-world_drive_read",
+         "status": "completed",
+         "startedAt": 1795226260597,
+         "input": {
+          "path": "/finance/q4-2025-variance.csv"
+         },
+         "endedAt": 1795226260604,
+         "output": "department,budget,actual,variance\nSales,120000,122500,2500\nMarketing,80000,92500,12500\nOperations,95000,91500,-3500\nWarehouse,140000,144700,4700\nCustomer Support,60000,60000,0\nG&A,70000,66500,-3500\n"
+        }
+       ],
+       "truncated": false
+      }
+     },
+     "time": {
+      "created": 1795226260197,
+      "ran": 1795226260582,
+      "completed": 1795226260605
+     }
+    }
+   ],
+   "finish": "tool-calls",
+   "rawFinish": "tool_calls",
+   "cost": 0.0134136,
+   "tokens": {
+    "input": 463,
+    "output": 170,
+    "reasoning": 219,
+    "cache": {
+     "read": 25600,
+     "write": 0
+    }
+   }
+  },
+  {
+   "id": "msg_1fbd2d48c001lEV2MxGMoMg3Yy",
+   "time": {
+    "created": 1795226260632,
+    "streamed": 1795226262644,
+    "completed": 1795226262663
+   },
+   "type": "assistant",
+   "agent": "build",
+   "model": {
+    "id": "moonshotai/kimi-k3.1-pro",
+    "providerID": "openrouter",
+    "variant": "default"
+   },
+   "content": [
+    {
+     "type": "reasoning",
+     "text": "Should submit response includes department overspent most and by how much. Call submit via execute. Could respond after submit perhaps tool ends? I'll call.",
+     "native": {
+      "reasoningField": "reasoning",
+      "reasoningDetails": [
+       {
+        "type": "reasoning.text",
+        "text": "Should submit response includes department overspent most and by how much. Call submit via execute. Could respond after submit perhaps tool ends? I'll call.",
+        "format": "unknown",
+        "index": 0
+       }
+      ]
+     },
+     "time": {
+      "created": 1795226261407,
+      "completed": 1795226262638
+     }
+    },
+    {
+     "type": "tool",
+     "id": "call_6fc7b96d654449569625dee4",
+     "name": "execute",
+     "executed": false,
+     "state": {
+      "status": "completed",
+      "input": {
+       "code": "return await tools[\"owb-world\"].submit({answer:\"Created /finance/q4-2025-variance.csv. Marketing overspent the most: actual spending was $92,500 against an $80,000 budget, an overage of $12,500.\"});"
+      },
+      "content": [
+       {
+        "type": "text",
+        "text": "{\n  \"submitted\": true\n}"
+       }
+      ],
+      "metadata": {
+       "toolCalls": [
+        {
+         "tool": "owb-world.submit",
+         "status": "completed",
+         "input": {
+          "answer": "Created /finance/q4-2025-variance.csv. Marketing overspent the most: actual spending was $92,500 against an $80,000 budget, an overage of $12,500."
+         }
+        }
+       ],
+       "openworkToolDetails": [
+        {
+         "invocationId": "call_6fc7b96d654449569625dee4:0",
+         "ordinal": 0,
+         "tool": "owb-world_submit",
+         "status": "completed",
+         "startedAt": 1795226262650,
+         "input": {
+          "answer": "Created /finance/q4-2025-variance.csv. Marketing overspent the most: actual spending was $92,500 against an $80,000 budget, an overage of $12,500."
+         },
+         "endedAt": 1795226262658,
+         "output": {
+          "submitted": true
+         }
+        }
+       ],
+       "truncated": false
+      }
+     },
+     "time": {
+      "created": 1795226261927,
+      "ran": 1795226262642,
+      "completed": 1795226262659
+     }
+    }
+   ],
+   "finish": "tool-calls",
+   "rawFinish": "tool_calls",
+   "cost": 0.00997434,
+   "tokens": {
+    "input": 448,
+    "output": 95,
+    "reasoning": 32,
+    "cache": {
+     "read": 26112,
+     "write": 0
+    }
+   }
+  },
+  {
+   "id": "msg_1fbd2dc950011rM3CvDDi337FF",
+   "time": {
+    "created": 1795226262689,
+    "streamed": 1795226264361,
+    "completed": 1795226264364
+   },
+   "type": "assistant",
+   "agent": "build",
+   "model": {
+    "id": "moonshotai/kimi-k3.1-pro",
+    "providerID": "openrouter",
+    "variant": "default"
+   },
+   "content": [
+    {
+     "type": "reasoning",
+     "text": "Now Kimi should respond concise same language user English. Could just state submitted. Since submit already response requested. Response perhaps \"Created... Marketing...\". No further tool.",
+     "native": {
+      "reasoningField": "reasoning",
+      "reasoningDetails": [
+       {
+        "type": "reasoning.text",
+        "text": "Now Kimi should respond concise same language user English. Could just state submitted. Since submit already response requested. Response perhaps \"Created... Marketing...\". No further tool.",
+        "format": "unknown",
+        "index": 0
+       }
+      ]
+     },
+     "time": {
+      "created": 1795226263835,
+      "completed": 1795226264357
+     }
+    },
+    {
+     "type": "text",
+     "text": "Created `/finance/q4-2025-variance.csv`.\n\n**Marketing** overspent the most: **$12,500** over budget ($92,500 actual vs. $80,000 budget)."
+    }
+   ],
+   "finish": "stop",
+   "rawFinish": "stop",
+   "cost": 0.00865998,
+   "tokens": {
+    "input": 105,
+    "output": 51,
+    "reasoning": 37,
+    "cache": {
+     "read": 26624,
+     "write": 0
+    }
+   }
+  },
+  {
+   "id": "msg_1fbd2e32f001IExeBTXc8FeJK5",
+   "time": {
+    "created": 1795226264367
+   },
+   "type": "idle",
+   "outcome": "succeeded"
+  }
+ ],
+ "actions": [
+  {
+   "step": 1,
+   "tool": "drive_list",
+   "args": {
+    "folder": "/finance"
+   },
+   "ok": true
+  },
+  {
+   "step": 2,
+   "tool": "drive_read",
+   "args": {
+    "path": "/finance/q4-2025-actuals-by-month.csv"
+   },
+   "ok": true
+  },
+  {
+   "step": 3,
+   "tool": "drive_read",
+   "args": {
+    "path": "/finance/q4-2025-budget.csv"
+   },
+   "ok": true
+  },
+  {
+   "step": 4,
+   "tool": "drive_write",
+   "args": {
+    "path": "/finance/q4-2025-variance.csv",
+    "content": "department,budget,actual,variance\nSales,120000,122500,2500\nMarketing,80000,92500,12500\nOperations,95000,91500,-3500\nWarehouse,140000,144700,4700\nCustomer Support,60000,60000,0\nG&A,70000,66500,-3500\n"
+   },
+   "ok": true
+  },
+  {
+   "step": 5,
+   "tool": "drive_read",
+   "args": {
+    "path": "/finance/q4-2025-variance.csv"
+   },
+   "ok": true
+  },
+  {
+   "step": 6,
+   "tool": "submit",
+   "args": {
+    "answer": "Created /finance/q4-2025-variance.csv. Marketing overspent the most: actual spending was $92,500 against an $80,000 budget, an overage of $12,500."
+   },
+   "ok": true
+  }
+ ],
+ "answer": "Created /finance/q4-2025-variance.csv. Marketing overspent the most: actual spending was $92,500 against an $80,000 budget, an overage of $12,500.",
+ "final_state": {
+  "now": "2026-03-09T09:00:00",
+  "timezone": "America/New_York",
+  "company": {
+   "name": "Larkspur Supply Co.",
+   "domain": "larkspur.example"
+  },
+  "user": {
+   "name": "Sam Rivera",
+   "email": "sam.rivera@larkspur.example",
+   "title": "Operations Manager"
+  },
+  "contacts": [
+   {
+    "name": "Priya Natarajan",
+    "email": "priya.natarajan@larkspur.example",
+    "title": "CEO"
+   },
+   {
+    "name": "Marcus Chen",
+    "email": "marcus.chen@larkspur.example",
+    "title": "CFO"
+   },
+   {
+    "name": "Elena Petrova",
+    "email": "elena.petrova@larkspur.example",
+    "title": "Head of Sales"
+   },
+   {
+    "name": "Jordan Blake",
+    "email": "jordan.blake@larkspur.example",
+    "title": "Finance Analyst"
+   },
+   {
+    "name": "Aisha Okafor",
+    "email": "aisha.okafor@larkspur.example",
+    "title": "HR Manager"
+   },
+   {
+    "name": "Tom Alvarez",
+    "email": "tom.alvarez@larkspur.example",
+    "title": "Warehouse Lead"
+   },
+   {
+    "name": "Finance team",
+    "email": "finance@larkspur.example",
+    "title": "Shared inbox"
+   }
+  ],
+  "mail": {
+   "messages": []
+  },
+  "calendar": {
+   "events": []
+  },
+  "drive": {
+   "files": {
+    "/finance/q4-2025-actuals-by-month.csv": {
+     "content": "department,month,actual\nSales,2025-10,41000\nSales,2025-11,39500\nSales,2025-12,42000\nMarketing,2025-10,30000\nMarketing,2025-11,31500\nMarketing,2025-12,31000\nOperations,2025-10,30500\nOperations,2025-11,31000\nOperations,2025-12,30000\nWarehouse,2025-10,47000\nWarehouse,2025-11,48500\nWarehouse,2025-12,49200\nCustomer Support,2025-10,19500\nCustomer Support,2025-11,20000\nCustomer Support,2025-12,20500\nG&A,2025-10,22000\nG&A,2025-11,23000\nG&A,2025-12,21500\n",
+     "seeded": true
+    },
+    "/finance/q4-2025-budget.csv": {
+     "content": "department,q4_budget\nSales,120000\nMarketing,80000\nOperations,95000\nWarehouse,140000\nCustomer Support,60000\nG&A,70000\n",
+     "seeded": true
+    },
+    "/finance/q4-2025-variance.csv": {
+     "content": "department,budget,actual,variance\nSales,120000,122500,2500\nMarketing,80000,92500,12500\nOperations,95000,91500,-3500\nWarehouse,140000,144700,4700\nCustomer Support,60000,60000,0\nG&A,70000,66500,-3500\n",
+     "seeded": false
+    }
+   }
+  },
+  "crm": {
+   "records": [
+    {
+     "id": "A-150",
+     "type": "account",
+     "name": "Pinecrest School District",
+     "domain": "pinecrestsd.example",
+     "owner": "Elena Petrova",
+     "renewal_date": "2026-07-01",
+     "segment": "Education",
+     "seeded": true
+    },
+    {
+     "id": "A-205",
+     "type": "account",
+     "name": "Brightwater Hotels",
+     "domain": "brightwaterhotels.example",
+     "owner": "Elena Petrova",
+     "segment": "Hospitality",
+     "seeded": true
+    },
+    {
+     "id": "A-310",
+     "type": "account",
+     "name": "Fernwood Grocers",
+     "domain": "fernwoodgrocers.example",
+     "owner": "Elena Petrova",
+     "segment": "Retail",
+     "seeded": true
+    },
+    {
+     "id": "A-322",
+     "type": "account",
+     "name": "Halcyon Cafe",
+     "domain": "halcyoncafe.example",
+     "owner": "Elena Petrova",
+     "segment": "Hospitality",
+     "seeded": true
+    },
+    {
+     "id": "A-340",
+     "type": "account",
+     "name": "Oakline Markets",
+     "domain": "oaklinemarkets.example",
+     "owner": "Elena Petrova",
+     "segment": "Retail",
+     "seeded": true
+    },
+    {
+     "id": "A-355",
+     "type": "account",
+     "name": "Ridgeview Clinic",
+     "domain": "ridgeviewclinic.example",
+     "owner": "Elena Petrova",
+     "segment": "Healthcare",
+     "seeded": true
+    }
+   ],
+   "stages": [
+    "Prospecting",
+    "Proposal",
+    "Negotiation",
+    "Closed Won",
+    "Closed Lost"
+   ]
+  },
+  "chat": {
+   "channels": {
+    "general": [],
+    "sales": [],
+    "ops": []
+   }
+  }
+ }
+}

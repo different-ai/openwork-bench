@@ -57,6 +57,8 @@ export interface Leaderboard {
   subjects: Subject[];
   generated_at: string;
   owb_version: string;
+  sources?: { paths?: string[]; results_repo?: string; results_revision?: string };
+  note?: string;
 }
 
 let cached: Leaderboard | undefined;
@@ -78,7 +80,12 @@ export const embedJson = (value: unknown) => JSON.stringify(value).replace(/<\//
 
 export const SITE_NAME = 'OpenWork Bench';
 export const REPO = 'https://github.com/different-ai/openwork-bench';
-export const RESULTS = 'https://huggingface.co/datasets/different-ai/openwork-bench-results';
+const HF_RESULTS = 'https://huggingface.co/datasets/different-ai/openwork-bench-results';
+/** Where the runs behind the board live: a results folder in this repository, or the Hugging Face results dataset. */
+export function resultsUrl(): string {
+  const p = leaderboard().sources?.paths?.[0];
+  return p?.startsWith('results/') ? `${REPO}/tree/pre-release/${p}` : HF_RESULTS;
+}
 export const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 export const route = (p = '') => `${base}/${p}`;
 export const docs = (page?: string) => route(`docs/${page ? `${page}/` : ''}`);

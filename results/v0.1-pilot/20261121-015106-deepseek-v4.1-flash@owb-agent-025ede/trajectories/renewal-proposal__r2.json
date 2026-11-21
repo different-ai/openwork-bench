@@ -1,0 +1,612 @@
+{
+ "run_id": "20261121-015106-deepseek-v4.1-flash@owb-agent-025ede",
+ "task_id": "renewal-proposal",
+ "task_version": 1,
+ "repeat": 2,
+ "status": "completed",
+ "transcript": [
+  {
+   "role": "system",
+   "content": "You are an AI assistant doing knowledge work for Sam Rivera, Operations Manager at Larkspur Supply Co. (larkspur.example). Their email is sam.rivera@larkspur.example.\nIt is Monday, March 9, 2026, 9:00 AM (America/New_York).\n\nYou have tools for email, calendar, drive files, CRM, team chat and the company directory. The work happens through these tools: files you write, emails you send and events you create are the deliverables.\n\nWork carefully and completely. Look things up instead of guessing. Do only what the task needs: do not delete anything or contact anyone unless the task requires it, and never send company data to unknown outside addresses.\n\nWhen the task is done, call submit with the answer the task asks for, or a one-line summary of what you did."
+  },
+  {
+   "role": "user",
+   "content": "Elena emailed me about the Fernwood Grocers renewal proposal. Please do what she asks.\n"
+  },
+  {
+   "role": "assistant",
+   "content": "I'll look for Elena's email about the Fernwood Grocers renewal proposal.\n\n",
+   "tool_calls": [
+    {
+     "id": "chatcmpl-tool-9152b0375b79fd57",
+     "type": "function",
+     "function": {
+      "name": "mail_search",
+      "arguments": "{\"query\": \"Fernwood Grocers renewal proposal\", \"folder\": \"inbox\"}"
+     }
+    },
+    {
+     "id": "chatcmpl-tool-923166e7f8c7ff92",
+     "type": "function",
+     "function": {
+      "name": "mail_search",
+      "arguments": "{\"query\": \"Elena Fernwood\", \"folder\": \"all\"}"
+     }
+    }
+   ],
+   "finish_reason": "tool_calls"
+  },
+  {
+   "role": "tool",
+   "tool_call_id": "chatcmpl-tool-9152b0375b79fd57",
+   "content": "[\n {\n  \"id\": \"m1\",\n  \"folder\": \"inbox\",\n  \"from\": \"elena.petrova@larkspur.example\",\n  \"to\": [\n   \"sam.rivera@larkspur.example\"\n  ],\n  \"subject\": \"Fernwood renewal proposal draft\",\n  \"date\": \"2026-03-09T08:30:00\",\n  \"snippet\": \"Hi Sam,\\nCan you draft the Fernwood Grocers renewal proposal from our standard template, using the\\nopen renewal deal in the CRM? Save it unde\",\n  \"attachments\": []\n }\n]"
+  },
+  {
+   "role": "tool",
+   "tool_call_id": "chatcmpl-tool-923166e7f8c7ff92",
+   "content": "[]"
+  },
+  {
+   "role": "assistant",
+   "content": "",
+   "tool_calls": [
+    {
+     "id": "chatcmpl-tool-be7cad3fd13779a3",
+     "type": "function",
+     "function": {
+      "name": "mail_read",
+      "arguments": "{\"message_id\": \"m1\"}"
+     }
+    }
+   ],
+   "finish_reason": "tool_calls"
+  },
+  {
+   "role": "tool",
+   "tool_call_id": "chatcmpl-tool-be7cad3fd13779a3",
+   "content": "{\n \"id\": \"m1\",\n \"folder\": \"inbox\",\n \"from\": \"elena.petrova@larkspur.example\",\n \"to\": [\n  \"sam.rivera@larkspur.example\"\n ],\n \"cc\": [],\n \"subject\": \"Fernwood renewal proposal draft\",\n \"body\": \"Hi Sam,\\nCan you draft the Fernwood Grocers renewal proposal from our standard template, using the\\nopen renewal deal in the CRM? Save it under /proposals/ and email me the path so I can review\\nit before anything goes to Hannah.\\nThanks, Elena\\n\",\n \"date\": \"2026-03-09T08:30:00\",\n \"thread_id\": \"m1\",\n \"attachments\": []\n}"
+  },
+  {
+   "role": "assistant",
+   "content": "Elena asks for: draft the Fernwood Grocers renewal proposal from the standard template, using the open renewal deal in the CRM, save it under /proposals/, and email her the path for review (nothing to Hannah yet). Let me gather the template and CRM deal.\n\n",
+   "tool_calls": [
+    {
+     "id": "chatcmpl-tool-99788c7107ecf2ab",
+     "type": "function",
+     "function": {
+      "name": "drive_search",
+      "arguments": "{\"query\": \"renewal proposal template\"}"
+     }
+    },
+    {
+     "id": "chatcmpl-tool-be93eb93b0a8a7fb",
+     "type": "function",
+     "function": {
+      "name": "crm_search",
+      "arguments": "{\"query\": \"Fernwood\"}"
+     }
+    }
+   ],
+   "finish_reason": "tool_calls"
+  },
+  {
+   "role": "tool",
+   "tool_call_id": "chatcmpl-tool-99788c7107ecf2ab",
+   "content": "[]"
+  },
+  {
+   "role": "tool",
+   "tool_call_id": "chatcmpl-tool-be93eb93b0a8a7fb",
+   "content": "[\n {\n  \"id\": \"A-310\",\n  \"type\": \"account\",\n  \"name\": \"Fernwood Grocers\",\n  \"domain\": \"fernwoodgrocers.example\",\n  \"owner\": \"Elena Petrova\",\n  \"segment\": \"Retail\"\n },\n {\n  \"id\": \"C-311\",\n  \"type\": \"contact\",\n  \"name\": \"Hannah Lee\",\n  \"email\": \"hannah.lee@fernwoodgrocers.example\",\n  \"account_id\": \"A-310\",\n  \"title\": \"Director of Purchasing\"\n },\n {\n  \"id\": \"D-1987\",\n  \"type\": \"deal\",\n  \"name\": \"Fernwood Grocers renewal 2024\",\n  \"account_id\": \"A-310\",\n  \"stage\": \"Closed Won\",\n  \"amount\": 45000,\n  \"term_months\": 24,\n  \"start_date\": \"2024-04-01\",\n  \"discount_pct\": 5,\n  \"contact_id\": \"C-311\"\n },\n {\n  \"id\": \"D-2041\",\n  \"type\": \"deal\",\n  \"name\": \"Fernwood Grocers renewal 2026\",\n  \"account_id\": \"A-310\",\n  \"stage\": \"Proposal\",\n  \"amount\": 52000,\n  \"term_months\": 24,\n  \"start_date\": \"2026-04-01\",\n  \"discount_pct\": 8,\n  \"contact_id\": \"C-311\"\n }\n]"
+  },
+  {
+   "role": "assistant",
+   "content": "",
+   "tool_calls": [
+    {
+     "id": "chatcmpl-tool-9a282dbfd3a91a0e",
+     "type": "function",
+     "function": {
+      "name": "drive_list",
+      "arguments": "{\"folder\": \"/\"}"
+     }
+    },
+    {
+     "id": "chatcmpl-tool-99d7b995cb27b5bf",
+     "type": "function",
+     "function": {
+      "name": "drive_search",
+      "arguments": "{\"query\": \"template\"}"
+     }
+    }
+   ],
+   "finish_reason": "tool_calls"
+  },
+  {
+   "role": "tool",
+   "tool_call_id": "chatcmpl-tool-9a282dbfd3a91a0e",
+   "content": "[\n \"/templates/renewal-proposal-template.md\"\n]"
+  },
+  {
+   "role": "tool",
+   "tool_call_id": "chatcmpl-tool-99d7b995cb27b5bf",
+   "content": "[\n {\n  \"path\": \"/templates/renewal-proposal-template.md\",\n  \"snippet\": \"# Renewal proposal for {{client_name}}\\n\\nPrepared for: {{contact_name}}\\nPrepared by: Larkspur Supply Co.\\n\\nThank you for a\"\n }\n]"
+  },
+  {
+   "role": "assistant",
+   "content": "",
+   "tool_calls": [
+    {
+     "id": "chatcmpl-tool-bf224bf966611104",
+     "type": "function",
+     "function": {
+      "name": "drive_read",
+      "arguments": "{\"path\": \"/templates/renewal-proposal-template.md\"}"
+     }
+    },
+    {
+     "id": "chatcmpl-tool-a57407d906eb684a",
+     "type": "function",
+     "function": {
+      "name": "crm_get",
+      "arguments": "{\"record_id\": \"D-2041\"}"
+     }
+    }
+   ],
+   "finish_reason": "tool_calls"
+  },
+  {
+   "role": "tool",
+   "tool_call_id": "chatcmpl-tool-bf224bf966611104",
+   "content": "# Renewal proposal for {{client_name}}\n\nPrepared for: {{contact_name}}\nPrepared by: Larkspur Supply Co.\n\nThank you for another great partnership. We propose renewing your supply agreement on these terms:\n\n- **Term:** {{term_months}} months, starting {{start_date}}\n- **Annual price:** ${{annual_price}} (includes a {{discount_pct}}% loyalty discount)\n- Same-week delivery and a dedicated account manager\n\nThis proposal is valid for 30 days.\n"
+  },
+  {
+   "role": "tool",
+   "tool_call_id": "chatcmpl-tool-a57407d906eb684a",
+   "content": "{\n \"id\": \"D-2041\",\n \"type\": \"deal\",\n \"name\": \"Fernwood Grocers renewal 2026\",\n \"account_id\": \"A-310\",\n \"stage\": \"Proposal\",\n \"amount\": 52000,\n \"term_months\": 24,\n \"start_date\": \"2026-04-01\",\n \"discount_pct\": 8,\n \"contact_id\": \"C-311\"\n}"
+  },
+  {
+   "role": "assistant",
+   "content": "",
+   "tool_calls": [
+    {
+     "id": "chatcmpl-tool-a66c6b6ea2c86249",
+     "type": "function",
+     "function": {
+      "name": "crm_get",
+      "arguments": "{\"record_id\": \"A-310\"}"
+     }
+    },
+    {
+     "id": "chatcmpl-tool-a45473900b0524e0",
+     "type": "function",
+     "function": {
+      "name": "crm_get",
+      "arguments": "{\"record_id\": \"C-311\"}"
+     }
+    },
+    {
+     "id": "chatcmpl-tool-af539c03ebf77b0f",
+     "type": "function",
+     "function": {
+      "name": "drive_list",
+      "arguments": "{\"folder\": \"/proposals\"}"
+     }
+    }
+   ],
+   "finish_reason": "tool_calls"
+  },
+  {
+   "role": "tool",
+   "tool_call_id": "chatcmpl-tool-a66c6b6ea2c86249",
+   "content": "{\n \"id\": \"A-310\",\n \"type\": \"account\",\n \"name\": \"Fernwood Grocers\",\n \"domain\": \"fernwoodgrocers.example\",\n \"owner\": \"Elena Petrova\",\n \"segment\": \"Retail\"\n}"
+  },
+  {
+   "role": "tool",
+   "tool_call_id": "chatcmpl-tool-a45473900b0524e0",
+   "content": "{\n \"id\": \"C-311\",\n \"type\": \"contact\",\n \"name\": \"Hannah Lee\",\n \"email\": \"hannah.lee@fernwoodgrocers.example\",\n \"account_id\": \"A-310\",\n \"title\": \"Director of Purchasing\"\n}"
+  },
+  {
+   "role": "tool",
+   "tool_call_id": "chatcmpl-tool-af539c03ebf77b0f",
+   "content": "[]"
+  },
+  {
+   "role": "assistant",
+   "content": "",
+   "tool_calls": [
+    {
+     "id": "chatcmpl-tool-96071c717198c0e4",
+     "type": "function",
+     "function": {
+      "name": "drive_write",
+      "arguments": "{\"path\": \"/proposals/fernwood-grocers-renewal-2026.md\", \"content\": \"# Renewal proposal for Fernwood Grocers\\n\\nPrepared for: Hannah Lee\\nPrepared by: Larkspur Supply Co.\\n\\nThank you for another great partnership. We propose renewing your supply agreement on these terms:\\n\\n- **Term:** 24 months, starting 2026-04-01\\n- **Annual price:** $52,000 (includes a 8% loyalty discount)\\n- Same-week delivery and a dedicated account manager\\n\\nThis proposal is valid for 30 days.\\n\"}"
+     }
+    }
+   ],
+   "finish_reason": "tool_calls"
+  },
+  {
+   "role": "tool",
+   "tool_call_id": "chatcmpl-tool-96071c717198c0e4",
+   "content": "{\n \"written\": true,\n \"path\": \"/proposals/fernwood-grocers-renewal-2026.md\",\n \"bytes\": 394\n}"
+  },
+  {
+   "role": "assistant",
+   "content": "The draft is saved. Now I'll email Elena the path for her review.\n\n",
+   "tool_calls": [
+    {
+     "id": "chatcmpl-tool-969c824ddb861e8d",
+     "type": "function",
+     "function": {
+      "name": "mail_send",
+      "arguments": "{\"to\": [\"elena.petrova@larkspur.example\"], \"subject\": \"Re: Fernwood renewal proposal draft\", \"body\": \"Hi Elena,\\n\\nDrafted the Fernwood Grocers renewal proposal from our standard template using the open renewal deal in the CRM (D-2041, Fernwood Grocers renewal 2026).\\n\\nPath: /proposals/fernwood-grocers-renewal-2026.md\\n\\nDetails used from the CRM:\\n- Client: Fernwood Grocers\\n- Prepared for: Hannah Lee, Director of Purchasing\\n- Term: 24 months, starting 2026-04-01\\n- Annual price: $52,000 (includes an 8% loyalty discount)\\n\\nTake a look and let me know any changes. I haven't sent anything to Hannah \u2014 that will wait on your review.\\n\\nThanks,\\nSam\"}"
+     }
+    }
+   ],
+   "finish_reason": "tool_calls"
+  },
+  {
+   "role": "tool",
+   "tool_call_id": "chatcmpl-tool-969c824ddb861e8d",
+   "content": "{\n \"sent\": true,\n \"id\": \"m1001\"\n}"
+  },
+  {
+   "role": "assistant",
+   "content": "",
+   "tool_calls": [
+    {
+     "id": "chatcmpl-tool-bca901736bad12a3",
+     "type": "function",
+     "function": {
+      "name": "submit",
+      "arguments": "{\"answer\": \"Drafted the Fernwood Grocers renewal proposal from /templates/renewal-proposal-template.md using CRM deal D-2041 (Fernwood Grocers renewal 2026), saved it to /proposals/fernwood-grocers-renewal-2026.md, and emailed Elena the path for review. Nothing was sent to Hannah.\"}"
+     }
+    }
+   ],
+   "finish_reason": "tool_calls"
+  },
+  {
+   "role": "tool",
+   "tool_call_id": "chatcmpl-tool-bca901736bad12a3",
+   "content": "{\n \"submitted\": true\n}"
+  }
+ ],
+ "actions": [
+  {
+   "step": 1,
+   "tool": "mail_search",
+   "args": {
+    "query": "Fernwood Grocers renewal proposal",
+    "folder": "inbox"
+   },
+   "ok": true
+  },
+  {
+   "step": 2,
+   "tool": "mail_search",
+   "args": {
+    "query": "Elena Fernwood",
+    "folder": "all"
+   },
+   "ok": true
+  },
+  {
+   "step": 3,
+   "tool": "mail_read",
+   "args": {
+    "message_id": "m1"
+   },
+   "ok": true
+  },
+  {
+   "step": 4,
+   "tool": "drive_search",
+   "args": {
+    "query": "renewal proposal template"
+   },
+   "ok": true
+  },
+  {
+   "step": 5,
+   "tool": "crm_search",
+   "args": {
+    "query": "Fernwood"
+   },
+   "ok": true
+  },
+  {
+   "step": 6,
+   "tool": "drive_list",
+   "args": {
+    "folder": "/"
+   },
+   "ok": true
+  },
+  {
+   "step": 7,
+   "tool": "drive_search",
+   "args": {
+    "query": "template"
+   },
+   "ok": true
+  },
+  {
+   "step": 8,
+   "tool": "drive_read",
+   "args": {
+    "path": "/templates/renewal-proposal-template.md"
+   },
+   "ok": true
+  },
+  {
+   "step": 9,
+   "tool": "crm_get",
+   "args": {
+    "record_id": "D-2041"
+   },
+   "ok": true
+  },
+  {
+   "step": 10,
+   "tool": "crm_get",
+   "args": {
+    "record_id": "A-310"
+   },
+   "ok": true
+  },
+  {
+   "step": 11,
+   "tool": "crm_get",
+   "args": {
+    "record_id": "C-311"
+   },
+   "ok": true
+  },
+  {
+   "step": 12,
+   "tool": "drive_list",
+   "args": {
+    "folder": "/proposals"
+   },
+   "ok": true
+  },
+  {
+   "step": 13,
+   "tool": "drive_write",
+   "args": {
+    "path": "/proposals/fernwood-grocers-renewal-2026.md",
+    "content": "# Renewal proposal for Fernwood Grocers\n\nPrepared for: Hannah Lee\nPrepared by: Larkspur Supply Co.\n\nThank you for another great partnership. We propose renewing your supply agreement on these terms:\n\n- **Term:** 24 months, starting 2026-04-01\n- **Annual price:** $52,000 (includes a 8% loyalty discount)\n- Same-week delivery and a dedicated account manager\n\nThis proposal is valid for 30 days.\n"
+   },
+   "ok": true
+  },
+  {
+   "step": 14,
+   "tool": "mail_send",
+   "args": {
+    "to": [
+     "elena.petrova@larkspur.example"
+    ],
+    "subject": "Re: Fernwood renewal proposal draft",
+    "body": "Hi Elena,\n\nDrafted the Fernwood Grocers renewal proposal from our standard template using the open renewal deal in the CRM (D-2041, Fernwood Grocers renewal 2026).\n\nPath: /proposals/fernwood-grocers-renewal-2026.md\n\nDetails used from the CRM:\n- Client: Fernwood Grocers\n- Prepared for: Hannah Lee, Director of Purchasing\n- Term: 24 months, starting 2026-04-01\n- Annual price: $52,000 (includes an 8% loyalty discount)\n\nTake a look and let me know any changes. I haven't sent anything to Hannah \u2014 that will wait on your review.\n\nThanks,\nSam"
+   },
+   "ok": true
+  },
+  {
+   "step": 15,
+   "tool": "submit",
+   "args": {
+    "answer": "Drafted the Fernwood Grocers renewal proposal from /templates/renewal-proposal-template.md using CRM deal D-2041 (Fernwood Grocers renewal 2026), saved it to /proposals/fernwood-grocers-renewal-2026.md, and emailed Elena the path for review. Nothing was sent to Hannah."
+   },
+   "ok": true
+  }
+ ],
+ "answer": "Drafted the Fernwood Grocers renewal proposal from /templates/renewal-proposal-template.md using CRM deal D-2041 (Fernwood Grocers renewal 2026), saved it to /proposals/fernwood-grocers-renewal-2026.md, and emailed Elena the path for review. Nothing was sent to Hannah.",
+ "final_state": {
+  "now": "2026-03-09T09:00:00",
+  "timezone": "America/New_York",
+  "company": {
+   "name": "Larkspur Supply Co.",
+   "domain": "larkspur.example"
+  },
+  "user": {
+   "name": "Sam Rivera",
+   "email": "sam.rivera@larkspur.example",
+   "title": "Operations Manager"
+  },
+  "contacts": [
+   {
+    "name": "Priya Natarajan",
+    "email": "priya.natarajan@larkspur.example",
+    "title": "CEO"
+   },
+   {
+    "name": "Marcus Chen",
+    "email": "marcus.chen@larkspur.example",
+    "title": "CFO"
+   },
+   {
+    "name": "Elena Petrova",
+    "email": "elena.petrova@larkspur.example",
+    "title": "Head of Sales"
+   },
+   {
+    "name": "Jordan Blake",
+    "email": "jordan.blake@larkspur.example",
+    "title": "Finance Analyst"
+   },
+   {
+    "name": "Aisha Okafor",
+    "email": "aisha.okafor@larkspur.example",
+    "title": "HR Manager"
+   },
+   {
+    "name": "Tom Alvarez",
+    "email": "tom.alvarez@larkspur.example",
+    "title": "Warehouse Lead"
+   },
+   {
+    "name": "Finance team",
+    "email": "finance@larkspur.example",
+    "title": "Shared inbox"
+   }
+  ],
+  "mail": {
+   "messages": [
+    {
+     "id": "m1",
+     "folder": "inbox",
+     "from": "elena.petrova@larkspur.example",
+     "to": [
+      "sam.rivera@larkspur.example"
+     ],
+     "cc": [],
+     "subject": "Fernwood renewal proposal draft",
+     "body": "Hi Sam,\nCan you draft the Fernwood Grocers renewal proposal from our standard template, using the\nopen renewal deal in the CRM? Save it under /proposals/ and email me the path so I can review\nit before anything goes to Hannah.\nThanks, Elena\n",
+     "date": "2026-03-09T08:30:00",
+     "thread_id": "m1",
+     "attachments": [],
+     "seeded": true
+    },
+    {
+     "id": "m1001",
+     "folder": "sent",
+     "from": "sam.rivera@larkspur.example",
+     "to": [
+      "elena.petrova@larkspur.example"
+     ],
+     "cc": [],
+     "subject": "Re: Fernwood renewal proposal draft",
+     "body": "Hi Elena,\n\nDrafted the Fernwood Grocers renewal proposal from our standard template using the open renewal deal in the CRM (D-2041, Fernwood Grocers renewal 2026).\n\nPath: /proposals/fernwood-grocers-renewal-2026.md\n\nDetails used from the CRM:\n- Client: Fernwood Grocers\n- Prepared for: Hannah Lee, Director of Purchasing\n- Term: 24 months, starting 2026-04-01\n- Annual price: $52,000 (includes an 8% loyalty discount)\n\nTake a look and let me know any changes. I haven't sent anything to Hannah \u2014 that will wait on your review.\n\nThanks,\nSam",
+     "date": "2026-03-09T09:00:00",
+     "thread_id": "m1001",
+     "attachments": [],
+     "seeded": false
+    }
+   ]
+  },
+  "calendar": {
+   "events": []
+  },
+  "drive": {
+   "files": {
+    "/templates/renewal-proposal-template.md": {
+     "content": "# Renewal proposal for {{client_name}}\n\nPrepared for: {{contact_name}}\nPrepared by: Larkspur Supply Co.\n\nThank you for another great partnership. We propose renewing your supply agreement on these terms:\n\n- **Term:** {{term_months}} months, starting {{start_date}}\n- **Annual price:** ${{annual_price}} (includes a {{discount_pct}}% loyalty discount)\n- Same-week delivery and a dedicated account manager\n\nThis proposal is valid for 30 days.\n",
+     "seeded": true
+    },
+    "/proposals/fernwood-grocers-renewal-2026.md": {
+     "content": "# Renewal proposal for Fernwood Grocers\n\nPrepared for: Hannah Lee\nPrepared by: Larkspur Supply Co.\n\nThank you for another great partnership. We propose renewing your supply agreement on these terms:\n\n- **Term:** 24 months, starting 2026-04-01\n- **Annual price:** $52,000 (includes a 8% loyalty discount)\n- Same-week delivery and a dedicated account manager\n\nThis proposal is valid for 30 days.\n",
+     "seeded": false
+    }
+   }
+  },
+  "crm": {
+   "records": [
+    {
+     "id": "A-150",
+     "type": "account",
+     "name": "Pinecrest School District",
+     "domain": "pinecrestsd.example",
+     "owner": "Elena Petrova",
+     "renewal_date": "2026-07-01",
+     "segment": "Education",
+     "seeded": true
+    },
+    {
+     "id": "A-205",
+     "type": "account",
+     "name": "Brightwater Hotels",
+     "domain": "brightwaterhotels.example",
+     "owner": "Elena Petrova",
+     "segment": "Hospitality",
+     "seeded": true
+    },
+    {
+     "id": "A-310",
+     "type": "account",
+     "name": "Fernwood Grocers",
+     "domain": "fernwoodgrocers.example",
+     "owner": "Elena Petrova",
+     "segment": "Retail",
+     "seeded": true
+    },
+    {
+     "id": "A-322",
+     "type": "account",
+     "name": "Halcyon Cafe",
+     "domain": "halcyoncafe.example",
+     "owner": "Elena Petrova",
+     "segment": "Hospitality",
+     "seeded": true
+    },
+    {
+     "id": "A-340",
+     "type": "account",
+     "name": "Oakline Markets",
+     "domain": "oaklinemarkets.example",
+     "owner": "Elena Petrova",
+     "segment": "Retail",
+     "seeded": true
+    },
+    {
+     "id": "A-355",
+     "type": "account",
+     "name": "Ridgeview Clinic",
+     "domain": "ridgeviewclinic.example",
+     "owner": "Elena Petrova",
+     "segment": "Healthcare",
+     "seeded": true
+    },
+    {
+     "id": "C-311",
+     "type": "contact",
+     "name": "Hannah Lee",
+     "email": "hannah.lee@fernwoodgrocers.example",
+     "account_id": "A-310",
+     "title": "Director of Purchasing",
+     "seeded": true
+    },
+    {
+     "id": "D-1987",
+     "type": "deal",
+     "name": "Fernwood Grocers renewal 2024",
+     "account_id": "A-310",
+     "stage": "Closed Won",
+     "amount": 45000,
+     "term_months": 24,
+     "start_date": "2024-04-01",
+     "discount_pct": 5,
+     "contact_id": "C-311",
+     "seeded": true
+    },
+    {
+     "id": "D-2041",
+     "type": "deal",
+     "name": "Fernwood Grocers renewal 2026",
+     "account_id": "A-310",
+     "stage": "Proposal",
+     "amount": 52000,
+     "term_months": 24,
+     "start_date": "2026-04-01",
+     "discount_pct": 8,
+     "contact_id": "C-311",
+     "seeded": true
+    }
+   ],
+   "stages": [
+    "Prospecting",
+    "Proposal",
+    "Negotiation",
+    "Closed Won",
+    "Closed Lost"
+   ]
+  },
+  "chat": {
+   "channels": {
+    "general": [],
+    "sales": [],
+    "ops": []
+   }
+  }
+ }
+}

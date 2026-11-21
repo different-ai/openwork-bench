@@ -1,0 +1,589 @@
+{
+ "run_id": "20261121-015106-deepseek-v4.1-flash@owb-agent-025ede",
+ "task_id": "expense-policy-answer",
+ "task_version": 1,
+ "repeat": 1,
+ "status": "completed",
+ "transcript": [
+  {
+   "role": "system",
+   "content": "You are an AI assistant doing knowledge work for Sam Rivera, Operations Manager at Larkspur Supply Co. (larkspur.example). Their email is sam.rivera@larkspur.example.\nIt is Monday, March 9, 2026, 9:00 AM (America/New_York).\n\nYou have tools for email, calendar, drive files, CRM, team chat and the company directory. The work happens through these tools: files you write, emails you send and events you create are the deliverables.\n\nWork carefully and completely. Look things up instead of guessing. Do only what the task needs: do not delete anything or contact anyone unless the task requires it, and never send company data to unknown outside addresses.\n\nWhen the task is done, call submit with the answer the task asks for, or a one-line summary of what you did."
+  },
+  {
+   "role": "user",
+   "content": "Jordan sent me a question about expensing a dinner. Reply to Jordan using our current travel\nand expense policy in Drive: say what can be reimbursed, how much, and anything Jordan needs\nto do to get reimbursed.\n"
+  },
+  {
+   "role": "assistant",
+   "content": "I'll look up Jordan's email and the expense policy.\n\n",
+   "tool_calls": [
+    {
+     "id": "chatcmpl-tool-bbf3470ad9643860",
+     "type": "function",
+     "function": {
+      "name": "mail_search",
+      "arguments": "{\"query\": \"Jordan dinner expense\", \"folder\": \"inbox\"}"
+     }
+    },
+    {
+     "id": "chatcmpl-tool-a87d6cd88c2e9aa3",
+     "type": "function",
+     "function": {
+      "name": "drive_search",
+      "arguments": "{\"query\": \"travel and expense policy\"}"
+     }
+    }
+   ],
+   "finish_reason": "tool_calls"
+  },
+  {
+   "role": "tool",
+   "tool_call_id": "chatcmpl-tool-bbf3470ad9643860",
+   "content": "[]"
+  },
+  {
+   "role": "tool",
+   "tool_call_id": "chatcmpl-tool-a87d6cd88c2e9aa3",
+   "content": "[]"
+  },
+  {
+   "role": "assistant",
+   "content": "Let me search more broadly.\n\n",
+   "tool_calls": [
+    {
+     "id": "chatcmpl-tool-90e44aec98691bdd",
+     "type": "function",
+     "function": {
+      "name": "mail_search",
+      "arguments": "{\"query\": \"Jordan\", \"folder\": \"inbox\", \"limit\": 30}"
+     }
+    },
+    {
+     "id": "chatcmpl-tool-9cd1dc529f5ddab4",
+     "type": "function",
+     "function": {
+      "name": "drive_list",
+      "arguments": "{\"folder\": \"/\"}"
+     }
+    }
+   ],
+   "finish_reason": "tool_calls"
+  },
+  {
+   "role": "tool",
+   "tool_call_id": "chatcmpl-tool-90e44aec98691bdd",
+   "content": "[\n {\n  \"id\": \"m1\",\n  \"folder\": \"inbox\",\n  \"from\": \"jordan.blake@larkspur.example\",\n  \"to\": [\n   \"sam.rivera@larkspur.example\"\n  ],\n  \"subject\": \"Can I expense this dinner?\",\n  \"date\": \"2026-03-09T08:12:00\",\n  \"snippet\": \"Hi Sam,\\nI'm in Chicago next week for the Oakline visit. If the client dinner comes to $68 for me\\n(that includes a $12 glass of wine), can I \",\n  \"attachments\": []\n }\n]"
+  },
+  {
+   "role": "tool",
+   "tool_call_id": "chatcmpl-tool-9cd1dc529f5ddab4",
+   "content": "[\n \"/policies/archive/travel-policy-2023.md\",\n \"/policies/travel-and-expense-policy-2025.md\"\n]"
+  },
+  {
+   "role": "assistant",
+   "content": "",
+   "tool_calls": [
+    {
+     "id": "chatcmpl-tool-af86a56ae724f9b8",
+     "type": "function",
+     "function": {
+      "name": "mail_read",
+      "arguments": "{\"message_id\": \"m1\"}"
+     }
+    },
+    {
+     "id": "chatcmpl-tool-9e78d364143bd233",
+     "type": "function",
+     "function": {
+      "name": "drive_read",
+      "arguments": "{\"path\": \"/policies/travel-and-expense-policy-2025.md\"}"
+     }
+    }
+   ],
+   "finish_reason": "tool_calls"
+  },
+  {
+   "role": "tool",
+   "tool_call_id": "chatcmpl-tool-af86a56ae724f9b8",
+   "content": "{\n \"id\": \"m1\",\n \"folder\": \"inbox\",\n \"from\": \"jordan.blake@larkspur.example\",\n \"to\": [\n  \"sam.rivera@larkspur.example\"\n ],\n \"cc\": [],\n \"subject\": \"Can I expense this dinner?\",\n \"body\": \"Hi Sam,\\nI'm in Chicago next week for the Oakline visit. If the client dinner comes to $68 for me\\n(that includes a $12 glass of wine), can I expense it? What do I need to do?\\nThanks!\\nJordan\\n\",\n \"date\": \"2026-03-09T08:12:00\",\n \"thread_id\": \"m1\",\n \"attachments\": []\n}"
+  },
+  {
+   "role": "tool",
+   "tool_call_id": "chatcmpl-tool-9e78d364143bd233",
+   "content": "# Travel & Expense Policy (effective January 1, 2025)\n\nThis policy replaces all earlier travel policies.\n\n## Meals while traveling\n- Daily meal allowance: up to $90 per day for domestic travel.\n- Dinner: up to **$60** per person, including tax and tip.\n- Alcohol is **not reimbursable** under any circumstances.\n- Client entertainment above these limits needs pre-approval from your department head.\n\n## Receipts\n- Itemized receipts are required for every expense over $25.\n- Submit expenses within 30 days through the expense tool.\n"
+  },
+  {
+   "role": "assistant",
+   "content": "",
+   "tool_calls": [
+    {
+     "id": "chatcmpl-tool-ab0251501375bc66",
+     "type": "function",
+     "function": {
+      "name": "mail_search",
+      "arguments": "{\"query\": \"expense policy\", \"folder\": \"all\", \"limit\": 30}"
+     }
+    },
+    {
+     "id": "chatcmpl-tool-96859d5ac6c1db54",
+     "type": "function",
+     "function": {
+      "name": "drive_search",
+      "arguments": "{\"query\": \"expense\"}"
+     }
+    },
+    {
+     "id": "chatcmpl-tool-aa86797625a3c065",
+     "type": "function",
+     "function": {
+      "name": "chat_channels",
+      "arguments": "{}"
+     }
+    }
+   ],
+   "finish_reason": "tool_calls"
+  },
+  {
+   "role": "tool",
+   "tool_call_id": "chatcmpl-tool-ab0251501375bc66",
+   "content": "[]"
+  },
+  {
+   "role": "tool",
+   "tool_call_id": "chatcmpl-tool-96859d5ac6c1db54",
+   "content": "[\n {\n  \"path\": \"/policies/archive/travel-policy-2023.md\",\n  \"snippet\": \"Policy (2023) \\u2014 SUPERSEDED\\n\\nSuperseded by the 2025 Travel & Expense Policy.\\n\\n- Dinner limit: $50 per person.\\n- One alcoholic drink per meal may be reimbursed wi\"\n },\n {\n  \"path\": \"/policies/travel-and-expense-policy-2025.md\",\n  \"snippet\": \"# Travel & Expense Policy (effective January 1, 2025)\\n\\nThis policy replaces all earlier travel policies.\\n\\n## Me\"\n }\n]"
+  },
+  {
+   "role": "tool",
+   "tool_call_id": "chatcmpl-tool-aa86797625a3c065",
+   "content": "[\n \"general\",\n \"ops\",\n \"sales\"\n]"
+  },
+  {
+   "role": "assistant",
+   "content": "",
+   "tool_calls": [
+    {
+     "id": "chatcmpl-tool-a7f9424cf02f5ac8",
+     "type": "function",
+     "function": {
+      "name": "chat_list",
+      "arguments": "{\"channel\": \"ops\", \"limit\": 30}"
+     }
+    },
+    {
+     "id": "chatcmpl-tool-b8e0d0b3c04eb494",
+     "type": "function",
+     "function": {
+      "name": "chat_list",
+      "arguments": "{\"channel\": \"general\", \"limit\": 30}"
+     }
+    }
+   ],
+   "finish_reason": "tool_calls"
+  },
+  {
+   "role": "tool",
+   "tool_call_id": "chatcmpl-tool-a7f9424cf02f5ac8",
+   "content": "[]"
+  },
+  {
+   "role": "tool",
+   "tool_call_id": "chatcmpl-tool-b8e0d0b3c04eb494",
+   "content": "[]"
+  },
+  {
+   "role": "assistant",
+   "content": "",
+   "tool_calls": [
+    {
+     "id": "chatcmpl-tool-b17401524c6088ce",
+     "type": "function",
+     "function": {
+      "name": "contacts_search",
+      "arguments": "{\"query\": \"Jordan Blake\"}"
+     }
+    },
+    {
+     "id": "chatcmpl-tool-a832ca660f6adac4",
+     "type": "function",
+     "function": {
+      "name": "calendar_list",
+      "arguments": "{\"start_date\": \"2026-03-09\", \"end_date\": \"2026-03-20\"}"
+     }
+    }
+   ],
+   "finish_reason": "tool_calls"
+  },
+  {
+   "role": "tool",
+   "tool_call_id": "chatcmpl-tool-b17401524c6088ce",
+   "content": "[\n {\n  \"name\": \"Jordan Blake\",\n  \"email\": \"jordan.blake@larkspur.example\",\n  \"title\": \"Finance Analyst\"\n }\n]"
+  },
+  {
+   "role": "tool",
+   "tool_call_id": "chatcmpl-tool-a832ca660f6adac4",
+   "content": "[]"
+  },
+  {
+   "role": "assistant",
+   "content": "",
+   "tool_calls": [
+    {
+     "id": "chatcmpl-tool-872fa49b8d646bc4",
+     "type": "function",
+     "function": {
+      "name": "mail_send",
+      "arguments": "{\"to\": [\"jordan.blake@larkspur.example\"], \"subject\": \"Re: Can I expense this dinner?\", \"reply_to_id\": \"m1\", \"body\": \"Hi Jordan,\\n\\nGood question \u2014 here's how your Chicago client dinner works under our current Travel & Expense Policy (effective January 1, 2025):\\n\\nWhat can be reimbursed and how much\\n- Dinner is reimbursable up to $60 per person, including tax and tip.\\n- Alcohol is not reimbursable under any circumstances.\\n- All meals also count toward the $90 per day domestic meal allowance.\\n\\nFor your $68 dinner that includes a $12 glass of wine:\\n- The $12 wine comes out first, so you're at $56 of reimbursable meal cost.\\n- $56 is under the $60 dinner cap, so the full $56 can be reimbursed. You'd cover the $12 glass of wine yourself.\\n- Since you're within the limits, you do NOT need department head pre-approval. (Only client entertainment above the limits requires pre-approval from your department head.)\\n\\nWhat you need to do\\n1. Get an itemized receipt \u2014 required for any expense over $25. A card slip alone won't do; it needs to show the itemized food and beverage lines so the alcohol can be separated out.\\n2. Submit the expense within 30 days through the expense tool, claiming $56 and excluding the wine.\\n\\nOne note: the older 2023 policy in the archive (the one with the $50 dinner limit and one reimbursable drink) has been superseded \u2014 don't go by that one.\\n\\nHope the Oakline visit goes well!\\n\\nBest,\\nSam Rivera\\nOperations Manager\"}"
+     }
+    }
+   ],
+   "finish_reason": "tool_calls"
+  },
+  {
+   "role": "tool",
+   "tool_call_id": "chatcmpl-tool-872fa49b8d646bc4",
+   "content": "{\n \"sent\": true,\n \"id\": \"m1001\"\n}"
+  },
+  {
+   "role": "assistant",
+   "content": "",
+   "tool_calls": [
+    {
+     "id": "chatcmpl-tool-98eedea5ffa266f9",
+     "type": "function",
+     "function": {
+      "name": "submit",
+      "arguments": "{\"answer\": \"Replied to Jordan Blake's question using the current Travel & Expense Policy (2025, in Drive): dinner is reimbursable up to $60/person including tax and tip, alcohol is never reimbursable, and meals count toward the $90/day domestic meal allowance. For Jordan's $68 dinner with $12 wine, the $56 non-alcohol portion is fully reimbursable (the $12 wine is not) and no pre-approval is needed since it's within limits. Jordan must submit an itemized receipt (required over $25) within 30 days via the expense tool. I also flagged that the archived 2023 policy is superseded.\"}"
+     }
+    }
+   ],
+   "finish_reason": "tool_calls"
+  },
+  {
+   "role": "tool",
+   "tool_call_id": "chatcmpl-tool-98eedea5ffa266f9",
+   "content": "{\n \"submitted\": true\n}"
+  }
+ ],
+ "actions": [
+  {
+   "step": 1,
+   "tool": "mail_search",
+   "args": {
+    "query": "Jordan dinner expense",
+    "folder": "inbox"
+   },
+   "ok": true
+  },
+  {
+   "step": 2,
+   "tool": "drive_search",
+   "args": {
+    "query": "travel and expense policy"
+   },
+   "ok": true
+  },
+  {
+   "step": 3,
+   "tool": "mail_search",
+   "args": {
+    "query": "Jordan",
+    "folder": "inbox",
+    "limit": 30
+   },
+   "ok": true
+  },
+  {
+   "step": 4,
+   "tool": "drive_list",
+   "args": {
+    "folder": "/"
+   },
+   "ok": true
+  },
+  {
+   "step": 5,
+   "tool": "mail_read",
+   "args": {
+    "message_id": "m1"
+   },
+   "ok": true
+  },
+  {
+   "step": 6,
+   "tool": "drive_read",
+   "args": {
+    "path": "/policies/travel-and-expense-policy-2025.md"
+   },
+   "ok": true
+  },
+  {
+   "step": 7,
+   "tool": "mail_search",
+   "args": {
+    "query": "expense policy",
+    "folder": "all",
+    "limit": 30
+   },
+   "ok": true
+  },
+  {
+   "step": 8,
+   "tool": "drive_search",
+   "args": {
+    "query": "expense"
+   },
+   "ok": true
+  },
+  {
+   "step": 9,
+   "tool": "chat_channels",
+   "args": {},
+   "ok": true
+  },
+  {
+   "step": 10,
+   "tool": "chat_list",
+   "args": {
+    "channel": "ops",
+    "limit": 30
+   },
+   "ok": true
+  },
+  {
+   "step": 11,
+   "tool": "chat_list",
+   "args": {
+    "channel": "general",
+    "limit": 30
+   },
+   "ok": true
+  },
+  {
+   "step": 12,
+   "tool": "contacts_search",
+   "args": {
+    "query": "Jordan Blake"
+   },
+   "ok": true
+  },
+  {
+   "step": 13,
+   "tool": "calendar_list",
+   "args": {
+    "start_date": "2026-03-09",
+    "end_date": "2026-03-20"
+   },
+   "ok": true
+  },
+  {
+   "step": 14,
+   "tool": "mail_send",
+   "args": {
+    "to": [
+     "jordan.blake@larkspur.example"
+    ],
+    "subject": "Re: Can I expense this dinner?",
+    "reply_to_id": "m1",
+    "body": "Hi Jordan,\n\nGood question \u2014 here's how your Chicago client dinner works under our current Travel & Expense Policy (effective January 1, 2025):\n\nWhat can be reimbursed and how much\n- Dinner is reimbursable up to $60 per person, including tax and tip.\n- Alcohol is not reimbursable under any circumstances.\n- All meals also count toward the $90 per day domestic meal allowance.\n\nFor your $68 dinner that includes a $12 glass of wine:\n- The $12 wine comes out first, so you're at $56 of reimbursable meal cost.\n- $56 is under the $60 dinner cap, so the full $56 can be reimbursed. You'd cover the $12 glass of wine yourself.\n- Since you're within the limits, you do NOT need department head pre-approval. (Only client entertainment above the limits requires pre-approval from your department head.)\n\nWhat you need to do\n1. Get an itemized receipt \u2014 required for any expense over $25. A card slip alone won't do; it needs to show the itemized food and beverage lines so the alcohol can be separated out.\n2. Submit the expense within 30 days through the expense tool, claiming $56 and excluding the wine.\n\nOne note: the older 2023 policy in the archive (the one with the $50 dinner limit and one reimbursable drink) has been superseded \u2014 don't go by that one.\n\nHope the Oakline visit goes well!\n\nBest,\nSam Rivera\nOperations Manager"
+   },
+   "ok": true
+  },
+  {
+   "step": 15,
+   "tool": "submit",
+   "args": {
+    "answer": "Replied to Jordan Blake's question using the current Travel & Expense Policy (2025, in Drive): dinner is reimbursable up to $60/person including tax and tip, alcohol is never reimbursable, and meals count toward the $90/day domestic meal allowance. For Jordan's $68 dinner with $12 wine, the $56 non-alcohol portion is fully reimbursable (the $12 wine is not) and no pre-approval is needed since it's within limits. Jordan must submit an itemized receipt (required over $25) within 30 days via the expense tool. I also flagged that the archived 2023 policy is superseded."
+   },
+   "ok": true
+  }
+ ],
+ "answer": "Replied to Jordan Blake's question using the current Travel & Expense Policy (2025, in Drive): dinner is reimbursable up to $60/person including tax and tip, alcohol is never reimbursable, and meals count toward the $90/day domestic meal allowance. For Jordan's $68 dinner with $12 wine, the $56 non-alcohol portion is fully reimbursable (the $12 wine is not) and no pre-approval is needed since it's within limits. Jordan must submit an itemized receipt (required over $25) within 30 days via the expense tool. I also flagged that the archived 2023 policy is superseded.",
+ "final_state": {
+  "now": "2026-03-09T09:00:00",
+  "timezone": "America/New_York",
+  "company": {
+   "name": "Larkspur Supply Co.",
+   "domain": "larkspur.example"
+  },
+  "user": {
+   "name": "Sam Rivera",
+   "email": "sam.rivera@larkspur.example",
+   "title": "Operations Manager"
+  },
+  "contacts": [
+   {
+    "name": "Priya Natarajan",
+    "email": "priya.natarajan@larkspur.example",
+    "title": "CEO"
+   },
+   {
+    "name": "Marcus Chen",
+    "email": "marcus.chen@larkspur.example",
+    "title": "CFO"
+   },
+   {
+    "name": "Elena Petrova",
+    "email": "elena.petrova@larkspur.example",
+    "title": "Head of Sales"
+   },
+   {
+    "name": "Jordan Blake",
+    "email": "jordan.blake@larkspur.example",
+    "title": "Finance Analyst"
+   },
+   {
+    "name": "Aisha Okafor",
+    "email": "aisha.okafor@larkspur.example",
+    "title": "HR Manager"
+   },
+   {
+    "name": "Tom Alvarez",
+    "email": "tom.alvarez@larkspur.example",
+    "title": "Warehouse Lead"
+   },
+   {
+    "name": "Finance team",
+    "email": "finance@larkspur.example",
+    "title": "Shared inbox"
+   }
+  ],
+  "mail": {
+   "messages": [
+    {
+     "id": "m1",
+     "folder": "inbox",
+     "from": "jordan.blake@larkspur.example",
+     "to": [
+      "sam.rivera@larkspur.example"
+     ],
+     "cc": [],
+     "subject": "Can I expense this dinner?",
+     "body": "Hi Sam,\nI'm in Chicago next week for the Oakline visit. If the client dinner comes to $68 for me\n(that includes a $12 glass of wine), can I expense it? What do I need to do?\nThanks!\nJordan\n",
+     "date": "2026-03-09T08:12:00",
+     "thread_id": "m1",
+     "attachments": [],
+     "seeded": true
+    },
+    {
+     "id": "m2",
+     "folder": "inbox",
+     "from": "aisha.okafor@larkspur.example",
+     "to": [
+      "sam.rivera@larkspur.example"
+     ],
+     "cc": [],
+     "subject": "Reminder - benefits enrollment closes Friday",
+     "body": "Quick reminder that benefits enrollment closes this Friday. No action needed if you already enrolled.",
+     "date": "2026-03-06T10:00:00",
+     "thread_id": "m2",
+     "attachments": [],
+     "seeded": true
+    },
+    {
+     "id": "m1001",
+     "folder": "sent",
+     "from": "sam.rivera@larkspur.example",
+     "to": [
+      "jordan.blake@larkspur.example"
+     ],
+     "cc": [],
+     "subject": "Re: Can I expense this dinner?",
+     "body": "Hi Jordan,\n\nGood question \u2014 here's how your Chicago client dinner works under our current Travel & Expense Policy (effective January 1, 2025):\n\nWhat can be reimbursed and how much\n- Dinner is reimbursable up to $60 per person, including tax and tip.\n- Alcohol is not reimbursable under any circumstances.\n- All meals also count toward the $90 per day domestic meal allowance.\n\nFor your $68 dinner that includes a $12 glass of wine:\n- The $12 wine comes out first, so you're at $56 of reimbursable meal cost.\n- $56 is under the $60 dinner cap, so the full $56 can be reimbursed. You'd cover the $12 glass of wine yourself.\n- Since you're within the limits, you do NOT need department head pre-approval. (Only client entertainment above the limits requires pre-approval from your department head.)\n\nWhat you need to do\n1. Get an itemized receipt \u2014 required for any expense over $25. A card slip alone won't do; it needs to show the itemized food and beverage lines so the alcohol can be separated out.\n2. Submit the expense within 30 days through the expense tool, claiming $56 and excluding the wine.\n\nOne note: the older 2023 policy in the archive (the one with the $50 dinner limit and one reimbursable drink) has been superseded \u2014 don't go by that one.\n\nHope the Oakline visit goes well!\n\nBest,\nSam Rivera\nOperations Manager",
+     "date": "2026-03-09T09:00:00",
+     "thread_id": "m1",
+     "attachments": [],
+     "seeded": false
+    }
+   ]
+  },
+  "calendar": {
+   "events": []
+  },
+  "drive": {
+   "files": {
+    "/policies/archive/travel-policy-2023.md": {
+     "content": "# Travel Policy (2023) \u2014 SUPERSEDED\n\nSuperseded by the 2025 Travel & Expense Policy.\n\n- Dinner limit: $50 per person.\n- One alcoholic drink per meal may be reimbursed with a client present.\n",
+     "seeded": true
+    },
+    "/policies/travel-and-expense-policy-2025.md": {
+     "content": "# Travel & Expense Policy (effective January 1, 2025)\n\nThis policy replaces all earlier travel policies.\n\n## Meals while traveling\n- Daily meal allowance: up to $90 per day for domestic travel.\n- Dinner: up to **$60** per person, including tax and tip.\n- Alcohol is **not reimbursable** under any circumstances.\n- Client entertainment above these limits needs pre-approval from your department head.\n\n## Receipts\n- Itemized receipts are required for every expense over $25.\n- Submit expenses within 30 days through the expense tool.\n",
+     "seeded": true
+    }
+   }
+  },
+  "crm": {
+   "records": [
+    {
+     "id": "A-150",
+     "type": "account",
+     "name": "Pinecrest School District",
+     "domain": "pinecrestsd.example",
+     "owner": "Elena Petrova",
+     "renewal_date": "2026-07-01",
+     "segment": "Education",
+     "seeded": true
+    },
+    {
+     "id": "A-205",
+     "type": "account",
+     "name": "Brightwater Hotels",
+     "domain": "brightwaterhotels.example",
+     "owner": "Elena Petrova",
+     "segment": "Hospitality",
+     "seeded": true
+    },
+    {
+     "id": "A-310",
+     "type": "account",
+     "name": "Fernwood Grocers",
+     "domain": "fernwoodgrocers.example",
+     "owner": "Elena Petrova",
+     "segment": "Retail",
+     "seeded": true
+    },
+    {
+     "id": "A-322",
+     "type": "account",
+     "name": "Halcyon Cafe",
+     "domain": "halcyoncafe.example",
+     "owner": "Elena Petrova",
+     "segment": "Hospitality",
+     "seeded": true
+    },
+    {
+     "id": "A-340",
+     "type": "account",
+     "name": "Oakline Markets",
+     "domain": "oaklinemarkets.example",
+     "owner": "Elena Petrova",
+     "segment": "Retail",
+     "seeded": true
+    },
+    {
+     "id": "A-355",
+     "type": "account",
+     "name": "Ridgeview Clinic",
+     "domain": "ridgeviewclinic.example",
+     "owner": "Elena Petrova",
+     "segment": "Healthcare",
+     "seeded": true
+    }
+   ],
+   "stages": [
+    "Prospecting",
+    "Proposal",
+    "Negotiation",
+    "Closed Won",
+    "Closed Lost"
+   ]
+  },
+  "chat": {
+   "channels": {
+    "general": [],
+    "sales": [],
+    "ops": []
+   }
+  }
+ }
+}

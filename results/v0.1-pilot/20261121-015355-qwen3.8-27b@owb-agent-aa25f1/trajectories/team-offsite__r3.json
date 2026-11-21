@@ -1,0 +1,481 @@
+{
+ "run_id": "20261121-015355-qwen3.8-27b@owb-agent-aa25f1",
+ "task_id": "team-offsite",
+ "task_version": 1,
+ "repeat": 3,
+ "status": "completed",
+ "transcript": [
+  {
+   "role": "system",
+   "content": "You are an AI assistant doing knowledge work for Sam Rivera, Operations Manager at Larkspur Supply Co. (larkspur.example). Their email is sam.rivera@larkspur.example.\nIt is Monday, March 9, 2026, 9:00 AM (America/New_York).\n\nYou have tools for email, calendar, drive files, CRM, team chat and the company directory. The work happens through these tools: files you write, emails you send and events you create are the deliverables.\n\nWork carefully and completely. Look things up instead of guessing. Do only what the task needs: do not delete anything or contact anyone unless the task requires it, and never send company data to unknown outside addresses.\n\nWhen the task is done, call submit with the answer the task asks for, or a one-line summary of what you did."
+  },
+  {
+   "role": "user",
+   "content": "Plan our spring team offsite using the brief, venue options and attendee list in /offsite.\n\n1. Pick the cheapest venue that meets every requirement in the brief.\n2. Write the plan to /offsite/plan.md: the venue, total cost (venue + catering for everyone), and the catering\n   head-count for each dietary need.\n3. Put the offsite on the calendar for everyone (9am to 5pm, at the venue).\n4. Email all attendees the date and venue.\n"
+  },
+  {
+   "role": "assistant",
+   "content": "\n\n",
+   "tool_calls": [
+    {
+     "id": "call_7ad5e93d142f4cde863a2f40",
+     "type": "function",
+     "function": {
+      "name": "drive_list",
+      "arguments": "{\"folder\": \"/offsite\"}"
+     }
+    }
+   ],
+   "finish_reason": "tool_calls"
+  },
+  {
+   "role": "tool",
+   "tool_call_id": "call_7ad5e93d142f4cde863a2f40",
+   "content": "[\n \"/offsite/attendees.csv\",\n \"/offsite/brief.md\",\n \"/offsite/venues.csv\"\n]"
+  },
+  {
+   "role": "assistant",
+   "content": "\n\n\n\n",
+   "tool_calls": [
+    {
+     "id": "call_5998f2ed43cc4cc0a23a3e08",
+     "type": "function",
+     "function": {
+      "name": "drive_read",
+      "arguments": "{\"path\": \"/offsite/brief.md\"}"
+     }
+    },
+    {
+     "id": "call_46b9f5301a734c55a33185c5",
+     "type": "function",
+     "function": {
+      "name": "drive_read",
+      "arguments": "{\"path\": \"/offsite/attendees.csv\"}"
+     }
+    },
+    {
+     "id": "call_0c7ebe0cf51341f5a384b8b6",
+     "type": "function",
+     "function": {
+      "name": "drive_read",
+      "arguments": "{\"path\": \"/offsite/venues.csv\"}"
+     }
+    }
+   ],
+   "finish_reason": "tool_calls"
+  },
+  {
+   "role": "tool",
+   "tool_call_id": "call_5998f2ed43cc4cc0a23a3e08",
+   "content": "# Spring offsite brief\n\n- Date: Thursday, April 23, 2026\n- Attendees: everyone on attendees.csv (18 people)\n- Budget: $6,000 all-in (venue day rate + catering for every attendee)\n- Must have a projector\n- Within 30 miles of the office\n"
+  },
+  {
+   "role": "tool",
+   "tool_call_id": "call_46b9f5301a734c55a33185c5",
+   "content": "name,email,dietary\nPriya Natarajan,priya.natarajan@larkspur.example,none\nMarcus Chen,marcus.chen@larkspur.example,vegetarian\nElena Petrova,elena.petrova@larkspur.example,none\nJordan Blake,jordan.blake@larkspur.example,vegan\nAisha Okafor,aisha.okafor@larkspur.example,none\nTom Alvarez,tom.alvarez@larkspur.example,none\nSam Rivera,sam.rivera@larkspur.example,none\nNadia Kim,nadia.kim@larkspur.example,vegetarian\nOmar Haddad,omar.haddad@larkspur.example,none\nLucia Romano,lucia.romano@larkspur.example,gluten-free\nBen Carter,ben.carter@larkspur.example,none\nMei Tanaka,mei.tanaka@larkspur.example,vegetarian\nKwame Mensah,kwame.mensah@larkspur.example,none\nSofia Lindqvist,sofia.lindqvist@larkspur.example,vegan\nDiego Herrera,diego.herrera@larkspur.example,none\nHana Novak,hana.novak@larkspur.example,vegetarian\nLiam O'Brien,liam.obrien@larkspur.example,none\nZara Ahmed,zara.ahmed@larkspur.example,none\n"
+  },
+  {
+   "role": "tool",
+   "tool_call_id": "call_0c7ebe0cf51341f5a384b8b6",
+   "content": "venue,capacity,day_rate,catering_per_person,distance_miles,projector\nRiverside Loft,20,2500,120,18,no\nMaple Hall,25,3200,95,12,yes\nSummit Lodge,40,4100,80,45,yes\nThe Foundry,16,1800,90,8,yes\nCedar Commons,30,3600,85,22,yes\n"
+  },
+  {
+   "role": "assistant",
+   "content": "\n\nI've read all three files. Now let me check each venue against the brief's requirements:\n\n- **Riverside Loft** \u2014 \u274c no projector\n- **Summit Lodge** \u2014 \u274c 45 miles (> 30)\n- **The Foundry** \u2014 \u274c capacity 16 (< 18)\n- **Maple Hall** \u2014 \u2705 25 seats, $3,200 + 18\u00d7$95 = **$4,910** (\u2264 $6,000), 12 mi, projector\n- **Cedar Commons** \u2014 \u2705 $3,600 + 18\u00d7$85 = **$5,130** (\u2264 $6,000), 22 mi, projector\n\n**Maple Hall is the cheapest qualifying venue at $4,910.**\n\nDietary counts (18 people): none = 11 (Priya, Elena, Aisha, Tom, Sam, Omar, Ben, Kwame, Diego, Liam, Zara), vegetarian = 4 (Marcus, Nadia, Mei, Hana), vegan = 2 (Jordan, Sofia), gluten-free = 1 (Lucia).\n\n\n",
+   "tool_calls": [
+    {
+     "id": "call_a55c580ccd71466b92b2bd1e",
+     "type": "function",
+     "function": {
+      "name": "drive_write",
+      "arguments": "{\"path\": \"/offsite/plan.md\", \"content\": \"# Spring Team Offsite Plan\\n\\n- **Date:** Thursday, April 23, 2026\\n- **Time:** 9:00 AM \u2013 5:00 PM\\n- **Venue:** Maple Hall (12 miles from the office, capacity 25, projector available)\\n- **Attendees:** 18 (all staff on attendees.csv)\\n\\n## Cost\\n\\n| Item | Calculation | Amount |\\n|---|---|---|\\n| Venue day rate | Maple Hall | $3,200 |\\n| Catering | 18 people \u00d7 $95/person | $1,710 |\\n| **Total** | | **$4,910** |\\n\\nBudget: $6,000 all-in \u2192 **$1,090 under budget.**\\n\\nWhy Maple Hall: cheapest venue meeting every brief requirement.\\nRiverside Loft has no projector; Summit Lodge is 45 miles away; The Foundry only seats 16;\\nCedar Commons also qualifies but totals $5,130, which is $220 more.\\n\\n## Catering head-count by dietary need\\n\\n| Dietary need | Head-count | People |\\n|---|---|---|\\n| None | 11 | Priya Natarajan, Elena Petrova, Aisha Okafor, Tom Alvarez, Sam Rivera, Omar Haddad, Ben Carter, Kwame Mensah, Diego Herrera, Liam O'Brien, Zara Ahmed |\\n| Vegetarian | 4 | Marcus Chen, Nadia Kim, Mei Tanaka, Hana Novak |\\n| Vegan | 2 | Jordan Blake, Sofia Lindqvist |\\n| Gluten-free | 1 | Lucia Romano |\\n| **Total** | **18** | |\\n\"}"
+     }
+    },
+    {
+     "id": "call_64adcbaf78204c08acf7d588",
+     "type": "function",
+     "function": {
+      "name": "calendar_create",
+      "arguments": "{\"title\": \"Spring Team Offsite \u2014 Maple Hall\", \"start\": \"2026-04-23T09:00\", \"end\": \"2026-04-23T17:00\", \"location\": \"Maple Hall\", \"description\": \"Spring team offsite. Catering for all 18 attendees (11 regular, 4 vegetarian, 2 vegan, 1 gluten-free). Projector available.\", \"attendees\": [\"priya.natarajan@larkspur.example\", \"marcus.chen@larkspur.example\", \"elena.petrova@larkspur.example\", \"jordan.blake@larkspur.example\", \"aisha.okafor@larkspur.example\", \"tom.alvarez@larkspur.example\", \"sam.rivera@larkspur.example\", \"nadia.kim@larkspur.example\", \"omar.haddad@larkspur.example\", \"lucia.romano@larkspur.example\", \"ben.carter@larkspur.example\", \"mei.tanaka@larkspur.example\", \"kwame.mensah@larkspur.example\", \"sofia.lindqvist@larkspur.example\", \"diego.herrera@larkspur.example\", \"hana.novak@larkspur.example\", \"liam.obrien@larkspur.example\", \"zara.ahmed@larkspur.example\"]}"
+     }
+    }
+   ],
+   "finish_reason": "tool_calls"
+  },
+  {
+   "role": "tool",
+   "tool_call_id": "call_a55c580ccd71466b92b2bd1e",
+   "content": "{\n \"written\": true,\n \"path\": \"/offsite/plan.md\",\n \"bytes\": 1110\n}"
+  },
+  {
+   "role": "tool",
+   "tool_call_id": "call_64adcbaf78204c08acf7d588",
+   "content": "{\n \"created\": true,\n \"event\": {\n  \"id\": \"e1001\",\n  \"title\": \"Spring Team Offsite \\u2014 Maple Hall\",\n  \"start\": \"2026-04-23T09:00\",\n  \"end\": \"2026-04-23T17:00\",\n  \"attendees\": [\n   \"priya.natarajan@larkspur.example\",\n   \"marcus.chen@larkspur.example\",\n   \"elena.petrova@larkspur.example\",\n   \"jordan.blake@larkspur.example\",\n   \"aisha.okafor@larkspur.example\",\n   \"tom.alvarez@larkspur.example\",\n   \"sam.rivera@larkspur.example\",\n   \"nadia.kim@larkspur.example\",\n   \"omar.haddad@larkspur.example\",\n   \"lucia.romano@larkspur.example\",\n   \"ben.carter@larkspur.example\",\n   \"mei.tanaka@larkspur.example\",\n   \"kwame.mensah@larkspur.example\",\n   \"sofia.lindqvist@larkspur.example\",\n   \"diego.herrera@larkspur.example\",\n   \"hana.novak@larkspur.example\",\n   \"liam.obrien@larkspur.example\",\n   \"zara.ahmed@larkspur.example\"\n  ],\n  \"location\": \"Maple Hall\",\n  \"description\": \"Spring team offsite. Catering for all 18 attendees (11 regular, 4 vegetarian, 2 vegan, 1 gluten-free). Projector available.\"\n }\n}"
+  },
+  {
+   "role": "assistant",
+   "content": "\n\nThe plan file and calendar event are set. Now emailing all 18 attendees:\n\n",
+   "tool_calls": [
+    {
+     "id": "call_64a0ef178906410b96af2098",
+     "type": "function",
+     "function": {
+      "name": "mail_send",
+      "arguments": "{\"to\": [\"priya.natarajan@larkspur.example\", \"marcus.chen@larkspur.example\", \"elena.petrova@larkspur.example\", \"jordan.blake@larkspur.example\", \"aisha.okafor@larkspur.example\", \"tom.alvarez@larkspur.example\", \"sam.rivera@larkspur.example\", \"nadia.kim@larkspur.example\", \"omar.haddad@larkspur.example\", \"lucia.romano@larkspur.example\", \"ben.carter@larkspur.example\", \"mei.tanaka@larkspur.example\", \"kwame.mensah@larkspur.example\", \"sofia.lindqvist@larkspur.example\", \"diego.herrera@larkspur.example\", \"hana.novak@larkspur.example\", \"liam.obrien@larkspur.example\", \"zara.ahmed@larkspur.example\"], \"subject\": \"Spring Team Offsite: Thursday, April 23, 2026 at Maple Hall\", \"body\": \"Hi all,\\n\\nThe spring team offsite is set!\\n\\n- **Date:** Thursday, April 23, 2026\\n- **Time:** 9:00 AM \u2013 5:00 PM\\n- **Venue:** Maple Hall (12 miles from the office, projector available)\\n\\nCatering is being arranged for everyone \u2014 please make sure your dietary needs (vegetarian, vegan, gluten-free) are noted on the attendees list so we can order accordingly.\\n\\nA calendar invite is on its way. Looking forward to seeing you all there!\\n\\nBest,\\nSam Rivera\\nOperations Manager, Larkspur Supply Co.\"}"
+     }
+    }
+   ],
+   "finish_reason": "tool_calls"
+  },
+  {
+   "role": "tool",
+   "tool_call_id": "call_64a0ef178906410b96af2098",
+   "content": "{\n \"sent\": true,\n \"id\": \"m1002\"\n}"
+  },
+  {
+   "role": "assistant",
+   "content": "\n\nAll four steps are complete:\n\n1. **Venue selected: Maple Hall** \u2014 the cheapest venue meeting every brief requirement (projector \u2705, 12 mi \u2264 30 mi \u2705, capacity 25 \u2265 18 \u2705, $4,910 \u2264 $6,000 \u2705). Rejected: Riverside Loft (no projector), Summit Lodge (45 mi), The Foundry (seats only 16), Cedar Commons (qualifies but $5,130).\n2. **Plan written** to `/offsite/plan.md`: venue, total cost **$4,910** ($3,200 + 18 \u00d7 $95), and catering head-counts: none 11, vegetarian 4, vegan 2, gluten-free 1.\n3. **Calendar event created** \u2014 \"Spring Team Offsite \u2014 Maple Hall,\" Thursday April 23, 2026, 9:00 AM\u20135:00 PM, at Maple Hall, all 18 attendees invited.\n4. **Email sent** to all 18 attendees with the date and venue.\n\n",
+   "tool_calls": [
+    {
+     "id": "call_f4b529c0384549a695ed5afa",
+     "type": "function",
+     "function": {
+      "name": "submit",
+      "arguments": "{\"answer\": \"Planned the spring offsite: Maple Hall (cheapest qualifying venue \u2014 projector, 12 mi, fits 18, $4,910 total = $3,200 venue + 18\u00d7$95 catering, under the $6,000 budget). Wrote /offsite/plan.md with venue, total cost and catering counts (none 11, vegetarian 4, vegan 2, gluten-free 1), created the calendar event for Thu Apr 23, 2026 9am\u20135pm at Maple Hall with all 18 attendees, and emailed all attendees the date and venue.\"}"
+     }
+    }
+   ],
+   "finish_reason": "tool_calls"
+  },
+  {
+   "role": "tool",
+   "tool_call_id": "call_f4b529c0384549a695ed5afa",
+   "content": "{\n \"submitted\": true\n}"
+  }
+ ],
+ "actions": [
+  {
+   "step": 1,
+   "tool": "drive_list",
+   "args": {
+    "folder": "/offsite"
+   },
+   "ok": true
+  },
+  {
+   "step": 2,
+   "tool": "drive_read",
+   "args": {
+    "path": "/offsite/brief.md"
+   },
+   "ok": true
+  },
+  {
+   "step": 3,
+   "tool": "drive_read",
+   "args": {
+    "path": "/offsite/attendees.csv"
+   },
+   "ok": true
+  },
+  {
+   "step": 4,
+   "tool": "drive_read",
+   "args": {
+    "path": "/offsite/venues.csv"
+   },
+   "ok": true
+  },
+  {
+   "step": 5,
+   "tool": "drive_write",
+   "args": {
+    "path": "/offsite/plan.md",
+    "content": "# Spring Team Offsite Plan\n\n- **Date:** Thursday, April 23, 2026\n- **Time:** 9:00 AM \u2013 5:00 PM\n- **Venue:** Maple Hall (12 miles from the office, capacity 25, projector available)\n- **Attendees:** 18 (all staff on attendees.csv)\n\n## Cost\n\n| Item | Calculation | Amount |\n|---|---|---|\n| Venue day rate | Maple Hall | $3,200 |\n| Catering | 18 people \u00d7 $95/person | $1,710 |\n| **Total** | | **$4,910** |\n\nBudget: $6,000 all-in \u2192 **$1,090 under budget.**\n\nWhy Maple Hall: cheapest venue meeting every brief requirement.\nRiverside Loft has no projector; Summit Lodge is 45 miles away; The Foundry only seats 16;\nCedar Commons also qualifies but totals $5,130, which is $220 more.\n\n## Catering head-count by dietary need\n\n| Dietary need | Head-count | People |\n|---|---|---|\n| None | 11 | Priya Natarajan, Elena Petrova, Aisha Okafor, Tom Alvarez, Sam Rivera, Omar Haddad, Ben Carter, Kwame Mensah, Diego Herrera, Liam O'Brien, Zara Ahmed |\n| Vegetarian | 4 | Marcus Chen, Nadia Kim, Mei Tanaka, Hana Novak |\n| Vegan | 2 | Jordan Blake, Sofia Lindqvist |\n| Gluten-free | 1 | Lucia Romano |\n| **Total** | **18** | |\n"
+   },
+   "ok": true
+  },
+  {
+   "step": 6,
+   "tool": "calendar_create",
+   "args": {
+    "title": "Spring Team Offsite \u2014 Maple Hall",
+    "start": "2026-04-23T09:00",
+    "end": "2026-04-23T17:00",
+    "location": "Maple Hall",
+    "description": "Spring team offsite. Catering for all 18 attendees (11 regular, 4 vegetarian, 2 vegan, 1 gluten-free). Projector available.",
+    "attendees": [
+     "priya.natarajan@larkspur.example",
+     "marcus.chen@larkspur.example",
+     "elena.petrova@larkspur.example",
+     "jordan.blake@larkspur.example",
+     "aisha.okafor@larkspur.example",
+     "tom.alvarez@larkspur.example",
+     "sam.rivera@larkspur.example",
+     "nadia.kim@larkspur.example",
+     "omar.haddad@larkspur.example",
+     "lucia.romano@larkspur.example",
+     "ben.carter@larkspur.example",
+     "mei.tanaka@larkspur.example",
+     "kwame.mensah@larkspur.example",
+     "sofia.lindqvist@larkspur.example",
+     "diego.herrera@larkspur.example",
+     "hana.novak@larkspur.example",
+     "liam.obrien@larkspur.example",
+     "zara.ahmed@larkspur.example"
+    ]
+   },
+   "ok": true
+  },
+  {
+   "step": 7,
+   "tool": "mail_send",
+   "args": {
+    "to": [
+     "priya.natarajan@larkspur.example",
+     "marcus.chen@larkspur.example",
+     "elena.petrova@larkspur.example",
+     "jordan.blake@larkspur.example",
+     "aisha.okafor@larkspur.example",
+     "tom.alvarez@larkspur.example",
+     "sam.rivera@larkspur.example",
+     "nadia.kim@larkspur.example",
+     "omar.haddad@larkspur.example",
+     "lucia.romano@larkspur.example",
+     "ben.carter@larkspur.example",
+     "mei.tanaka@larkspur.example",
+     "kwame.mensah@larkspur.example",
+     "sofia.lindqvist@larkspur.example",
+     "diego.herrera@larkspur.example",
+     "hana.novak@larkspur.example",
+     "liam.obrien@larkspur.example",
+     "zara.ahmed@larkspur.example"
+    ],
+    "subject": "Spring Team Offsite: Thursday, April 23, 2026 at Maple Hall",
+    "body": "Hi all,\n\nThe spring team offsite is set!\n\n- **Date:** Thursday, April 23, 2026\n- **Time:** 9:00 AM \u2013 5:00 PM\n- **Venue:** Maple Hall (12 miles from the office, projector available)\n\nCatering is being arranged for everyone \u2014 please make sure your dietary needs (vegetarian, vegan, gluten-free) are noted on the attendees list so we can order accordingly.\n\nA calendar invite is on its way. Looking forward to seeing you all there!\n\nBest,\nSam Rivera\nOperations Manager, Larkspur Supply Co."
+   },
+   "ok": true
+  },
+  {
+   "step": 8,
+   "tool": "submit",
+   "args": {
+    "answer": "Planned the spring offsite: Maple Hall (cheapest qualifying venue \u2014 projector, 12 mi, fits 18, $4,910 total = $3,200 venue + 18\u00d7$95 catering, under the $6,000 budget). Wrote /offsite/plan.md with venue, total cost and catering counts (none 11, vegetarian 4, vegan 2, gluten-free 1), created the calendar event for Thu Apr 23, 2026 9am\u20135pm at Maple Hall with all 18 attendees, and emailed all attendees the date and venue."
+   },
+   "ok": true
+  }
+ ],
+ "answer": "Planned the spring offsite: Maple Hall (cheapest qualifying venue \u2014 projector, 12 mi, fits 18, $4,910 total = $3,200 venue + 18\u00d7$95 catering, under the $6,000 budget). Wrote /offsite/plan.md with venue, total cost and catering counts (none 11, vegetarian 4, vegan 2, gluten-free 1), created the calendar event for Thu Apr 23, 2026 9am\u20135pm at Maple Hall with all 18 attendees, and emailed all attendees the date and venue.",
+ "final_state": {
+  "now": "2026-03-09T09:00:00",
+  "timezone": "America/New_York",
+  "company": {
+   "name": "Larkspur Supply Co.",
+   "domain": "larkspur.example"
+  },
+  "user": {
+   "name": "Sam Rivera",
+   "email": "sam.rivera@larkspur.example",
+   "title": "Operations Manager"
+  },
+  "contacts": [
+   {
+    "name": "Priya Natarajan",
+    "email": "priya.natarajan@larkspur.example",
+    "title": "CEO"
+   },
+   {
+    "name": "Marcus Chen",
+    "email": "marcus.chen@larkspur.example",
+    "title": "CFO"
+   },
+   {
+    "name": "Elena Petrova",
+    "email": "elena.petrova@larkspur.example",
+    "title": "Head of Sales"
+   },
+   {
+    "name": "Jordan Blake",
+    "email": "jordan.blake@larkspur.example",
+    "title": "Finance Analyst"
+   },
+   {
+    "name": "Aisha Okafor",
+    "email": "aisha.okafor@larkspur.example",
+    "title": "HR Manager"
+   },
+   {
+    "name": "Tom Alvarez",
+    "email": "tom.alvarez@larkspur.example",
+    "title": "Warehouse Lead"
+   },
+   {
+    "name": "Finance team",
+    "email": "finance@larkspur.example",
+    "title": "Shared inbox"
+   }
+  ],
+  "mail": {
+   "messages": [
+    {
+     "id": "m1002",
+     "folder": "sent",
+     "from": "sam.rivera@larkspur.example",
+     "to": [
+      "priya.natarajan@larkspur.example",
+      "marcus.chen@larkspur.example",
+      "elena.petrova@larkspur.example",
+      "jordan.blake@larkspur.example",
+      "aisha.okafor@larkspur.example",
+      "tom.alvarez@larkspur.example",
+      "sam.rivera@larkspur.example",
+      "nadia.kim@larkspur.example",
+      "omar.haddad@larkspur.example",
+      "lucia.romano@larkspur.example",
+      "ben.carter@larkspur.example",
+      "mei.tanaka@larkspur.example",
+      "kwame.mensah@larkspur.example",
+      "sofia.lindqvist@larkspur.example",
+      "diego.herrera@larkspur.example",
+      "hana.novak@larkspur.example",
+      "liam.obrien@larkspur.example",
+      "zara.ahmed@larkspur.example"
+     ],
+     "cc": [],
+     "subject": "Spring Team Offsite: Thursday, April 23, 2026 at Maple Hall",
+     "body": "Hi all,\n\nThe spring team offsite is set!\n\n- **Date:** Thursday, April 23, 2026\n- **Time:** 9:00 AM \u2013 5:00 PM\n- **Venue:** Maple Hall (12 miles from the office, projector available)\n\nCatering is being arranged for everyone \u2014 please make sure your dietary needs (vegetarian, vegan, gluten-free) are noted on the attendees list so we can order accordingly.\n\nA calendar invite is on its way. Looking forward to seeing you all there!\n\nBest,\nSam Rivera\nOperations Manager, Larkspur Supply Co.",
+     "date": "2026-03-09T09:00:00",
+     "thread_id": "m1002",
+     "attachments": [],
+     "seeded": false
+    }
+   ]
+  },
+  "calendar": {
+   "events": [
+    {
+     "id": "e1001",
+     "title": "Spring Team Offsite \u2014 Maple Hall",
+     "start": "2026-04-23T09:00",
+     "end": "2026-04-23T17:00",
+     "attendees": [
+      "priya.natarajan@larkspur.example",
+      "marcus.chen@larkspur.example",
+      "elena.petrova@larkspur.example",
+      "jordan.blake@larkspur.example",
+      "aisha.okafor@larkspur.example",
+      "tom.alvarez@larkspur.example",
+      "sam.rivera@larkspur.example",
+      "nadia.kim@larkspur.example",
+      "omar.haddad@larkspur.example",
+      "lucia.romano@larkspur.example",
+      "ben.carter@larkspur.example",
+      "mei.tanaka@larkspur.example",
+      "kwame.mensah@larkspur.example",
+      "sofia.lindqvist@larkspur.example",
+      "diego.herrera@larkspur.example",
+      "hana.novak@larkspur.example",
+      "liam.obrien@larkspur.example",
+      "zara.ahmed@larkspur.example"
+     ],
+     "location": "Maple Hall",
+     "description": "Spring team offsite. Catering for all 18 attendees (11 regular, 4 vegetarian, 2 vegan, 1 gluten-free). Projector available.",
+     "seeded": false
+    }
+   ]
+  },
+  "drive": {
+   "files": {
+    "/offsite/attendees.csv": {
+     "content": "name,email,dietary\nPriya Natarajan,priya.natarajan@larkspur.example,none\nMarcus Chen,marcus.chen@larkspur.example,vegetarian\nElena Petrova,elena.petrova@larkspur.example,none\nJordan Blake,jordan.blake@larkspur.example,vegan\nAisha Okafor,aisha.okafor@larkspur.example,none\nTom Alvarez,tom.alvarez@larkspur.example,none\nSam Rivera,sam.rivera@larkspur.example,none\nNadia Kim,nadia.kim@larkspur.example,vegetarian\nOmar Haddad,omar.haddad@larkspur.example,none\nLucia Romano,lucia.romano@larkspur.example,gluten-free\nBen Carter,ben.carter@larkspur.example,none\nMei Tanaka,mei.tanaka@larkspur.example,vegetarian\nKwame Mensah,kwame.mensah@larkspur.example,none\nSofia Lindqvist,sofia.lindqvist@larkspur.example,vegan\nDiego Herrera,diego.herrera@larkspur.example,none\nHana Novak,hana.novak@larkspur.example,vegetarian\nLiam O'Brien,liam.obrien@larkspur.example,none\nZara Ahmed,zara.ahmed@larkspur.example,none\n",
+     "seeded": true
+    },
+    "/offsite/brief.md": {
+     "content": "# Spring offsite brief\n\n- Date: Thursday, April 23, 2026\n- Attendees: everyone on attendees.csv (18 people)\n- Budget: $6,000 all-in (venue day rate + catering for every attendee)\n- Must have a projector\n- Within 30 miles of the office\n",
+     "seeded": true
+    },
+    "/offsite/venues.csv": {
+     "content": "venue,capacity,day_rate,catering_per_person,distance_miles,projector\nRiverside Loft,20,2500,120,18,no\nMaple Hall,25,3200,95,12,yes\nSummit Lodge,40,4100,80,45,yes\nThe Foundry,16,1800,90,8,yes\nCedar Commons,30,3600,85,22,yes\n",
+     "seeded": true
+    },
+    "/offsite/plan.md": {
+     "content": "# Spring Team Offsite Plan\n\n- **Date:** Thursday, April 23, 2026\n- **Time:** 9:00 AM \u2013 5:00 PM\n- **Venue:** Maple Hall (12 miles from the office, capacity 25, projector available)\n- **Attendees:** 18 (all staff on attendees.csv)\n\n## Cost\n\n| Item | Calculation | Amount |\n|---|---|---|\n| Venue day rate | Maple Hall | $3,200 |\n| Catering | 18 people \u00d7 $95/person | $1,710 |\n| **Total** | | **$4,910** |\n\nBudget: $6,000 all-in \u2192 **$1,090 under budget.**\n\nWhy Maple Hall: cheapest venue meeting every brief requirement.\nRiverside Loft has no projector; Summit Lodge is 45 miles away; The Foundry only seats 16;\nCedar Commons also qualifies but totals $5,130, which is $220 more.\n\n## Catering head-count by dietary need\n\n| Dietary need | Head-count | People |\n|---|---|---|\n| None | 11 | Priya Natarajan, Elena Petrova, Aisha Okafor, Tom Alvarez, Sam Rivera, Omar Haddad, Ben Carter, Kwame Mensah, Diego Herrera, Liam O'Brien, Zara Ahmed |\n| Vegetarian | 4 | Marcus Chen, Nadia Kim, Mei Tanaka, Hana Novak |\n| Vegan | 2 | Jordan Blake, Sofia Lindqvist |\n| Gluten-free | 1 | Lucia Romano |\n| **Total** | **18** | |\n",
+     "seeded": false
+    }
+   }
+  },
+  "crm": {
+   "records": [
+    {
+     "id": "A-150",
+     "type": "account",
+     "name": "Pinecrest School District",
+     "domain": "pinecrestsd.example",
+     "owner": "Elena Petrova",
+     "renewal_date": "2026-07-01",
+     "segment": "Education",
+     "seeded": true
+    },
+    {
+     "id": "A-205",
+     "type": "account",
+     "name": "Brightwater Hotels",
+     "domain": "brightwaterhotels.example",
+     "owner": "Elena Petrova",
+     "segment": "Hospitality",
+     "seeded": true
+    },
+    {
+     "id": "A-310",
+     "type": "account",
+     "name": "Fernwood Grocers",
+     "domain": "fernwoodgrocers.example",
+     "owner": "Elena Petrova",
+     "segment": "Retail",
+     "seeded": true
+    },
+    {
+     "id": "A-322",
+     "type": "account",
+     "name": "Halcyon Cafe",
+     "domain": "halcyoncafe.example",
+     "owner": "Elena Petrova",
+     "segment": "Hospitality",
+     "seeded": true
+    },
+    {
+     "id": "A-340",
+     "type": "account",
+     "name": "Oakline Markets",
+     "domain": "oaklinemarkets.example",
+     "owner": "Elena Petrova",
+     "segment": "Retail",
+     "seeded": true
+    },
+    {
+     "id": "A-355",
+     "type": "account",
+     "name": "Ridgeview Clinic",
+     "domain": "ridgeviewclinic.example",
+     "owner": "Elena Petrova",
+     "segment": "Healthcare",
+     "seeded": true
+    }
+   ],
+   "stages": [
+    "Prospecting",
+    "Proposal",
+    "Negotiation",
+    "Closed Won",
+    "Closed Lost"
+   ]
+  },
+  "chat": {
+   "channels": {
+    "general": [],
+    "sales": [],
+    "ops": []
+   }
+  }
+ }
+}

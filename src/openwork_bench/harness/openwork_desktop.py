@@ -148,7 +148,43 @@ class OpenWorkClient:
             body["model"] = model
         self.request("POST", f"/workspace/{self._q(ws)}/opencode/session/{self._q(sid)}/prompt_async", body)
 
+    def detect_v2(self) -> bool:
+        """True when the desktop routes chats to engine v2 (the default for fresh installs)."""
+        try:
+            st = self.request("GET", "/experimental/engine-v2-preview/status")
+        except OpenWorkError:
+            return self.v2
+        self.v2 = bool(isinstance(st, dict) and st.get("enabled") and st.get("chatRouting"))
+        return self.v2
+
+    def save_provider_key(self, ws: str, provider_id: str, key: str) -> None:
+        """Save an API key the way the app's AI Providers page does (OpenCode auth.set).
+        On engine v2, OpenWork mirrors it into v2's native provider."""
+        self.request(
+            "PUT",
+            f"/workspace/{self._q(ws)}/opencode/auth/{self._q(provider_id)}",
+            {"type": "api", "key": key},
+        )
+
+    def session_v2(self, ws: str, sid: str) -> dict[str, Any]:
+        out = self.request("GET", f"/workspace/{self._q(ws)}/opencode2/api/session/{self._q(sid)}")
+        return out.get("data", out) if isinstance(out, dict) else {}
+
+    def messages_v2(self, ws: str, sid: str) -> list[dict[str, Any]]:
+        out = self.request(
+            "GET", f"/workspace/{self._q(ws)}/opencode2/api/session/{self._q(sid)}/message?order=asc"
+        )
+        data = out.get("data", out) if isinstance(out, dict) else out
+        return data if isinstance(data, list) else []
+
     def status(self, ws: str) -> dict[str, Any]:
+        if self.v2:
+            out = self.request("GET", f"/workspace/{self._q(ws)}/opencode2/api/session/active")
+            active = out.get("data", out) if isinstance(out, dict) else {}
+            return {
+                sid: {"type": "busy" if (v or {}).get("type") == "running" else "idle"}
+                for sid, v in (active or {}).items()
+            }
         out = self.request("GET", f"/workspace/{self._q(ws)}/opencode/session/status")
         return out if isinstance(out, dict) else {}
 
@@ -262,6 +298,54 @@ class OpenWorkDesktopAgent(Agent):
             host_token=read_secret(ow.get("host_token_env", "OPENWORK_HOST_TOKEN")),
         )
 
+    _keys_saved: set[str] = set()
+
+    @staticmethod
+    def _outcome_v2(world, budgets, status, info, msgs, meta) -> AgentOutcome:
+        t = info.get("tokens") or {}
+        cache = t.get("cache") or {}
+        usage = Usage(
+            input_tokens=int(t.get("input", 0) or 0),
+            output_tokens=int(t.get("output", 0) or 0) + int(t.get("reasoning", 0) or 0),
+            cache_read_tokens=int(cache.get("read", 0) or 0),
+            cache_write_tokens=int(cache.get("write", 0) or 0),
+        )
+        cost = float(info.get("cost", 0) or 0)
+        model = info.get("model") or {}
+        served = [f"{model.get('providerID')}/{model.get('id')}"] if model.get("id") else []
+        meta["outcome"] = info.get("outcome")
+        if usage.total == 0 and not world.actions:
+            status = "error"  # the model never ran: provider or engine failure, not a score
+        elif usage.total >= budgets.max_tokens and status == "completed":
+            status = "budget_tokens"
+        if world.answer is None:
+            texts = [
+                m.get("text")
+                for m in msgs
+                if isinstance(m, dict) and m.get("text") and m.get("role", m.get("type")) != "user"
+            ]
+            world.answer = texts[-1] if texts else ""
+            if status == "completed":
+                status = "no_submit"
+        transcript = [
+            {k: (v[:4000] if isinstance(v, str) else v) for k, v in m.items()}
+            for m in msgs
+            if isinstance(m, dict)
+        ][:200]
+        return AgentOutcome(
+            status=status,
+            usage=usage,
+            steps=len(world.actions),
+            turns=sum(1 for m in msgs if isinstance(m, dict) and m.get("role", m.get("type")) == "assistant"),
+            transcript=transcript,
+            billed_usd=cost if cost > 0 else None,
+            served_by=served,
+            meta=meta,
+            error=None
+            if status != "error"
+            else f"engine v2 session outcome {info.get('outcome')!r} with no tokens",
+        )
+
     def _workspace(self, bundle: TaskBundle, repeat: int) -> str:
         if self.cfg.get("workspace_id"):
             return self.cfg["workspace_id"]
@@ -284,17 +368,24 @@ class OpenWorkDesktopAgent(Agent):
             ) as srv:
                 ws = self._workspace(bundle, repeat)
                 provider_id, provider_block = opencode_model_config(self.subject)
-                self.client.patch_config(
-                    ws,
-                    {
-                        "provider": provider_block,
-                        "model": f"{provider_id}/{self.subject['model']}",
-                        "mcp": {
-                            SERVER_NAME: {"type": "remote", "url": srv.url, "enabled": True, "oauth": False}
-                        },
-                        "permission": dict(DENY_LOCAL_TOOLS),
-                    },
-                )
+                v2 = self.client.detect_v2()
+                update: dict[str, Any] = {
+                    "model": f"{provider_id}/{self.subject['model']}",
+                    "mcp": {SERVER_NAME: {"type": "remote", "url": srv.url, "enabled": True, "oauth": False}},
+                    "permission": dict(DENY_LOCAL_TOOLS),
+                }
+                if v2:
+                    # Engine v2 cannot map a configured OpenRouter block; it mirrors the native provider
+                    # from a saved key instead. Clear any earlier block and save the key once.
+                    update["provider"] = {provider_id: None}
+                    if provider_id not in self._keys_saved:
+                        key = read_secret(self.subject.get("api_key_env", "OPENROUTER_API_KEY")) or ""
+                        self.client.save_provider_key(ws, provider_id, key)
+                        self._keys_saved.add(provider_id)
+                else:
+                    update["provider"] = provider_block
+                meta["engine"] = "v2" if v2 else "v1"
+                self.client.patch_config(ws, update)
                 self.client.reload_engine(ws)
                 model_ref = {"providerID": provider_id, "modelID": self.subject["model"]}
                 sid = self.client.create_session(ws, f"OpenWork Bench · {bundle.id} · r{repeat}", model_ref)
@@ -323,6 +414,10 @@ class OpenWorkDesktopAgent(Agent):
                         break
                     if not busy and (seen_busy or elapsed > grace or world.done):
                         break
+                if self.client.v2:
+                    info = self.client.session_v2(ws, sid)
+                    msgs = self.client.messages_v2(ws, sid)
+                    return self._outcome_v2(world, budgets, status, info, msgs, meta)
                 msgs = self.client.messages(ws, sid)
                 for child in self.client.children(ws, sid):
                     if child.get("id"):

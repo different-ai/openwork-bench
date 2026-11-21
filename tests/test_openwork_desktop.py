@@ -78,6 +78,41 @@ class FakeOpenWork:
                             },
                         )
                     return self._send(200, {"id": "ses_1"})
+                if p == "/experimental/engine-v2-preview/status":
+                    return self._send(200, {"enabled": fake.v2, "chatRouting": fake.v2})
+                if fake.v2 and method == "PUT" and p == "/workspace/ws_1/opencode/auth/openrouter":
+                    fake.saved_key = self._body()
+                    return self._send(200, True)
+                if fake.v2 and p == "/workspace/ws_1/opencode2/api/session/active":
+                    return self._send(200, {"data": {"ses_1": {"type": "running"}} if fake.busy else {}})
+                if fake.v2 and method == "GET" and p == "/workspace/ws_1/opencode2/api/session/ses_1":
+                    return self._send(
+                        200,
+                        {
+                            "data": {
+                                "id": "ses_1",
+                                "model": {"providerID": "openrouter", "id": "z-ai/glm-5.3"},
+                                "cost": 0.0031,
+                                "tokens": {
+                                    "input": 2000,
+                                    "output": 400,
+                                    "reasoning": 100,
+                                    "cache": {"read": 0, "write": 0},
+                                },
+                                "outcome": "completed",
+                            }
+                        },
+                    )
+                if fake.v2 and p.startswith("/workspace/ws_1/opencode2/api/session/ses_1/message"):
+                    return self._send(
+                        200,
+                        {
+                            "data": [
+                                {"id": "m1", "role": "user", "text": "brief"},
+                                {"id": "m2", "role": "assistant", "text": "Replied to Jordan."},
+                            ]
+                        },
+                    )
                 if fake.v2 and p == "/workspace/ws_1/opencode2/api/session":
                     fake.v2_create = self._body()
                     return self._send(200, {"data": {"info": {"id": "ses_1"}}})
@@ -156,6 +191,9 @@ class FakeOpenWork:
 
             def do_PATCH(self):
                 self._route("PATCH")
+
+            def do_PUT(self):
+                self._route("PUT")
 
         self.httpd = ThreadingHTTPServer(("127.0.0.1", 0), H)
         self.url = f"http://127.0.0.1:{self.httpd.server_address[1]}"
@@ -262,3 +300,7 @@ def test_v2_desktop_uses_native_session_routes(env, by_id):
     assert fake.v2_create["model"] == {"providerID": "openrouter", "id": "z-ai/glm-5.3"}
     assert fake.v2_model == {"model": {"providerID": "openrouter", "id": "z-ai/glm-5.3"}}
     assert fake.prompts[0]["delivery"] == "steer" and "Reply to Jordan" in fake.prompts[0]["text"]
+    assert fake.saved_key == {"type": "api", "key": "test-key"}
+    assert fake.config["provider"] == {"openrouter": None}  # v2 mirrors the native provider instead
+    assert row["cost_usd"] == pytest.approx(0.0031) and row["usage"]["output_tokens"] == 500
+    assert row["served_by"] == ["openrouter/z-ai/glm-5.3"]

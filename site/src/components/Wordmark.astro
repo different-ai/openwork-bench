@@ -1,0 +1,32 @@
+---
+// The pixel OPEN followed by Work Bench, drawn at build time.
+// `compact` is the header lockup: at 15 px the hero's spaced pixels and faded "Bench" read as
+// see-through, so it uses chunkier pixels, a heavier "Work" and a solid secondary tone.
+interface Props { class?: string; label?: string; compact?: boolean }
+const { class: className, label, compact = false } = Astro.props;
+
+// A 5x7 raster font, a nod to OpenWork's pixel lettering.
+const GLYPHS: Record<string, string[]> = {
+  O: ['01110', '10001', '10001', '10001', '10001', '10001', '01110'],
+  P: ['11110', '10001', '10001', '11110', '10000', '10000', '10000'],
+  E: ['11111', '10000', '10000', '11110', '10000', '10000', '11111'],
+  N: ['10001', '11001', '10101', '10011', '10001', '10001', '10001'],
+};
+const size = compact ? 0.94 : 0.86;
+const inset = (1 - size) / 2;
+const pixels: { x: number; y: number }[] = [];
+let x = 0;
+for (const ch of 'OPEN') {
+  GLYPHS[ch].forEach((row, y) => [...row].forEach((bit, i) => { if (bit === '1') pixels.push({ x: x + i + inset, y: y + inset }); }));
+  x += 6;
+}
+const main = `font: ${compact ? 600 : 500} 9.2px Inter, sans-serif; letter-spacing: -0.4px; fill: currentColor`;
+const sub = compact
+  ? 'font: 500 9.2px Inter, sans-serif; letter-spacing: -0.4px; fill: var(--wm-sub, currentColor)'
+  : 'font: 400 9.2px Inter, sans-serif; letter-spacing: -0.4px; fill: currentColor; opacity: .38';
+---
+<svg class={className} viewBox={`0 -0.6 ${x + 52} 8.2`} role={label ? 'img' : undefined} aria-label={label} aria-hidden={label ? undefined : 'true'}>
+  {pixels.map((p) => <rect x={p.x.toFixed(2)} y={p.y.toFixed(2)} width={size} height={size} rx={compact ? 0.1 : 0.14} fill="currentColor" />)}
+  <text x={x + 0.4} y="6.55" style={main}>Work</text>
+  <text x={x + 25.5} y="6.55" style={sub}>Bench</text>
+</svg>

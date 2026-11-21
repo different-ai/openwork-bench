@@ -1,0 +1,50 @@
+---
+import Site from '../../layouts/Site.astro';
+import { fmt, heat, heatInk, leaderboard, modelRoute, route, taskRoute } from '../../lib/site';
+
+const lb = leaderboard();
+const cats = lb.index.categories;
+const groups = Object.entries(cats)
+  .map(([id, c]) => ({ id, label: c.label, tasks: lb.tasks.filter((t) => t.category === id) }))
+  .filter((g) => g.tasks.length > 0);
+const best = (taskId: string) => {
+  const scored = lb.subjects
+    .filter((s) => s.type !== 'reference' && s.tasks[taskId])
+    .sort((a, b) => b.tasks[taskId].score - a.tasks[taskId].score);
+  return scored[0];
+};
+const description = `The ${lb.tasks.length} knowledge-work tasks on OpenWork Bench: email, calendar, documents, spreadsheets, CRM and chat, each graded by checks on the final state of a simulated workplace.`;
+---
+<Site title="Tasks" description={description} active="tasks">
+  <header class="page-head">
+    <p class="crumbs"><a href={route()}>Leaderboard</a> / Tasks</p>
+    <h1>Tasks</h1>
+    <p class="lede">Everyday office work in a simulated company. Each task is graded by checks on what the agent left behind, not by how it sounds.</p>
+  </header>
+  {groups.map((g) => (
+    <section class="block" style="margin-top: 56px">
+      <h2 class="list-cat">{g.label}</h2>
+      <div class="card scroll">
+        <table>
+          <thead><tr><th class="l">Task</th><th class="l">Occupation</th><th class="l">Difficulty</th><th>Expert time</th><th class="l">Best subject</th><th>Score</th></tr></thead>
+          <tbody>
+            {g.tasks.map((t) => {
+              const top = best(t.id);
+              const v = top ? top.tasks[t.id].score * 100 : null;
+              return (
+                <tr>
+                  <td class="l"><a href={taskRoute(t)}>{t.title}</a></td>
+                  <td class="l">{t.occupation}</td>
+                  <td class="l">{t.difficulty}</td>
+                  <td>{Math.round(t.expert_minutes)} min</td>
+                  <td class="l">{top ? <a href={modelRoute(top)}>{top.label}</a> : '–'}</td>
+                  <td class="heat" style={`background: ${heat(v)}; color: ${heatInk(v)}`}>{fmt(v, 0)}</td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  ))}
+</Site>

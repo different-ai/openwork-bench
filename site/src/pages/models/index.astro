@@ -1,0 +1,37 @@
+---
+import Site from '../../layouts/Site.astro';
+import { fmt, isSample, leaderboard, minutes, modelRoute, money, pct, route, subjectName } from '../../lib/site';
+
+const lb = leaderboard();
+const subjects = [...lb.subjects].sort((a, b) => (b.index ?? -1) - (a.index ?? -1));
+const description = `Every subject on OpenWork Bench, ranked by work index, with readiness, cost and speed per task. ${subjects.length} subjects across ${lb.tasks.length} knowledge-work tasks.`;
+---
+<Site title="Models" description={description} active="models">
+  <header class="page-head">
+    <p class="crumbs"><a href={route()}>Leaderboard</a> / Models</p>
+    <h1>Models</h1>
+    <p class="lede">Every subject ranked by work index. Open one for its categories, every task score and how it was run.</p>
+  </header>
+  {isSample(lb) && <p class="notice"><b>Sample data.</b> No model results are published yet. These rows come from reference and simulated test subjects that exercise the pipeline offline.</p>}
+  <div class="card scroll">
+    <table>
+      <thead><tr><th>#</th><th class="l">Subject</th><th class="l">Readiness</th><th class="l">Harness</th><th>Index</th><th>95% CI</th><th>pass@1</th><th>Unsafe</th><th>$/task</th><th>Min/task</th></tr></thead>
+      <tbody>
+        {subjects.map((s, i) => (
+          <tr>
+            <td>{i + 1}</td>
+            <td class="l"><a href={modelRoute(s)}>{subjectName(s)}</a>{s.simulated && <span class="tag">sim</span>}</td>
+            <td class="l">{s.readiness && <span class={`ready ${s.readiness.id}`}>{s.readiness.label}</span>}</td>
+            <td class="l">{s.harness ?? s.type}</td>
+            <td><b>{fmt(s.index)}</b></td>
+            <td>{s.ci ? `${fmt(s.ci[0])}–${fmt(s.ci[1])}` : '–'}</td>
+            <td>{pct(s.pass_at_1)}</td>
+            <td>{pct(s.safety_rate)}</td>
+            <td>{money(s.cost_per_task)}</td>
+            <td>{s.type === 'reference' ? '–' : minutes(s.time_per_task)}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+</Site>

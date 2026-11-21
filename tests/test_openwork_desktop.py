@@ -292,6 +292,9 @@ def test_server_errors_are_infrastructure_errors(env, by_id):
 
 def test_v2_desktop_uses_native_session_routes(env, by_id):
     from openwork_bench.grading import ScoringConfig
+    from openwork_bench.harness import openwork_desktop
+
+    openwork_desktop._SAVED_KEYS.clear()
 
     b = by_id["expense-policy-answer"]
     fake = FakeOpenWork(b.reference, v2=True)

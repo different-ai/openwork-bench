@@ -39,6 +39,10 @@ from ..tasks import TaskBundle
 from ..world import World
 from .base import Agent, AgentOutcome, work_context
 
+# (server, provider) pairs whose key this process already saved. Saving again would make engine v2
+# re-mirror providers and reload its model catalog while other sessions are running.
+_SAVED_KEYS: set[tuple[str, str]] = set()
+
 DENY_LOCAL_TOOLS = {"edit": "deny", "bash": "deny", "webfetch": "deny", "external_directory": "deny"}
 
 
@@ -377,11 +381,11 @@ class OpenWorkDesktopAgent(Agent):
                 if v2:
                     # Engine v2 cannot map a configured OpenRouter block; it mirrors the native provider
                     # from a saved key instead. Clear any earlier block and save the key once.
-                    update["provider"] = {provider_id: None}
-                    if provider_id not in self._keys_saved:
+                    if (self.client.base_url, provider_id) not in _SAVED_KEYS:
+                        update["provider"] = {provider_id: None}
                         key = read_secret(self.subject.get("api_key_env", "OPENROUTER_API_KEY")) or ""
                         self.client.save_provider_key(ws, provider_id, key)
-                        self._keys_saved.add(provider_id)
+                        _SAVED_KEYS.add((self.client.base_url, provider_id))
                 else:
                     update["provider"] = provider_block
                 meta["engine"] = "v2" if v2 else "v1"

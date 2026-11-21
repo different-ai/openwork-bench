@@ -113,7 +113,8 @@ def _plan_one(
         problems.append(
             f"estimated sandbox time {hours:.1f} h exceeds budget {budget['max_sandbox_hours']} h"
         )
-    missing = [x["name"] for x in spec.get("secrets", []) if not os.environ.get(x["name"])]
+    # Environment variable names the run needs; only the names are ever read or printed.
+    unset = [x["name"] for x in spec.get("required_env", []) if x["name"] not in os.environ]
 
     server = ow.get("server", {})
     desktop_ids = [r["subject"] for r in rows if r["harness"] == "openwork-desktop"]
@@ -156,7 +157,7 @@ def _plan_one(
             "est_sandbox_usd": round(sandbox_usd, 2),
         },
         "budget": budget,
-        "missing_secrets": missing,
+        "unset_env": unset,
         "problems": problems,
         "steps": steps_out,
     }
@@ -202,8 +203,8 @@ def _render_one(p: dict[str, Any]) -> str:
         f"Estimated sandbox time  {t['est_sandbox_hours']:.1f} h ≈ ${t['est_sandbox_usd']:.2f}   (budget {b.get('max_sandbox_hours')} h)",
         "Estimates use planning assumptions from the world spec; real runs record billed cost.",
     ]
-    if p["missing_secrets"]:
-        out.append(f"Secrets not set in this shell: {', '.join(p['missing_secrets'])}")
+    if p["unset_env"]:
+        out.append(f"Not set in this shell: {', '.join(p['unset_env'])}")
     out += ["", "Problems:" if p["problems"] else "Problems: none"] + [f"  - {x}" for x in p["problems"]]
     out += ["", "Steps:"] + [f"  {i}. {s}" for i, s in enumerate(p["steps"], 1)]
     return "\n".join(out)

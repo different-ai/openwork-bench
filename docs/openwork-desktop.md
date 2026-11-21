@@ -8,7 +8,7 @@ document is the run standard.
 
 | Piece | What it is | Where |
 |---|---|---|
-| World spec | One YAML file describing a complete run: OpenWork build and placement, board, harnesses, repeats, secrets by name, budget | `worlds/openwork-bench.world.yaml` |
+| World spec | One YAML file describing a complete run: OpenWork build and placement, board, harnesses, repeats, required environment variables by name, budget | `worlds/openwork-bench.world.yaml` |
 | OpenWork world | A sandbox running OpenWork Desktop (server + engine), created with OpenWork's world CLI | `different-ai/openwork`: `pnpm world up preview-desktop --place daytona` |
 | Task world | The task's simulated company served as a remote MCP server (streamable HTTP) | `owb world serve <task> --http` (started automatically per attempt) |
 | Harness | `openwork-desktop`: drives the OpenWork server for each attempt and reads the result | `src/openwork_bench/harness/openwork_desktop.py` |

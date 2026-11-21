@@ -24,6 +24,8 @@ uv run owb validate
 
 ## Pull requests
 
+- Open PRs against `pre-release` (`--base pre-release`); `main` takes only release PRs from
+  `pre-release`. See [docs/maintaining.md](docs/maintaining.md).
 - One focused change per PR, with a plain description of the problem and the change.
 - New or changed tasks must pass `owb validate`: the reference solution scores 1.0 and an empty
   submission scores at most 0.15.

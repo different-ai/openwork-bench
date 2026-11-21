@@ -5,7 +5,6 @@ from __future__ import annotations
 import argparse
 import json
 import sys
-import webbrowser
 from pathlib import Path
 from typing import Any
 
@@ -230,20 +229,9 @@ def cmd_leaderboard(args: argparse.Namespace) -> int:
     return 0
 
 
-def cmd_site(args: argparse.Namespace) -> int:
-    from .site import build_site
-
-    path = build_site(Path(args.leaderboard), Path(args.out))
-    print(f"Wrote {path}")
-    if args.open:
-        webbrowser.open(path.resolve().as_uri())
-    return 0
-
-
 def cmd_demo(args: argparse.Namespace) -> int:
-    """Run the offline subjects end to end and build the leaderboard site."""
+    """Run the offline subjects end to end and write the leaderboard the site is built from."""
     from .index import summary_table
-    from .site import build_site
     from .subjects import load_subjects
 
     subjects = load_subjects()
@@ -265,10 +253,10 @@ def cmd_demo(args: argparse.Namespace) -> int:
     out = Path(args.out) / "leaderboard.json"
     out.write_text(json.dumps(lb, indent=1))
     print("\n" + summary_table(lb))
-    site = build_site(out, Path(args.site_out))
-    print(f"\nLeaderboard: {out}\nSite: {site}")
-    if args.open:
-        webbrowser.open(site.resolve().as_uri())
+    site_data = Path(args.site_data)
+    site_data.parent.mkdir(parents=True, exist_ok=True)
+    site_data.write_text(out.read_text())
+    print(f"\nLeaderboard: {out}\nSite data: {site_data} (cd site && npm run dev)")
     return 0
 
 
@@ -436,25 +424,20 @@ def build_parser() -> argparse.ArgumentParser:
     lb = sub.add_parser("leaderboard", help="Build leaderboard.json from runs")
     lb.add_argument("--runs", nargs="+", default=["runs"])
     lb.add_argument("--index", default=None)
-    lb.add_argument("--out", default="site/data/leaderboard.json")
+    lb.add_argument("--out", default="site/public/leaderboard.json")
     lb.add_argument("--any-index", action="store_true", help="Include rows from other index versions")
     lb.set_defaults(fn=cmd_leaderboard)
 
-    s = sub.add_parser("site", help="Build the static leaderboard site")
-    s.add_argument("--leaderboard", default="site/data/leaderboard.json")
-    s.add_argument("--out", default="site/dist")
-    s.add_argument("--open", action="store_true")
-    s.set_defaults(fn=cmd_site)
-
     d = sub.add_parser(
-        "demo", help="Offline end-to-end demo: reference + simulated subjects, leaderboard, site"
+        "demo", help="Offline end-to-end demo: reference + simulated subjects and the leaderboard"
     )
     d.add_argument("--repeats", type=int, default=3)
     d.add_argument("--workers", type=int, default=8)
     d.add_argument("--out", default="runs-demo")
-    d.add_argument("--site-out", default="site/dist")
+    d.add_argument(
+        "--site-data", default="site/public/leaderboard.json", help="Where the site reads the leaderboard"
+    )
     d.add_argument("--index", default=None)
-    d.add_argument("--open", action="store_true")
     d.set_defaults(fn=cmd_demo)
 
     sh = sub.add_parser("show", help="Show a run, or one task's trajectory")

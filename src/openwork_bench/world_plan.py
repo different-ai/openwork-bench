@@ -138,7 +138,7 @@ def _plan_one(
             f"(in the sandbox) owb run {' '.join(control_ids)} --tasks {bench.get('tasks', 'all')} --repeats {repeats}"
         )
     steps_out += [
-        "owb leaderboard --runs runs && owb site",
+        "owb leaderboard --runs runs --out site/public/leaderboard.json   # then: cd site && npm run build",
         f"owb hub push-run runs/<run_id>   # opens a pull request on {spec.get('publish', {}).get('results_repo', 'the results dataset')}",
         "(in the sandbox) delete the key file; revoke the key at the provider",
         f"(in different-ai/openwork) pnpm world down {ow['world']}",

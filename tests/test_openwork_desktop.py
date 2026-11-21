@@ -50,7 +50,17 @@ class FakeOpenWork:
                 if p == "/workspaces/local":
                     if self.headers.get("X-OpenWork-Host-Token") != HOST:
                         return self._send(401, {"error": "host token"})
-                    return self._send(200, {"workspace": {"id": "ws_1", "path": self._body()["folderPath"]}})
+                    folder = self._body()["folderPath"]
+                    return self._send(
+                        200,
+                        {
+                            "activeId": "ws_1",
+                            "workspaces": [
+                                {"id": "ws_0", "path": "/other", "workspaceType": "local"},
+                                {"id": "ws_1", "path": folder, "workspaceType": "local"},
+                            ],
+                        },
+                    )
                 if self.headers.get("Authorization") != f"Bearer {CLIENT}":
                     return self._send(401, {"error": "client token"})
                 if method == "PATCH" and p == "/workspace/ws_1/config":

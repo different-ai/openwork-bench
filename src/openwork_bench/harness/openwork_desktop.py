@@ -84,7 +84,17 @@ class OpenWorkClient:
         out = self.request(
             "POST", "/workspaces/local", {"folderPath": folder, "name": name, "preset": "starter"}, host=True
         )
-        ws = out.get("workspace", out) if isinstance(out, dict) else {}
+        # The server answers with the full registry: {"activeId": ..., "workspaces": [...]}.
+        # Older shapes returned {"workspace": {...}} or the workspace itself.
+        ws: dict[str, Any] = {}
+        if isinstance(out, dict):
+            if isinstance(out.get("workspaces"), list):
+                items = [w for w in out["workspaces"] if isinstance(w, dict)]
+                ws = next((w for w in items if w.get("path") == folder), None) or next(
+                    (w for w in items if w.get("id") == out.get("activeId")), {}
+                )
+            else:
+                ws = out.get("workspace", out)
         if not ws.get("id"):
             raise OpenWorkError(f"workspace creation returned no id: {str(out)[:200]}")
         return ws

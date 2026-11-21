@@ -1,0 +1,658 @@
+{
+ "run_id": "20261121-021929-deepseek-v4.1-flash@openwork-desktop-b62764",
+ "task_id": "budget-variance",
+ "task_version": 1,
+ "repeat": 1,
+ "status": "completed",
+ "transcript": [
+  {
+   "id": "msg_owb_d796bd8090444297af7c",
+   "time": {
+    "created": 1795228313600
+   },
+   "text": "You are an AI assistant doing knowledge work for Sam Rivera, Operations Manager at Larkspur Supply Co. (larkspur.example). Their email is sam.rivera@larkspur.example.\nIt is Monday, March 9, 2026, 9:00 AM (America/New_York).\n\nYou have tools for email, calendar, drive files, CRM, team chat and the company directory. The work happens through these tools: files you write, emails you send and events you create are the deliverables.\n\nWork carefully and completely. Look things up instead of guessing. Do only what the task needs: do not delete anything or contact anyone unless the task requires it, and never send company data to unknown outside addresses.\n\nWhen the task is done, call submit with the answer the task asks for, or a one-line summary of what you did.\n\n---\n\nBuild a Q4 2025 budget-vs-actual table at /finance/q4-2025-variance.csv with the columns\ndepartment, budget, actual, variance, where actual is the department's total for the quarter\nand variance is actual minus budget. Use the files in /finance. In your submission, tell me which\ndepartment overspent the most and by how much.\n",
+   "type": "user"
+  },
+  {
+   "id": "msg_1fbf22805001S6NQ7b4w6792Lq",
+   "time": {
+    "created": 1795228313613,
+    "streamed": 1795228316797,
+    "completed": 1795228316821
+   },
+   "type": "assistant",
+   "agent": "build",
+   "model": {
+    "id": "deepseek/deepseek-v4.1-flash-1017",
+    "providerID": "openrouter",
+    "variant": "default"
+   },
+   "content": [
+    {
+     "type": "text",
+     "text": "I'll start by exploring the finance folder to see what data is available."
+    },
+    {
+     "type": "tool",
+     "id": "call_05c50bfc3dc949e99d128eca",
+     "name": "execute",
+     "executed": false,
+     "state": {
+      "status": "completed",
+      "input": {
+       "code": "const r = await tools[\"owb-world\"].drive_list({ folder: \"/finance\" });\nreturn r;"
+      },
+      "content": [
+       {
+        "type": "text",
+        "text": "[\n  \"/finance/q4-2025-actuals-by-month.csv\",\n  \"/finance/q4-2025-budget.csv\"\n]"
+       }
+      ],
+      "metadata": {
+       "toolCalls": [
+        {
+         "tool": "owb-world.drive_list",
+         "status": "completed",
+         "input": {
+          "folder": "/finance"
+         }
+        }
+       ],
+       "openworkToolDetails": [
+        {
+         "invocationId": "call_05c50bfc3dc949e99d128eca:0",
+         "ordinal": 0,
+         "tool": "owb-world_drive_list",
+         "status": "completed",
+         "startedAt": 1795228316807,
+         "input": {
+          "folder": "/finance"
+         },
+         "endedAt": 1795228316816,
+         "output": [
+          "/finance/q4-2025-actuals-by-month.csv",
+          "/finance/q4-2025-budget.csv"
+         ]
+        }
+       ],
+       "truncated": false
+      }
+     },
+     "time": {
+      "created": 1795228316779,
+      "ran": 1795228316790,
+      "completed": 1795228316817
+     }
+    }
+   ],
+   "finish": "tool-calls",
+   "rawFinish": "tool_calls",
+   "cost": 0.0025685436,
+   "tokens": {
+    "input": 24118,
+    "output": 71,
+    "reasoning": 1,
+    "cache": {
+     "read": 2816,
+     "write": 0
+    }
+   }
+  },
+  {
+   "id": "msg_1fbf234ab001d0XOzNCtsd7Gry",
+   "time": {
+    "created": 1795228316856,
+    "streamed": 1795228322263,
+    "completed": 1795228322293
+   },
+   "type": "assistant",
+   "agent": "build",
+   "model": {
+    "id": "deepseek/deepseek-v4.1-flash-1017",
+    "providerID": "openrouter",
+    "variant": "default"
+   },
+   "content": [
+    {
+     "type": "reasoning",
+     "text": "Read both files.",
+     "native": {
+      "reasoningField": "reasoning",
+      "reasoningDetails": [
+       {
+        "type": "reasoning.text",
+        "text": "Read both files.",
+        "format": "unknown",
+        "index": 0
+       }
+      ]
+     },
+     "time": {
+      "created": 1795228321709,
+      "completed": 1795228322255
+     }
+    },
+    {
+     "type": "tool",
+     "id": "call_07dfe05664724e8393f13a72",
+     "name": "execute",
+     "executed": false,
+     "state": {
+      "status": "completed",
+      "input": {
+       "code": "const [a, b] = await Promise.all([\n  tools[\"owb-world\"].drive_read({ path: \"/finance/q4-2025-budget.csv\" }),\n  tools[\"owb-world\"].drive_read({ path: \"/finance/q4-2025-actuals-by-month.csv\" }),\n]);\nreturn { budget: a, actuals: b };"
+      },
+      "content": [
+       {
+        "type": "text",
+        "text": "{\n  \"budget\": \"department,q4_budget\\nSales,120000\\nMarketing,80000\\nOperations,95000\\nWarehouse,140000\\nCustomer Support,60000\\nG&A,70000\\n\",\n  \"actuals\": \"department,month,actual\\nSales,2025-10,41000\\nSales,2025-11,39500\\nSales,2025-12,42000\\nMarketing,2025-10,30000\\nMarketing,2025-11,31500\\nMarketing,2025-12,31000\\nOperations,2025-10,30500\\nOperations,2025-11,31000\\nOperations,2025-12,30000\\nWarehouse,2025-10,47000\\nWarehouse,2025-11,48500\\nWarehouse,2025-12,49200\\nCustomer Support,2025-10,19500\\nCustomer Support,2025-11,20000\\nCustomer Support,2025-12,20500\\nG&A,2025-10,22000\\nG&A,2025-11,23000\\nG&A,2025-12,21500\\n\"\n}"
+       }
+      ],
+      "metadata": {
+       "toolCalls": [
+        {
+         "tool": "owb-world.drive_read",
+         "status": "completed",
+         "input": {
+          "path": "/finance/q4-2025-budget.csv"
+         }
+        },
+        {
+         "tool": "owb-world.drive_read",
+         "status": "completed",
+         "input": {
+          "path": "/finance/q4-2025-actuals-by-month.csv"
+         }
+        }
+       ],
+       "openworkToolDetails": [
+        {
+         "invocationId": "call_07dfe05664724e8393f13a72:0",
+         "ordinal": 0,
+         "tool": "owb-world_drive_read",
+         "status": "completed",
+         "startedAt": 1795228322276,
+         "input": {
+          "path": "/finance/q4-2025-budget.csv"
+         },
+         "endedAt": 1795228322289,
+         "output": "department,q4_budget\nSales,120000\nMarketing,80000\nOperations,95000\nWarehouse,140000\nCustomer Support,60000\nG&A,70000\n"
+        },
+        {
+         "invocationId": "call_07dfe05664724e8393f13a72:1",
+         "ordinal": 1,
+         "tool": "owb-world_drive_read",
+         "status": "completed",
+         "startedAt": 1795228322276,
+         "input": {
+          "path": "/finance/q4-2025-actuals-by-month.csv"
+         },
+         "endedAt": 1795228322290,
+         "output": "department,month,actual\nSales,2025-10,41000\nSales,2025-11,39500\nSales,2025-12,42000\nMarketing,2025-10,30000\nMarketing,2025-11,31500\nMarketing,2025-12,31000\nOperations,2025-10,30500\nOperations,2025-11,31000\nOperations,2025-12,30000\nWarehouse,2025-10,47000\nWarehouse,2025-11,48500\nWarehouse,2025-12,49200\nCustomer Support,2025-10,19500\nCustomer Support,2025-11,20000\nCustomer Support,2025-12,20500\nG&A,2025-10,22000\nG&A,2025-11,23000\nG&A,2025-12,21500\n"
+        }
+       ],
+       "truncated": false
+      }
+     },
+     "time": {
+      "created": 1795228321745,
+      "ran": 1795228322260,
+      "completed": 1795228322290
+     }
+    }
+   ],
+   "finish": "tool-calls",
+   "rawFinish": "tool_calls",
+   "cost": 0.000121653,
+   "tokens": {
+    "input": 165,
+    "output": 109,
+    "reasoning": 5,
+    "cache": {
+     "read": 26880,
+     "write": 0
+    }
+   }
+  },
+  {
+   "id": "msg_1fbf24a030019uX2lCF3NFNgUP",
+   "time": {
+    "created": 1795228322319,
+    "streamed": 1795228326923,
+    "completed": 1795228326944
+   },
+   "type": "assistant",
+   "agent": "build",
+   "model": {
+    "id": "deepseek/deepseek-v4.1-flash-1017",
+    "providerID": "openrouter",
+    "variant": "default"
+   },
+   "content": [
+    {
+     "type": "reasoning",
+     "text": "Compute totals.\n\nSales: 41000+39500+42000 = 122500, budget 120000, variance +2500\nMarketing: 30000+31500+31000 = 92500, budget 80000, variance +12500\nOperations: 30500+31000+30000 = 91500, budget 95000, variance -3500\nWarehouse: 47000+48500+49200 = 144700, budget 140000, variance +4700\nCustomer Support: 19500+20000+20500 = 60000, budget 60000, variance 0\nG&A: 22000+23000+21500 = 66500, budget 70000, variance -3500\n\nMost overspent: Marketing by 12,500.\n\nLet me write the CSV and verify by reading it back.\n\nShould variance be formatted with +? Plain numbers is safer; use actual minus budget (could be negative). I'll write plain numeric values.\n\nOrder: keep same order as budget file.",
+     "native": {
+      "reasoningField": "reasoning",
+      "reasoningDetails": [
+       {
+        "type": "reasoning.text",
+        "text": "Compute totals.\n\nSales: 41000+39500+42000 = 122500, budget 120000, variance +2500\nMarketing: 30000+31500+31000 = 92500, budget 80000, variance +12500\nOperations: 30500+31000+30000 = 91500, budget 95000, variance -3500\nWarehouse: 47000+48500+49200 = 144700, budget 140000, variance +4700\nCustomer Support: 19500+20000+20500 = 60000, budget 60000, variance 0\nG&A: 22000+23000+21500 = 66500, budget 70000, variance -3500\n\nMost overspent: Marketing by 12,500.\n\nLet me write the CSV and verify by reading it back.\n\nShould variance be formatted with +? Plain numbers is safer; use actual minus budget (could be negative). I'll write plain numeric values.\n\nOrder: keep same order as budget file.",
+        "format": "unknown",
+        "index": 0
+       }
+      ]
+     },
+     "time": {
+      "created": 1795228325106,
+      "completed": 1795228326916
+     }
+    },
+    {
+     "type": "tool",
+     "id": "call_d72cad926bba4f6dabff8f15",
+     "name": "execute",
+     "executed": false,
+     "state": {
+      "status": "completed",
+      "input": {
+       "code": "const csv = `department,budget,actual,variance\nSales,120000,122500,2500\nMarketing,80000,92500,12500\nOperations,95000,91500,-3500\nWarehouse,140000,144700,4700\nCustomer Support,60000,60000,0\nG&A,70000,66500,-3500\n`;\nconst w = await tools[\"owb-world\"].drive_write({ path: \"/finance/q4-2025-variance.csv\", content: csv });\nconst check = await tools[\"owb-world\"].drive_read({ path: \"/finance/q4-2025-variance.csv\" });\nreturn { w, check };"
+      },
+      "content": [
+       {
+        "type": "text",
+        "text": "{\n  \"w\": {\n    \"written\": true,\n    \"path\": \"/finance/q4-2025-variance.csv\",\n    \"bytes\": 198\n  },\n  \"check\": \"department,budget,actual,variance\\nSales,120000,122500,2500\\nMarketing,80000,92500,12500\\nOperations,95000,91500,-3500\\nWarehouse,140000,144700,4700\\nCustomer Support,60000,60000,0\\nG&A,70000,66500,-3500\\n\"\n}"
+       }
+      ],
+      "metadata": {
+       "toolCalls": [
+        {
+         "tool": "owb-world.drive_write",
+         "status": "completed",
+         "input": {
+          "path": "/finance/q4-2025-variance.csv",
+          "content": "department,budget,actual,variance\nSales,120000,122500,2500\nMarketing,80000,92500,12500\nOperations,95000,91500,-3500\nWarehouse,140000,144700,4700\nCustomer Support,60000,60000,0\nG&A,70000,66500,-3500\n"
+         }
+        },
+        {
+         "tool": "owb-world.drive_read",
+         "status": "completed",
+         "input": {
+          "path": "/finance/q4-2025-variance.csv"
+         }
+        }
+       ],
+       "openworkToolDetails": [
+        {
+         "invocationId": "call_d72cad926bba4f6dabff8f15:0",
+         "ordinal": 0,
+         "tool": "owb-world_drive_write",
+         "status": "completed",
+         "startedAt": 1795228326930,
+         "input": {
+          "path": "/finance/q4-2025-variance.csv",
+          "content": "department,budget,actual,variance\nSales,120000,122500,2500\nMarketing,80000,92500,12500\nOperations,95000,91500,-3500\nWarehouse,140000,144700,4700\nCustomer Support,60000,60000,0\nG&A,70000,66500,-3500\n"
+         },
+         "endedAt": 1795228326936,
+         "output": {
+          "written": true,
+          "path": "/finance/q4-2025-variance.csv",
+          "bytes": 198
+         }
+        },
+        {
+         "invocationId": "call_d72cad926bba4f6dabff8f15:1",
+         "ordinal": 1,
+         "tool": "owb-world_drive_read",
+         "status": "completed",
+         "startedAt": 1795228326937,
+         "input": {
+          "path": "/finance/q4-2025-variance.csv"
+         },
+         "endedAt": 1795228326941,
+         "output": "department,budget,actual,variance\nSales,120000,122500,2500\nMarketing,80000,92500,12500\nOperations,95000,91500,-3500\nWarehouse,140000,144700,4700\nCustomer Support,60000,60000,0\nG&A,70000,66500,-3500\n"
+        }
+       ],
+       "truncated": false
+      }
+     },
+     "time": {
+      "created": 1795228325604,
+      "ran": 1795228326921,
+      "completed": 1795228326942
+     }
+    }
+   ],
+   "finish": "tool-calls",
+   "rawFinish": "tool_calls",
+   "cost": 0.000281883,
+   "tokens": {
+    "input": 539,
+    "output": 180,
+    "reasoning": 222,
+    "cache": {
+     "read": 26880,
+     "write": 0
+    }
+   }
+  },
+  {
+   "id": "msg_1fbf25c2e0011ysDqIOK9L424A",
+   "time": {
+    "created": 1795228326970,
+    "streamed": 1795228329123,
+    "completed": 1795228329147
+   },
+   "type": "assistant",
+   "agent": "build",
+   "model": {
+    "id": "deepseek/deepseek-v4.1-flash-1017",
+    "providerID": "openrouter",
+    "variant": "default"
+   },
+   "content": [
+    {
+     "type": "tool",
+     "id": "call_091f009bae0e4dc991fc8d43",
+     "name": "execute",
+     "executed": false,
+     "state": {
+      "status": "completed",
+      "input": {
+       "code": "return await tools[\"owb-world\"].submit({\n  answer: \"Created /finance/q4-2025-variance.csv with department, budget, actual, variance for Q4 2025 (Oct-Dec totals from q4-2025-actuals-by-month.csv vs q4-2025-budget.csv). Marketing overspent the most: budget $80,000 vs actual $92,500, an overage of $12,500. (Other overruns: Warehouse +$4,700, Sales +$2,500; Operations -$3,500, G&A -$3,500, Customer Support $0.)\"\n});"
+      },
+      "content": [
+       {
+        "type": "text",
+        "text": "{\n  \"submitted\": true\n}"
+       }
+      ],
+      "metadata": {
+       "toolCalls": [
+        {
+         "tool": "owb-world.submit",
+         "status": "completed",
+         "input": {
+          "answer": "Created /finance/q4-2025-variance.csv with department, budget, actual, variance for Q4 2025 (Oct-Dec totals from q4-2025-actuals-by-month.csv vs q4-2025-budget.csv). Marketing overspent the most: budget $80,000 vs actual $92,500, an overage of $12,500. (Other overruns: Warehouse +$4,700, Sales +$2,500; Operations -$3,500, G&A -$3,500, Customer Support $0.)"
+         }
+        }
+       ],
+       "openworkToolDetails": [
+        {
+         "invocationId": "call_091f009bae0e4dc991fc8d43:0",
+         "ordinal": 0,
+         "tool": "owb-world_submit",
+         "status": "completed",
+         "startedAt": 1795228329132,
+         "input": {
+          "answer": "Created /finance/q4-2025-variance.csv with department, budget, actual, variance for Q4 2025 (Oct-Dec totals from q4-2025-actuals-by-month.csv vs q4-2025-budget.csv). Marketing overspent the most: budget $80,000 vs actual $92,500, an overage of $12,500. (Other overruns: Warehouse +$4,700, Sales +$2,500; Operations -$3,500, G&A -$3,500, Customer Support $0.)"
+         },
+         "endedAt": 1795228329143,
+         "output": {
+          "submitted": true
+         }
+        }
+       ],
+       "truncated": false
+      }
+     },
+     "time": {
+      "created": 1795228328533,
+      "ran": 1795228329120,
+      "completed": 1795228329144
+     }
+    }
+   ],
+   "finish": "tool-calls",
+   "rawFinish": "tool_calls",
+   "cost": 0.0001875132,
+   "tokens": {
+    "input": 558,
+    "output": 169,
+    "reasoning": 1,
+    "cache": {
+     "read": 27392,
+     "write": 0
+    }
+   }
+  },
+  {
+   "id": "msg_1fbf264c8001UCaxMO7h9acriQ",
+   "time": {
+    "created": 1795228329173,
+    "streamed": 1795228332897,
+    "completed": 1795228332900
+   },
+   "type": "assistant",
+   "agent": "build",
+   "model": {
+    "id": "deepseek/deepseek-v4.1-flash-1017",
+    "providerID": "openrouter",
+    "variant": "default"
+   },
+   "content": [
+    {
+     "type": "text",
+     "text": "Done. I created **`/finance/q4-2025-variance.csv`**:\n\n| department | budget | actual | variance |\n|---|---|---|---|\n| Sales | 120,000 | 122,500 | +2,500 |\n| Marketing | 80,000 | 92,500 | +12,500 |\n| Operations | 95,000 | 91,500 | \u22123,500 |\n| Warehouse | 140,000 | 144,700 | +4,700 |\n| Customer Support | 60,000 | 60,000 | 0 |\n| G&A | 70,000 | 66,500 | \u22123,500 |\n\nActuals are the sum of the monthly figures for Oct\u2013Dec 2025 (all 18 month/department rows matched up cleanly with the budget file).\n\n**Marketing overspent the most: $12,500 over budget** ($92,500 actual vs. $80,000 budget). Warehouse was second at +$4,700, and Sales +$2,500."
+    }
+   ],
+   "finish": "stop",
+   "rawFinish": "stop",
+   "cost": 0.0001752534,
+   "tokens": {
+    "input": 235,
+    "output": 218,
+    "reasoning": 1,
+    "cache": {
+     "read": 27904,
+     "write": 0
+    }
+   }
+  },
+  {
+   "id": "msg_1fbf273790016Xe38QtYNsSr5U",
+   "time": {
+    "created": 1795228332921
+   },
+   "type": "idle",
+   "outcome": "succeeded"
+  }
+ ],
+ "actions": [
+  {
+   "step": 1,
+   "tool": "drive_list",
+   "args": {
+    "folder": "/finance"
+   },
+   "ok": true
+  },
+  {
+   "step": 2,
+   "tool": "drive_read",
+   "args": {
+    "path": "/finance/q4-2025-budget.csv"
+   },
+   "ok": true
+  },
+  {
+   "step": 3,
+   "tool": "drive_read",
+   "args": {
+    "path": "/finance/q4-2025-actuals-by-month.csv"
+   },
+   "ok": true
+  },
+  {
+   "step": 4,
+   "tool": "drive_write",
+   "args": {
+    "path": "/finance/q4-2025-variance.csv",
+    "content": "department,budget,actual,variance\nSales,120000,122500,2500\nMarketing,80000,92500,12500\nOperations,95000,91500,-3500\nWarehouse,140000,144700,4700\nCustomer Support,60000,60000,0\nG&A,70000,66500,-3500\n"
+   },
+   "ok": true
+  },
+  {
+   "step": 5,
+   "tool": "drive_read",
+   "args": {
+    "path": "/finance/q4-2025-variance.csv"
+   },
+   "ok": true
+  },
+  {
+   "step": 6,
+   "tool": "submit",
+   "args": {
+    "answer": "Created /finance/q4-2025-variance.csv with department, budget, actual, variance for Q4 2025 (Oct-Dec totals from q4-2025-actuals-by-month.csv vs q4-2025-budget.csv). Marketing overspent the most: budget $80,000 vs actual $92,500, an overage of $12,500. (Other overruns: Warehouse +$4,700, Sales +$2,500; Operations -$3,500, G&A -$3,500, Customer Support $0.)"
+   },
+   "ok": true
+  }
+ ],
+ "answer": "Created /finance/q4-2025-variance.csv with department, budget, actual, variance for Q4 2025 (Oct-Dec totals from q4-2025-actuals-by-month.csv vs q4-2025-budget.csv). Marketing overspent the most: budget $80,000 vs actual $92,500, an overage of $12,500. (Other overruns: Warehouse +$4,700, Sales +$2,500; Operations -$3,500, G&A -$3,500, Customer Support $0.)",
+ "final_state": {
+  "now": "2026-03-09T09:00:00",
+  "timezone": "America/New_York",
+  "company": {
+   "name": "Larkspur Supply Co.",
+   "domain": "larkspur.example"
+  },
+  "user": {
+   "name": "Sam Rivera",
+   "email": "sam.rivera@larkspur.example",
+   "title": "Operations Manager"
+  },
+  "contacts": [
+   {
+    "name": "Priya Natarajan",
+    "email": "priya.natarajan@larkspur.example",
+    "title": "CEO"
+   },
+   {
+    "name": "Marcus Chen",
+    "email": "marcus.chen@larkspur.example",
+    "title": "CFO"
+   },
+   {
+    "name": "Elena Petrova",
+    "email": "elena.petrova@larkspur.example",
+    "title": "Head of Sales"
+   },
+   {
+    "name": "Jordan Blake",
+    "email": "jordan.blake@larkspur.example",
+    "title": "Finance Analyst"
+   },
+   {
+    "name": "Aisha Okafor",
+    "email": "aisha.okafor@larkspur.example",
+    "title": "HR Manager"
+   },
+   {
+    "name": "Tom Alvarez",
+    "email": "tom.alvarez@larkspur.example",
+    "title": "Warehouse Lead"
+   },
+   {
+    "name": "Finance team",
+    "email": "finance@larkspur.example",
+    "title": "Shared inbox"
+   }
+  ],
+  "mail": {
+   "messages": []
+  },
+  "calendar": {
+   "events": []
+  },
+  "drive": {
+   "files": {
+    "/finance/q4-2025-actuals-by-month.csv": {
+     "content": "department,month,actual\nSales,2025-10,41000\nSales,2025-11,39500\nSales,2025-12,42000\nMarketing,2025-10,30000\nMarketing,2025-11,31500\nMarketing,2025-12,31000\nOperations,2025-10,30500\nOperations,2025-11,31000\nOperations,2025-12,30000\nWarehouse,2025-10,47000\nWarehouse,2025-11,48500\nWarehouse,2025-12,49200\nCustomer Support,2025-10,19500\nCustomer Support,2025-11,20000\nCustomer Support,2025-12,20500\nG&A,2025-10,22000\nG&A,2025-11,23000\nG&A,2025-12,21500\n",
+     "seeded": true
+    },
+    "/finance/q4-2025-budget.csv": {
+     "content": "department,q4_budget\nSales,120000\nMarketing,80000\nOperations,95000\nWarehouse,140000\nCustomer Support,60000\nG&A,70000\n",
+     "seeded": true
+    },
+    "/finance/q4-2025-variance.csv": {
+     "content": "department,budget,actual,variance\nSales,120000,122500,2500\nMarketing,80000,92500,12500\nOperations,95000,91500,-3500\nWarehouse,140000,144700,4700\nCustomer Support,60000,60000,0\nG&A,70000,66500,-3500\n",
+     "seeded": false
+    }
+   }
+  },
+  "crm": {
+   "records": [
+    {
+     "id": "A-150",
+     "type": "account",
+     "name": "Pinecrest School District",
+     "domain": "pinecrestsd.example",
+     "owner": "Elena Petrova",
+     "renewal_date": "2026-07-01",
+     "segment": "Education",
+     "seeded": true
+    },
+    {
+     "id": "A-205",
+     "type": "account",
+     "name": "Brightwater Hotels",
+     "domain": "brightwaterhotels.example",
+     "owner": "Elena Petrova",
+     "segment": "Hospitality",
+     "seeded": true
+    },
+    {
+     "id": "A-310",
+     "type": "account",
+     "name": "Fernwood Grocers",
+     "domain": "fernwoodgrocers.example",
+     "owner": "Elena Petrova",
+     "segment": "Retail",
+     "seeded": true
+    },
+    {
+     "id": "A-322",
+     "type": "account",
+     "name": "Halcyon Cafe",
+     "domain": "halcyoncafe.example",
+     "owner": "Elena Petrova",
+     "segment": "Hospitality",
+     "seeded": true
+    },
+    {
+     "id": "A-340",
+     "type": "account",
+     "name": "Oakline Markets",
+     "domain": "oaklinemarkets.example",
+     "owner": "Elena Petrova",
+     "segment": "Retail",
+     "seeded": true
+    },
+    {
+     "id": "A-355",
+     "type": "account",
+     "name": "Ridgeview Clinic",
+     "domain": "ridgeviewclinic.example",
+     "owner": "Elena Petrova",
+     "segment": "Healthcare",
+     "seeded": true
+    }
+   ],
+   "stages": [
+    "Prospecting",
+    "Proposal",
+    "Negotiation",
+    "Closed Won",
+    "Closed Lost"
+   ]
+  },
+  "chat": {
+   "channels": {
+    "general": [],
+    "sales": [],
+    "ops": []
+   }
+  }
+ }
+}

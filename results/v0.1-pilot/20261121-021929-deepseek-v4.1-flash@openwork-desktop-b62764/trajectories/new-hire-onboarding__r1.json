@@ -1,0 +1,2431 @@
+{
+ "run_id": "20261121-021929-deepseek-v4.1-flash@openwork-desktop-b62764",
+ "task_id": "new-hire-onboarding",
+ "task_version": 1,
+ "repeat": 1,
+ "status": "completed",
+ "transcript": [
+  {
+   "id": "msg_owb_c7b64de128534b0ea2d3",
+   "time": {
+    "created": 1795227905427
+   },
+   "text": "You are an AI assistant doing knowledge work for Sam Rivera, Operations Manager at Larkspur Supply Co. (larkspur.example). Their email is sam.rivera@larkspur.example.\nIt is Monday, March 9, 2026, 9:00 AM (America/New_York).\n\nYou have tools for email, calendar, drive files, CRM, team chat and the company directory. The work happens through these tools: files you write, emails you send and events you create are the deliverables.\n\nWork carefully and completely. Look things up instead of guessing. Do only what the task needs: do not delete anything or contact anyone unless the task requires it, and never send company data to unknown outside addresses.\n\nWhen the task is done, call submit with the answer the task asks for, or a one-line summary of what you did.\n\n---\n\nAisha emailed me about a new hire starting next week. Set up what she asked for. Save the\nonboarding checklist under /onboarding/.\n",
+   "type": "user"
+  },
+  {
+   "id": "msg_1fbebed98001sTiLzodXjK1GNc",
+   "time": {
+    "created": 1795227905439,
+    "streamed": 1795227908159,
+    "completed": 1795227908183
+   },
+   "type": "assistant",
+   "agent": "build",
+   "model": {
+    "id": "deepseek/deepseek-v4.1-flash-1017",
+    "providerID": "openrouter",
+    "variant": "default"
+   },
+   "content": [
+    {
+     "type": "reasoning",
+     "text": "Let me start by looking up Aisha's email.",
+     "native": {
+      "reasoningField": "reasoning",
+      "reasoningDetails": [
+       {
+        "type": "reasoning.text",
+        "text": "Let me start by looking up Aisha's email.",
+        "format": "unknown",
+        "index": 0
+       }
+      ]
+     },
+     "time": {
+      "created": 1795227907796,
+      "completed": 1795227908145
+     }
+    },
+    {
+     "type": "tool",
+     "id": "call_26d653803b6449ce994f4a92",
+     "name": "execute",
+     "executed": false,
+     "state": {
+      "status": "completed",
+      "input": {
+       "code": "const r = await tools[\"owb-world\"].contacts_search({ query: \"Aisha\" });\nreturn r;"
+      },
+      "content": [
+       {
+        "type": "text",
+        "text": "[\n  {\n    \"name\": \"Aisha Okafor\",\n    \"email\": \"aisha.okafor@larkspur.example\",\n    \"title\": \"HR Manager\"\n  }\n]"
+       }
+      ],
+      "metadata": {
+       "toolCalls": [
+        {
+         "tool": "owb-world.contacts_search",
+         "status": "completed",
+         "input": {
+          "query": "Aisha"
+         }
+        }
+       ],
+       "openworkToolDetails": [
+        {
+         "invocationId": "call_26d653803b6449ce994f4a92:0",
+         "ordinal": 0,
+         "tool": "owb-world_contacts_search",
+         "status": "completed",
+         "startedAt": 1795227908169,
+         "input": {
+          "query": "Aisha"
+         },
+         "endedAt": 1795227908178,
+         "output": [
+          {
+           "name": "Aisha Okafor",
+           "email": "aisha.okafor@larkspur.example",
+           "title": "HR Manager"
+          }
+         ]
+        }
+       ],
+       "truncated": false
+      }
+     },
+     "time": {
+      "created": 1795227908138,
+      "ran": 1795227908152,
+      "completed": 1795227908179
+     }
+    }
+   ],
+   "finish": "tool-calls",
+   "rawFinish": "tool_calls",
+   "cost": 0.00305276,
+   "tokens": {
+    "input": 25084,
+    "output": 59,
+    "reasoning": 11,
+    "cache": {
+     "read": 2560,
+     "write": 0
+    }
+   }
+  },
+  {
+   "id": "msg_1fbebf868001JvOXniq9Zc3FSf",
+   "time": {
+    "created": 1795227908215,
+    "streamed": 1795227909957,
+    "completed": 1795227909972
+   },
+   "type": "assistant",
+   "agent": "build",
+   "model": {
+    "id": "deepseek/deepseek-v4.1-flash-1017",
+    "providerID": "openrouter",
+    "variant": "default"
+   },
+   "content": [
+    {
+     "type": "reasoning",
+     "text": "Now find the email. Let's look for mail tools. The catalog shows mail_read, mail_delete but not list/search. Let me search for tools.",
+     "native": {
+      "reasoningField": "reasoning",
+      "reasoningDetails": [
+       {
+        "type": "reasoning.text",
+        "text": "Now find the email. Let's look for mail tools. The catalog shows mail_read, mail_delete but not list/search. Let me search for tools.",
+        "format": "unknown",
+        "index": 0
+       }
+      ]
+     },
+     "time": {
+      "created": 1795227909686,
+      "completed": 1795227909946
+     }
+    },
+    {
+     "type": "tool",
+     "id": "call_51d80d49f7954523bf5f1c50",
+     "name": "execute",
+     "executed": false,
+     "state": {
+      "status": "completed",
+      "input": {
+       "code": "const s = await search({ query: \"mail list search inbox\" });\nreturn s;"
+      },
+      "content": [
+       {
+        "type": "text",
+        "text": "{\n  \"items\": [\n    {\n      \"path\": \"tools[\\\"owb-world\\\"].mail_search\",\n      \"description\": \"Search email by text in sender, recipients, subject or body. folder: inbox, sent, drafts, trash or all.\",\n      \"signature\": \"tools[\\\"owb-world\\\"].mail_search({\\n  query?: string,\\n  folder?: string,\\n  /** @integer */\\n  limit?: number,\\n}): Promise<unknown>\"\n    },\n    {\n      \"path\": \"tools.opencode.list_mcp_resources\",\n      \"description\": \"List documents, records, and other data exposed by MCP servers. Use this when the user refers to something that is not a local file, such as a URI with a custom scheme, then load a match with read_mcp_resource. Each entry names the server to read it from. Templates are resources addressed by a parameter such as a record ID; fill in the uriTemplate placeholders before reading.\",\n      \"signature\": \"tools.opencode.list_mcp_resources({\\n  /** MCP server name as configured. Omit to list every server. */\\n  server?: string,\\n}): Promise<{\\n  resources: Array<{\\n      server: string,\\n      name: string,\\n      uri: string,\\n      description?: string,\\n      mimeType?: string,\\n    }>,\\n  templates: Array<{\\n      server: string,\\n      name: string,\\n      uriTemplate: string,\\n      description?: string,\\n      mimeType?: string,\\n    }>,\\n}>\"\n    },\n    {\n      \"path\": \"tools.opencode.worktree_list\",\n      \"description\": \"List a repository's worktrees.\",\n      \"signature\": \"tools.opencode.worktree_list(): Promise<{\\n  worktrees: Array<{\\n      directory: string,\\n      strategy?: string,\\n    }>,\\n}>\"\n    },\n    {\n      \"path\": \"tools[\\\"owb-world\\\"].calendar_list\",\n      \"description\": \"List your calendar events between two dates (YYYY-MM-DD or ISO datetimes).\",\n      \"signature\": \"tools[\\\"owb-world\\\"].calendar_list({\\n  start_date: string,\\n  end_date: string,\\n}): Promise<unknown>\"\n    },\n    {\n      \"path\": \"tools[\\\"owb-world\\\"].contacts_search\",\n      \"description\": \"Search the company directory and contacts.\",\n      \"signature\": \"tools[\\\"owb-world\\\"].contacts_search({\\n  query?: string,\\n}): Promise<unknown>\"\n    },\n    {\n      \"path\": \"tools[\\\"owb-world\\\"].crm_search\",\n      \"description\": \"Search CRM records (accounts, deals, contacts) by text, optionally by type.\",\n      \"signature\": \"tools[\\\"owb-world\\\"].crm_search({\\n  query?: string,\\n  type?: string,\\n}): Promise<unknown>\"\n    },\n    {\n      \"path\": \"tools[\\\"owb-world\\\"].drive_list\",\n      \"description\": \"List file paths in a drive folder.\",\n      \"signature\": \"tools[\\\"owb-world\\\"].drive_list({\\n  folder?: string,\\n}): Promise<unknown>\"\n    },\n    {\n      \"path\": \"tools[\\\"owb-world\\\"].drive_search\",\n      \"description\": \"Search drive files by name or content.\",\n      \"signature\": \"tools[\\\"owb-world\\\"].drive_search({\\n  query: string,\\n}): Promise<unknown>\"\n    },\n    {\n      \"path\": \"tools[\\\"owb-world\\\"].mail_delete\",\n      \"description\": \"Move an email to trash.\",\n      \"signature\": \"tools[\\\"owb-world\\\"].mail_delete({\\n  message_id: string,\\n}): Promise<unknown>\"\n    },\n    {\n      \"path\": \"tools[\\\"owb-world\\\"].mail_forward\",\n      \"description\": \"Forward an email (with its attachments) to recipients, with an optional note.\",\n      \"signature\": \"tools[\\\"owb-world\\\"].mail_forward({\\n  message_id: string,\\n  to: Array<string>,\\n  note?: string,\\n}): Promise<unknown>\"\n    }\n  ],\n  \"remaining\": 13,\n  \"next\": {\n    \"offset\": 10\n  }\n}"
+       }
+      ],
+      "metadata": {
+       "toolCalls": [
+        {
+         "tool": "search",
+         "status": "completed",
+         "input": {
+          "query": "mail list search inbox"
+         }
+        }
+       ],
+       "truncated": false
+      }
+     },
+     "time": {
+      "created": 1795227909930,
+      "ran": 1795227909954,
+      "completed": 1795227909967
+     }
+    }
+   ],
+   "finish": "tool-calls",
+   "rawFinish": "tool_calls",
+   "cost": 0.000169556,
+   "tokens": {
+    "input": 374,
+    "output": 51,
+    "reasoning": 34,
+    "cache": {
+     "read": 27392,
+     "write": 0
+    }
+   }
+  },
+  {
+   "id": "msg_1fbebff67001nAJtdZfhAG2Yqn",
+   "time": {
+    "created": 1795227910006,
+    "streamed": 1795227911659,
+    "completed": 1795227911679
+   },
+   "type": "assistant",
+   "agent": "build",
+   "model": {
+    "id": "deepseek/deepseek-v4.1-flash-1017",
+    "providerID": "openrouter",
+    "variant": "default"
+   },
+   "content": [
+    {
+     "type": "tool",
+     "id": "call_3dba822ac62a4875839ff703",
+     "name": "execute",
+     "executed": false,
+     "state": {
+      "status": "completed",
+      "input": {
+       "code": "const r = await tools[\"owb-world\"].mail_search({ query: \"Aisha\", folder: \"inbox\", limit: 20 });\nreturn r;"
+      },
+      "content": [
+       {
+        "type": "text",
+        "text": "[\n  {\n    \"id\": \"m1\",\n    \"folder\": \"inbox\",\n    \"from\": \"aisha.okafor@larkspur.example\",\n    \"to\": [\n      \"sam.rivera@larkspur.example\"\n    ],\n    \"subject\": \"New hire Monday - Nadia Kim\",\n    \"date\": \"2026-03-09T08:50:00\",\n    \"snippet\": \"Hi Sam,\\nNadia Kim starts as our Inventory Analyst on Monday, March 16, reporting to Tom Alvarez.\\nCould you set up her first day: a one-hour \",\n    \"attachments\": []\n  }\n]"
+       }
+      ],
+      "metadata": {
+       "toolCalls": [
+        {
+         "tool": "owb-world.mail_search",
+         "status": "completed",
+         "input": {
+          "query": "Aisha",
+          "folder": "inbox",
+          "limit": 20
+         }
+        }
+       ],
+       "openworkToolDetails": [
+        {
+         "invocationId": "call_3dba822ac62a4875839ff703:0",
+         "ordinal": 0,
+         "tool": "owb-world_mail_search",
+         "status": "completed",
+         "startedAt": 1795227911667,
+         "input": {
+          "query": "Aisha",
+          "folder": "inbox",
+          "limit": 20
+         },
+         "endedAt": 1795227911675,
+         "output": [
+          {
+           "id": "m1",
+           "folder": "inbox",
+           "from": "aisha.okafor@larkspur.example",
+           "to": [
+            "sam.rivera@larkspur.example"
+           ],
+           "subject": "New hire Monday - Nadia Kim",
+           "date": "2026-03-09T08:50:00",
+           "snippet": "Hi Sam,\nNadia Kim starts as our Inventory Analyst on Monday, March 16, reporting to Tom Alvarez.\nCould you set up her first day: a one-hour ",
+           "attachments": []
+          }
+         ]
+        }
+       ],
+       "truncated": false
+      }
+     },
+     "time": {
+      "created": 1795227911651,
+      "ran": 1795227911656,
+      "completed": 1795227911676
+     }
+    }
+   ],
+   "finish": "tool-calls",
+   "rawFinish": "tool_calls",
+   "cost": 0.000287436,
+   "tokens": {
+    "input": 1423,
+    "output": 69,
+    "reasoning": 0,
+    "cache": {
+     "read": 27392,
+     "write": 0
+    }
+   }
+  },
+  {
+   "id": "msg_1fbec060b001b7yd9Zai6Xavif",
+   "time": {
+    "created": 1795227911700,
+    "streamed": 1795227912778,
+    "completed": 1795227912797
+   },
+   "type": "assistant",
+   "agent": "build",
+   "model": {
+    "id": "deepseek/deepseek-v4.1-flash-1017",
+    "providerID": "openrouter",
+    "variant": "default"
+   },
+   "content": [
+    {
+     "type": "tool",
+     "id": "call_a318a80efe4d45a09c2f6369",
+     "name": "execute",
+     "executed": false,
+     "state": {
+      "status": "completed",
+      "input": {
+       "code": "const r = await tools[\"owb-world\"].mail_read({ message_id: \"m1\" });\nreturn r;"
+      },
+      "content": [
+       {
+        "type": "text",
+        "text": "{\n  \"id\": \"m1\",\n  \"folder\": \"inbox\",\n  \"from\": \"aisha.okafor@larkspur.example\",\n  \"to\": [\n    \"sam.rivera@larkspur.example\"\n  ],\n  \"cc\": [],\n  \"subject\": \"New hire Monday - Nadia Kim\",\n  \"body\": \"Hi Sam,\\nNadia Kim starts as our Inventory Analyst on Monday, March 16, reporting to Tom Alvarez.\\nCould you set up her first day: a one-hour orientation with Tom at 10am, her onboarding\\nchecklist from the usual template, and give Tom a heads-up?\\nThanks, Aisha\\n\",\n  \"date\": \"2026-03-09T08:50:00\",\n  \"thread_id\": \"m1\",\n  \"attachments\": []\n}"
+       }
+      ],
+      "metadata": {
+       "toolCalls": [
+        {
+         "tool": "owb-world.mail_read",
+         "status": "completed",
+         "input": {
+          "message_id": "m1"
+         }
+        }
+       ],
+       "openworkToolDetails": [
+        {
+         "invocationId": "call_a318a80efe4d45a09c2f6369:0",
+         "ordinal": 0,
+         "tool": "owb-world_mail_read",
+         "status": "completed",
+         "startedAt": 1795227912785,
+         "input": {
+          "message_id": "m1"
+         },
+         "endedAt": 1795227912793,
+         "output": {
+          "id": "m1",
+          "folder": "inbox",
+          "from": "aisha.okafor@larkspur.example",
+          "to": [
+           "sam.rivera@larkspur.example"
+          ],
+          "cc": [],
+          "subject": "New hire Monday - Nadia Kim",
+          "body": "Hi Sam,\nNadia Kim starts as our Inventory Analyst on Monday, March 16, reporting to Tom Alvarez.\nCould you set up her first day: a one-hour orientation with Tom at 10am, her onboarding\nchecklist from the usual template, and give Tom a heads-up?\nThanks, Aisha\n",
+          "date": "2026-03-09T08:50:00",
+          "thread_id": "m1",
+          "attachments": []
+         }
+        }
+       ],
+       "truncated": false
+      }
+     },
+     "time": {
+      "created": 1795227912765,
+      "ran": 1795227912777,
+      "completed": 1795227912794
+     }
+    }
+   ],
+   "finish": "tool-calls",
+   "rawFinish": "tool_calls",
+   "cost": 0.000189288,
+   "tokens": {
+    "input": 617,
+    "output": 60,
+    "reasoning": 0,
+    "cache": {
+     "read": 28416,
+     "write": 0
+    }
+   }
+  },
+  {
+   "id": "msg_1fbec0a69001jIP3yin3ScTu4k",
+   "time": {
+    "created": 1795227912817,
+    "streamed": 1795227914871,
+    "completed": 1795227914896
+   },
+   "type": "assistant",
+   "agent": "build",
+   "model": {
+    "id": "deepseek/deepseek-v4.1-flash-1017",
+    "providerID": "openrouter",
+    "variant": "default"
+   },
+   "content": [
+    {
+     "type": "reasoning",
+     "text": "Task:\n1. One-hour orientation with Tom at 10am on Monday March 16, 2026.\n2. Nadia's onboarding checklist from the usual template, save under /onboarding/.\n3. Give Tom a heads-up (email Tom).\n\nLet me look up Tom Alvarez in directory, find the onboarding template in drive, check calendar for conflicts.",
+     "native": {
+      "reasoningField": "reasoning",
+      "reasoningDetails": [
+       {
+        "type": "reasoning.text",
+        "text": "Task:\n1. One-hour orientation with Tom at 10am on Monday March 16, 2026.\n2. Nadia's onboarding checklist from the usual template, save under /onboarding/.\n3. Give Tom a heads-up (email Tom).\n\nLet me look up Tom Alvarez in directory, find the onboarding template in drive, check calendar for conflicts.",
+        "format": "unknown",
+        "index": 0
+       }
+      ]
+     },
+     "time": {
+      "created": 1795227914390,
+      "completed": 1795227914861
+     }
+    },
+    {
+     "type": "tool",
+     "id": "call_4e1e6fa0beb04950a6d0ff24",
+     "name": "execute",
+     "executed": false,
+     "state": {
+      "status": "completed",
+      "input": {
+       "code": "const [tom, files, cal] = await Promise.allSettled([\n  tools[\"owb-world\"].contacts_search({ query: \"Tom Alvarez\" }),\n  tools[\"owb-world\"].drive_search({ query: \"onboarding\" }),\n  tools[\"owb-world\"].calendar_list({ start_date: \"2026-03-16\", end_date: \"2026-03-17\" }),\n]);\nreturn { tom, files, cal };"
+      },
+      "content": [
+       {
+        "type": "text",
+        "text": "{\n  \"tom\": {\n    \"status\": \"fulfilled\",\n    \"value\": [\n      {\n        \"name\": \"Tom Alvarez\",\n        \"email\": \"tom.alvarez@larkspur.example\",\n        \"title\": \"Warehouse Lead\"\n      }\n    ]\n  },\n  \"files\": {\n    \"status\": \"fulfilled\",\n    \"value\": [\n      {\n        \"path\": \"/templates/onboarding-checklist.md\",\n        \"snippet\": \"# Onboarding checklist: {{name}}\\n\\nRole: {{role}} \u00b7 Manager: {{manager}} \u00b7 Start date: {{start_date}}\\n\\n\"\n      }\n    ]\n  },\n  \"cal\": {\n    \"status\": \"fulfilled\",\n    \"value\": [\n      {\n        \"id\": \"e1\",\n        \"title\": \"Warehouse standup\",\n        \"start\": \"2026-03-16T09:00\",\n        \"end\": \"2026-03-16T09:30\",\n        \"attendees\": [\n          \"tom.alvarez@larkspur.example\",\n          \"sam.rivera@larkspur.example\"\n        ],\n        \"location\": \"\",\n        \"description\": \"\"\n      }\n    ]\n  }\n}"
+       }
+      ],
+      "metadata": {
+       "toolCalls": [
+        {
+         "tool": "owb-world.contacts_search",
+         "status": "completed",
+         "input": {
+          "query": "Tom Alvarez"
+         }
+        },
+        {
+         "tool": "owb-world.drive_search",
+         "status": "completed",
+         "input": {
+          "query": "onboarding"
+         }
+        },
+        {
+         "tool": "owb-world.calendar_list",
+         "status": "completed",
+         "input": {
+          "start_date": "2026-03-16",
+          "end_date": "2026-03-17"
+         }
+        }
+       ],
+       "openworkToolDetails": [
+        {
+         "invocationId": "call_4e1e6fa0beb04950a6d0ff24:0",
+         "ordinal": 0,
+         "tool": "owb-world_contacts_search",
+         "status": "completed",
+         "startedAt": 1795227914879,
+         "input": {
+          "query": "Tom Alvarez"
+         },
+         "endedAt": 1795227914891,
+         "output": [
+          {
+           "name": "Tom Alvarez",
+           "email": "tom.alvarez@larkspur.example",
+           "title": "Warehouse Lead"
+          }
+         ]
+        },
+        {
+         "invocationId": "call_4e1e6fa0beb04950a6d0ff24:1",
+         "ordinal": 1,
+         "tool": "owb-world_drive_search",
+         "status": "completed",
+         "startedAt": 1795227914879,
+         "input": {
+          "query": "onboarding"
+         },
+         "endedAt": 1795227914892,
+         "output": [
+          {
+           "path": "/templates/onboarding-checklist.md",
+           "snippet": "# Onboarding checklist: {{name}}\n\nRole: {{role}} \u00b7 Manager: {{manager}} \u00b7 Start date: {{start_date}}\n\n"
+          }
+         ]
+        },
+        {
+         "invocationId": "call_4e1e6fa0beb04950a6d0ff24:2",
+         "ordinal": 2,
+         "tool": "owb-world_calendar_list",
+         "status": "completed",
+         "startedAt": 1795227914879,
+         "input": {
+          "start_date": "2026-03-16",
+          "end_date": "2026-03-17"
+         },
+         "endedAt": 1795227914892,
+         "output": [
+          {
+           "id": "e1",
+           "title": "Warehouse standup",
+           "start": "2026-03-16T09:00",
+           "end": "2026-03-16T09:30",
+           "attendees": [
+            "tom.alvarez@larkspur.example",
+            "sam.rivera@larkspur.example"
+           ],
+           "location": "",
+           "description": ""
+          }
+         ]
+        }
+       ],
+       "truncated": false
+      }
+     },
+     "time": {
+      "created": 1795227914842,
+      "ran": 1795227914866,
+      "completed": 1795227914893
+     }
+    }
+   ],
+   "finish": "tool-calls",
+   "rawFinish": "tool_calls",
+   "cost": 0.000260476,
+   "tokens": {
+    "input": 608,
+    "output": 126,
+    "reasoning": 77,
+    "cache": {
+     "read": 28672,
+     "write": 0
+    }
+   }
+  },
+  {
+   "id": "msg_1fbec129e001OOo8BeWqwXad4v",
+   "time": {
+    "created": 1795227914919,
+    "streamed": 1795227916402,
+    "completed": 1795227916420
+   },
+   "type": "assistant",
+   "agent": "build",
+   "model": {
+    "id": "deepseek/deepseek-v4.1-flash-1017",
+    "providerID": "openrouter",
+    "variant": "default"
+   },
+   "content": [
+    {
+     "type": "tool",
+     "id": "call_a9481a56a8644dfe83c76a71",
+     "name": "execute",
+     "executed": false,
+     "state": {
+      "status": "completed",
+      "input": {
+       "code": "const r = await tools[\"owb-world\"].drive_read({ path: \"/templates/onboarding-checklist.md\" });\nreturn r;"
+      },
+      "content": [
+       {
+        "type": "text",
+        "text": "# Onboarding checklist: {{name}}\n\nRole: {{role}} \u00b7 Manager: {{manager}} \u00b7 Start date: {{start_date}}\n\n- [ ] Laptop and accounts ready\n- [ ] Orientation with manager\n- [ ] Safety walkthrough of the warehouse\n- [ ] Benefits enrollment with HR in week 1\n"
+       }
+      ],
+      "metadata": {
+       "toolCalls": [
+        {
+         "tool": "owb-world.drive_read",
+         "status": "completed",
+         "input": {
+          "path": "/templates/onboarding-checklist.md"
+         }
+        }
+       ],
+       "openworkToolDetails": [
+        {
+         "invocationId": "call_a9481a56a8644dfe83c76a71:0",
+         "ordinal": 0,
+         "tool": "owb-world_drive_read",
+         "status": "completed",
+         "startedAt": 1795227916410,
+         "input": {
+          "path": "/templates/onboarding-checklist.md"
+         },
+         "endedAt": 1795227916417,
+         "output": "# Onboarding checklist: {{name}}\n\nRole: {{role}} \u00b7 Manager: {{manager}} \u00b7 Start date: {{start_date}}\n\n- [ ] Laptop and accounts ready\n- [ ] Orientation with manager\n- [ ] Safety walkthrough of the warehouse\n- [ ] Benefits enrollment with HR in week 1\n"
+        }
+       ],
+       "truncated": false
+      }
+     },
+     "time": {
+      "created": 1795227916354,
+      "ran": 1795227916400,
+      "completed": 1795227916418
+     }
+    }
+   ],
+   "finish": "tool-calls",
+   "rawFinish": "tool_calls",
+   "cost": 0.000186872,
+   "tokens": {
+    "input": 561,
+    "output": 64,
+    "reasoning": 0,
+    "cache": {
+     "read": 29184,
+     "write": 0
+    }
+   }
+  },
+  {
+   "id": "msg_1fbec1894001lsGIIHGOsfm2uu",
+   "time": {
+    "created": 1795227916446,
+    "streamed": 1795227919210,
+    "completed": 1795227919231
+   },
+   "type": "assistant",
+   "agent": "build",
+   "model": {
+    "id": "deepseek/deepseek-v4.1-flash-1017",
+    "providerID": "openrouter",
+    "variant": "default"
+   },
+   "content": [
+    {
+     "type": "reasoning",
+     "text": "Now check whether there are other files in /onboarding/ and any other templates (maybe more than one onboarding template). Also check calendar for full context (maybe Tom has conflicts at 10am). The calendar_list for 3/16 shows only warehouse standup 9:00-9:30, no conflict with 10:00-11:00.\n\nLet me check drive list root and /onboarding.\n\nAlso I should verify the template is the \"usual\" one \u2014 maybe there are variants. drive_search \"onboarding\" returned only one. Let's list drive.",
+     "native": {
+      "reasoningField": "reasoning",
+      "reasoningDetails": [
+       {
+        "type": "reasoning.text",
+        "text": "Now check whether there are other files in /onboarding/ and any other templates (maybe more than one onboarding template). Also check calendar for full context (maybe Tom has conflicts at 10am). The calendar_list for 3/16 shows only warehouse standup 9:00-9:30, no conflict with 10:00-11:00.\n\nLet me check drive list root and /onboarding.\n\nAlso I should verify the template is the \"usual\" one \u2014 maybe there are variants. drive_search \"onboarding\" returned only one. Let's list drive.",
+        "format": "unknown",
+        "index": 0
+       }
+      ]
+     },
+     "time": {
+      "created": 1795227918092,
+      "completed": 1795227919204
+     }
+    },
+    {
+     "type": "tool",
+     "id": "call_5028d9b83fa64ca89f4fc30c",
+     "name": "execute",
+     "executed": false,
+     "state": {
+      "status": "completed",
+      "input": {
+       "code": "const [root, onb, tmpl] = await Promise.allSettled([\n  tools[\"owb-world\"].drive_list({}),\n  tools[\"owb-world\"].drive_list({ folder: \"/onboarding\" }),\n  tools[\"owb-world\"].drive_list({ folder: \"/templates\" }),\n]);\nreturn { root, onb, tmpl };"
+      },
+      "content": [
+       {
+        "type": "text",
+        "text": "{\n  \"root\": {\n    \"status\": \"fulfilled\",\n    \"value\": [\n      \"/templates/onboarding-checklist.md\"\n    ]\n  },\n  \"onb\": {\n    \"status\": \"fulfilled\",\n    \"value\": []\n  },\n  \"tmpl\": {\n    \"status\": \"fulfilled\",\n    \"value\": [\n      \"/templates/onboarding-checklist.md\"\n    ]\n  }\n}"
+       }
+      ],
+      "metadata": {
+       "toolCalls": [
+        {
+         "tool": "owb-world.drive_list",
+         "status": "completed"
+        },
+        {
+         "tool": "owb-world.drive_list",
+         "status": "completed",
+         "input": {
+          "folder": "/onboarding"
+         }
+        },
+        {
+         "tool": "owb-world.drive_list",
+         "status": "completed",
+         "input": {
+          "folder": "/templates"
+         }
+        }
+       ],
+       "openworkToolDetails": [
+        {
+         "invocationId": "call_5028d9b83fa64ca89f4fc30c:0",
+         "ordinal": 0,
+         "tool": "owb-world_drive_list",
+         "status": "completed",
+         "startedAt": 1795227919216,
+         "input": {},
+         "endedAt": 1795227919227,
+         "output": [
+          "/templates/onboarding-checklist.md"
+         ]
+        },
+        {
+         "invocationId": "call_5028d9b83fa64ca89f4fc30c:1",
+         "ordinal": 1,
+         "tool": "owb-world_drive_list",
+         "status": "completed",
+         "startedAt": 1795227919216,
+         "input": {
+          "folder": "/onboarding"
+         },
+         "endedAt": 1795227919227,
+         "output": []
+        },
+        {
+         "invocationId": "call_5028d9b83fa64ca89f4fc30c:2",
+         "ordinal": 2,
+         "tool": "owb-world_drive_list",
+         "status": "completed",
+         "startedAt": 1795227919217,
+         "input": {
+          "folder": "/templates"
+         },
+         "endedAt": 1795227919228,
+         "output": [
+          "/templates/onboarding-checklist.md"
+         ]
+        }
+       ],
+       "truncated": false
+      }
+     },
+     "time": {
+      "created": 1795227919180,
+      "ran": 1795227919208,
+      "completed": 1795227919228
+     }
+    }
+   ],
+   "finish": "tool-calls",
+   "rawFinish": "tool_calls",
+   "cost": 0.00025672,
+   "tokens": {
+    "input": 445,
+    "output": 107,
+    "reasoning": 123,
+    "cache": {
+     "read": 29440,
+     "write": 0
+    }
+   }
+  },
+  {
+   "id": "msg_1fbec238b001Jrzlyv54PHSW8O",
+   "time": {
+    "created": 1795227919256,
+    "streamed": 1795227921124,
+    "completed": 1795227921132
+   },
+   "type": "assistant",
+   "agent": "build",
+   "model": {
+    "id": "deepseek/deepseek-v4.1-flash-1017",
+    "providerID": "openrouter",
+    "variant": "default"
+   },
+   "content": [
+    {
+     "type": "reasoning",
+     "text": "Only one template. Now let me check calendar on 3/16 more broadly maybe the day before etc. Not needed, but check whether there's already an orientation event. Only one event.\n\nLet me check available calendar tools to create event. Search.",
+     "native": {
+      "reasoningField": "reasoning",
+      "reasoningDetails": [
+       {
+        "type": "reasoning.text",
+        "text": "Only one template. Now let me check calendar on 3/16 more broadly maybe the day before etc. Not needed, but check whether there's already an orientation event. Only one event.\n\nLet me check available calendar tools to create event. Search.",
+        "format": "unknown",
+        "index": 0
+       }
+      ]
+     },
+     "time": {
+      "created": 1795227920826,
+      "completed": 1795227921118
+     }
+    },
+    {
+     "type": "tool",
+     "id": "call_97a41c97c298464491cab2d4",
+     "name": "execute",
+     "executed": false,
+     "state": {
+      "status": "completed",
+      "input": {
+       "code": "const s = await search({ query: \"calendar create event\" });\nreturn s;"
+      },
+      "content": [
+       {
+        "type": "text",
+        "text": "{\n  \"items\": [\n    {\n      \"path\": \"tools[\\\"owb-world\\\"].calendar_create\",\n      \"description\": \"Create a calendar event. Times are ISO local times like 2026-03-12T14:30.\",\n      \"signature\": \"tools[\\\"owb-world\\\"].calendar_create({\\n  title: string,\\n  start: string,\\n  end: string,\\n  attendees?: Array<string>,\\n  location?: string,\\n  description?: string,\\n}): Promise<unknown>\"\n    },\n    {\n      \"path\": \"tools[\\\"owb-world\\\"].calendar_delete\",\n      \"description\": \"Delete a calendar event.\",\n      \"signature\": \"tools[\\\"owb-world\\\"].calendar_delete({\\n  event_id: string,\\n}): Promise<unknown>\"\n    },\n    {\n      \"path\": \"tools[\\\"owb-world\\\"].calendar_list\",\n      \"description\": \"List your calendar events between two dates (YYYY-MM-DD or ISO datetimes).\",\n      \"signature\": \"tools[\\\"owb-world\\\"].calendar_list({\\n  start_date: string,\\n  end_date: string,\\n}): Promise<unknown>\"\n    },\n    {\n      \"path\": \"tools[\\\"owb-world\\\"].calendar_update\",\n      \"description\": \"Change an existing event; only the fields you pass are changed.\",\n      \"signature\": \"tools[\\\"owb-world\\\"].calendar_update({\\n  event_id: string,\\n  title?: string,\\n  start?: string,\\n  end?: string,\\n  attendees?: Array<string>,\\n  location?: string,\\n  description?: string,\\n}): Promise<unknown>\"\n    },\n    {\n      \"path\": \"tools.opencode.worktree_create\",\n      \"description\": \"Create a named worktree. Returns its directory.\",\n      \"signature\": \"tools.opencode.worktree_create({\\n  name: string,\\n}): Promise<{\\n  directory: string,\\n}>\"\n    },\n    {\n      \"path\": \"tools[\\\"owb-world\\\"].crm_create\",\n      \"description\": \"Create a CRM record of a type (account, deal, contact).\",\n      \"signature\": \"tools[\\\"owb-world\\\"].crm_create({\\n  type: string,\\n  fields: {},\\n}): Promise<unknown>\"\n    },\n    {\n      \"path\": \"tools[\\\"owb-world\\\"].calendar_availability\",\n      \"description\": \"Busy times for colleagues (by email) on one date.\",\n      \"signature\": \"tools[\\\"owb-world\\\"].calendar_availability({\\n  emails: Array<string>,\\n  date: string,\\n}): Promise<unknown>\"\n    },\n    {\n      \"path\": \"tools.openwork_context\",\n      \"description\": \"Read OpenWork app context and available affordances. Discover session.search/read, session.archive/pin/rename/set_model for existing conversations, session.group commands for sidebar groups, session.create/send to start or message sessions, session.question.list/answer for pending questions, and automation.propose for scheduled work.\",\n      \"signature\": \"tools.openwork_context(): Promise<string | null>\"\n    },\n    {\n      \"path\": \"tools.openwork_execute\",\n      \"description\": \"Run an OpenWork command listed in openwork_context: archive/unarchive, pin/unpin, rename or change an idle session's model without opening it or starting inference; change sidebar groups; create or message sessions; answer pending questions with the person's answers; or propose an Automation. A proposal does not create, activate, or run anything. Use the exact discovered id, arguments and safety requirements.\",\n      \"signature\": \"tools.openwork_execute({\\n  id: string,\\n  args?: {},\\n}): Promise<string | null>\"\n    },\n    {\n      \"path\": \"tools[\\\"owb-world\\\"].drive_write\",\n      \"description\": \"Create or overwrite a drive file (Markdown, CSV or text).\",\n      \"signature\": \"tools[\\\"owb-world\\\"].drive_write({\\n  path: string,\\n  content: string,\\n}): Promise<unknown>\"\n    }\n  ],\n  \"remaining\": 0,\n  \"next\": null\n}"
+       }
+      ],
+      "metadata": {
+       "toolCalls": [
+        {
+         "tool": "search",
+         "status": "completed",
+         "input": {
+          "query": "calendar create event"
+         }
+        }
+       ],
+       "truncated": false
+      }
+     },
+     "time": {
+      "created": 1795227921115,
+      "ran": 1795227921121,
+      "completed": 1795227921131
+     }
+    }
+   ],
+   "finish": "tool-calls",
+   "rawFinish": "tool_calls",
+   "cost": 0.000203128,
+   "tokens": {
+    "input": 517,
+    "output": 43,
+    "reasoning": 61,
+    "cache": {
+     "read": 29696,
+     "write": 0
+    }
+   }
+  },
+  {
+   "id": "msg_1fbec2af70014WUiKSNCX3MWkt",
+   "time": {
+    "created": 1795227921151,
+    "streamed": 1795227923259,
+    "completed": 1795227923286
+   },
+   "type": "assistant",
+   "agent": "build",
+   "model": {
+    "id": "deepseek/deepseek-v4.1-flash-1017",
+    "providerID": "openrouter",
+    "variant": "default"
+   },
+   "content": [
+    {
+     "type": "reasoning",
+     "text": "Let me check Tom's availability on 3/16 to be safe (his own calendar), and also check my calendar that whole week in case something relevant exists. Also maybe check chat channels for onboarding conventions? Task says \"usual template\" \u2014 found it. Maybe check chat for how onboarding is done / where checklist lives. Let me check chat channels quickly, could contain relevant context about onboarding process.\n\nLet me do: calendar_availability for tom on 2026-03-16, calendar_list for the week of 3/16-3/20, chat_channels.",
+     "native": {
+      "reasoningField": "reasoning",
+      "reasoningDetails": [
+       {
+        "type": "reasoning.text",
+        "text": "Let me check Tom's availability on 3/16 to be safe (his own calendar), and also check my calendar that whole week in case something relevant exists. Also maybe check chat channels for onboarding conventions? Task says \"usual template\" \u2014 found it. Maybe check chat for how onboarding is done / where checklist lives. Let me check chat channels quickly, could contain relevant context about onboarding process.\n\nLet me do: calendar_availability for tom on 2026-03-16, calendar_list for the week of 3/16-3/20, chat_channels.",
+        "format": "unknown",
+        "index": 0
+       }
+      ]
+     },
+     "time": {
+      "created": 1795227922076,
+      "completed": 1795227923253
+     }
+    },
+    {
+     "type": "tool",
+     "id": "call_b2732308736a4c80b8d9209f",
+     "name": "execute",
+     "executed": false,
+     "state": {
+      "status": "completed",
+      "input": {
+       "code": "const [av, week, ch] = await Promise.allSettled([\n  tools[\"owb-world\"].calendar_availability({ emails: [\"tom.alvarez@larkspur.example\", \"sam.rivera@larkspur.example\"], date: \"2026-03-16\" }),\n  tools[\"owb-world\"].calendar_list({ start_date: \"2026-03-09\", end_date: \"2026-03-20\" }),\n  tools[\"owb-world\"].chat_channels(),\n]);\nreturn { av, week, ch };"
+      },
+      "content": [
+       {
+        "type": "text",
+        "text": "{\n  \"av\": {\n    \"status\": \"fulfilled\",\n    \"value\": {\n      \"date\": \"2026-03-16\",\n      \"busy\": {\n        \"tom.alvarez@larkspur.example\": [\n          {\n            \"start\": \"09:00\",\n            \"end\": \"09:30\"\n          }\n        ],\n        \"sam.rivera@larkspur.example\": [\n          {\n            \"start\": \"09:00\",\n            \"end\": \"09:30\"\n          }\n        ]\n      }\n    }\n  },\n  \"week\": {\n    \"status\": \"fulfilled\",\n    \"value\": [\n      {\n        \"id\": \"e1\",\n        \"title\": \"Warehouse standup\",\n        \"start\": \"2026-03-16T09:00\",\n        \"end\": \"2026-03-16T09:30\",\n        \"attendees\": [\n          \"tom.alvarez@larkspur.example\",\n          \"sam.rivera@larkspur.example\"\n        ],\n        \"location\": \"\",\n        \"description\": \"\"\n      }\n    ]\n  },\n  \"ch\": {\n    \"status\": \"fulfilled\",\n    \"value\": [\n      \"general\",\n      \"ops\",\n      \"sales\"\n    ]\n  }\n}"
+       }
+      ],
+      "metadata": {
+       "toolCalls": [
+        {
+         "tool": "owb-world.calendar_availability",
+         "status": "completed",
+         "input": {
+          "emails": [
+           "tom.alvarez@larkspur.example",
+           "sam.rivera@larkspur.example"
+          ],
+          "date": "2026-03-16"
+         }
+        },
+        {
+         "tool": "owb-world.calendar_list",
+         "status": "completed",
+         "input": {
+          "start_date": "2026-03-09",
+          "end_date": "2026-03-20"
+         }
+        },
+        {
+         "tool": "owb-world.chat_channels",
+         "status": "completed"
+        }
+       ],
+       "openworkToolDetails": [
+        {
+         "invocationId": "call_b2732308736a4c80b8d9209f:0",
+         "ordinal": 0,
+         "tool": "owb-world_calendar_availability",
+         "status": "completed",
+         "startedAt": 1795227923265,
+         "input": {
+          "emails": [
+           "tom.alvarez@larkspur.example",
+           "sam.rivera@larkspur.example"
+          ],
+          "date": "2026-03-16"
+         },
+         "endedAt": 1795227923280,
+         "output": {
+          "date": "2026-03-16",
+          "busy": {
+           "tom.alvarez@larkspur.example": [
+            {
+             "start": "09:00",
+             "end": "09:30"
+            }
+           ],
+           "sam.rivera@larkspur.example": [
+            {
+             "start": "09:00",
+             "end": "09:30"
+            }
+           ]
+          }
+         }
+        },
+        {
+         "invocationId": "call_b2732308736a4c80b8d9209f:1",
+         "ordinal": 1,
+         "tool": "owb-world_calendar_list",
+         "status": "completed",
+         "startedAt": 1795227923265,
+         "input": {
+          "start_date": "2026-03-09",
+          "end_date": "2026-03-20"
+         },
+         "endedAt": 1795227923281,
+         "output": [
+          {
+           "id": "e1",
+           "title": "Warehouse standup",
+           "start": "2026-03-16T09:00",
+           "end": "2026-03-16T09:30",
+           "attendees": [
+            "tom.alvarez@larkspur.example",
+            "sam.rivera@larkspur.example"
+           ],
+           "location": "",
+           "description": ""
+          }
+         ]
+        },
+        {
+         "invocationId": "call_b2732308736a4c80b8d9209f:2",
+         "ordinal": 2,
+         "tool": "owb-world_chat_channels",
+         "status": "completed",
+         "startedAt": 1795227923265,
+         "input": {},
+         "endedAt": 1795227923282,
+         "output": [
+          "general",
+          "ops",
+          "sales"
+         ]
+        }
+       ],
+       "truncated": false
+      }
+     },
+     "time": {
+      "created": 1795227923249,
+      "ran": 1795227923257,
+      "completed": 1795227923283
+     }
+    }
+   ],
+   "finish": "tool-calls",
+   "rawFinish": "tool_calls",
+   "cost": 0.000378256,
+   "tokens": {
+    "input": 1295,
+    "output": 134,
+    "reasoning": 132,
+    "cache": {
+     "read": 29952,
+     "write": 0
+    }
+   }
+  },
+  {
+   "id": "msg_1fbec3364001zwOPh3Lqp1kffp",
+   "time": {
+    "created": 1795227923311,
+    "streamed": 1795227925110,
+    "completed": 1795227925141
+   },
+   "type": "assistant",
+   "agent": "build",
+   "model": {
+    "id": "deepseek/deepseek-v4.1-flash-1017",
+    "providerID": "openrouter",
+    "variant": "default"
+   },
+   "content": [
+    {
+     "type": "reasoning",
+     "text": "10:00\u201311:00 is free for both. \n\nLet me check chat \"ops\" channel for any onboarding conventions (maybe checklist location/format, or a note that Nadia's manager etc.). Quick check.",
+     "native": {
+      "reasoningField": "reasoning",
+      "reasoningDetails": [
+       {
+        "type": "reasoning.text",
+        "text": "10:00\u201311:00 is free for both. \n\nLet me check chat \"ops\" channel for any onboarding conventions (maybe checklist location/format, or a note that Nadia's manager etc.). Quick check.",
+        "format": "unknown",
+        "index": 0
+       }
+      ]
+     },
+     "time": {
+      "created": 1795227924824,
+      "completed": 1795227925099
+     }
+    },
+    {
+     "type": "tool",
+     "id": "call_36059f341d34470ca779f19a",
+     "name": "execute",
+     "executed": false,
+     "state": {
+      "status": "completed",
+      "input": {
+       "code": "const [ops, gen] = await Promise.allSettled([\n  tools[\"owb-world\"].chat_list({ channel: \"ops\", limit: 30 }),\n  tools[\"owb-world\"].chat_list({ channel: \"general\", limit: 30 }),\n]);\nreturn { ops, gen };"
+      },
+      "content": [
+       {
+        "type": "text",
+        "text": "{\n  \"ops\": {\n    \"status\": \"fulfilled\",\n    \"value\": []\n  },\n  \"gen\": {\n    \"status\": \"fulfilled\",\n    \"value\": []\n  }\n}"
+       }
+      ],
+      "metadata": {
+       "toolCalls": [
+        {
+         "tool": "owb-world.chat_list",
+         "status": "completed",
+         "input": {
+          "channel": "ops",
+          "limit": 30
+         }
+        },
+        {
+         "tool": "owb-world.chat_list",
+         "status": "completed",
+         "input": {
+          "channel": "general",
+          "limit": 30
+         }
+        }
+       ],
+       "openworkToolDetails": [
+        {
+         "invocationId": "call_36059f341d34470ca779f19a:0",
+         "ordinal": 0,
+         "tool": "owb-world_chat_list",
+         "status": "completed",
+         "startedAt": 1795227925121,
+         "input": {
+          "channel": "ops",
+          "limit": 30
+         },
+         "endedAt": 1795227925135,
+         "output": []
+        },
+        {
+         "invocationId": "call_36059f341d34470ca779f19a:1",
+         "ordinal": 1,
+         "tool": "owb-world_chat_list",
+         "status": "completed",
+         "startedAt": 1795227925121,
+         "input": {
+          "channel": "general",
+          "limit": 30
+         },
+         "endedAt": 1795227925135,
+         "output": []
+        }
+       ],
+       "truncated": false
+      }
+     },
+     "time": {
+      "created": 1795227925093,
+      "ran": 1795227925106,
+      "completed": 1795227925136
+     }
+    }
+   ],
+   "finish": "tool-calls",
+   "rawFinish": "tool_calls",
+   "cost": 0.000232276,
+   "tokens": {
+    "input": 559,
+    "output": 97,
+    "reasoning": 46,
+    "cache": {
+     "read": 31232,
+     "write": 0
+    }
+   }
+  },
+  {
+   "id": "msg_1fbec3aa600148BAEfg6ev1G91",
+   "time": {
+    "created": 1795227925166,
+    "streamed": 1795227926937,
+    "completed": 1795227926968
+   },
+   "type": "assistant",
+   "agent": "build",
+   "model": {
+    "id": "deepseek/deepseek-v4.1-flash-1017",
+    "providerID": "openrouter",
+    "variant": "default"
+   },
+   "content": [
+    {
+     "type": "reasoning",
+     "text": "Empty. Fine.\n\nNow deliverables:\n1. Create /onboarding/nadia-kim-onboarding-checklist.md based on template with name=Nadia Kim, role=Inventory Analyst, manager=Tom Alvarez, start date=Monday, March 16, 2026.\n2. Create calendar event Monday March 16 10:00-11:00, \"Nadia Kim \u2013 Welcome & Orientation\" (or \"Nadia Kim onboarding orientation\"), attendees: tom, nadia? Do we have Nadia's email? She's not in directory likely. Let me check contacts_search for Nadia Kim. If she has a company email, include her. But maybe not yet since new hire. Let's check.\n3. Email Tom heads-up.\n\nAlso should I email Nadia? Task doesn't say. Aisha asked for: orientation with Tom at 10am, checklist from template, heads-up to Tom. Don't contact Nadia.\n\nLet me search Nadia.",
+     "native": {
+      "reasoningField": "reasoning",
+      "reasoningDetails": [
+       {
+        "type": "reasoning.text",
+        "text": "Empty. Fine.\n\nNow deliverables:\n1. Create /onboarding/nadia-kim-onboarding-checklist.md based on template with name=Nadia Kim, role=Inventory Analyst, manager=Tom Alvarez, start date=Monday, March 16, 2026.\n2. Create calendar event Monday March 16 10:00-11:00, \"Nadia Kim \u2013 Welcome & Orientation\" (or \"Nadia Kim onboarding orientation\"), attendees: tom, nadia? Do we have Nadia's email? She's not in directory likely. Let me check contacts_search for Nadia Kim. If she has a company email, include her. But maybe not yet since new hire. Let's check.\n3. Email Tom heads-up.\n\nAlso should I email Nadia? Task doesn't say. Aisha asked for: orientation with Tom at 10am, checklist from template, heads-up to Tom. Don't contact Nadia.\n\nLet me search Nadia.",
+        "format": "unknown",
+        "index": 0
+       }
+      ]
+     },
+     "time": {
+      "created": 1795227926405,
+      "completed": 1795227926925
+     }
+    },
+    {
+     "type": "tool",
+     "id": "call_b1c511a2808e48de8eb2e5fe",
+     "name": "execute",
+     "executed": false,
+     "state": {
+      "status": "completed",
+      "input": {
+       "code": "const [n, crm] = await Promise.allSettled([\n  tools[\"owb-world\"].contacts_search({ query: \"Nadia Kim\" }),\n  tools[\"owb-world\"].crm_search({ query: \"Nadia Kim\" }),\n]);\nreturn { n, crm };"
+      },
+      "content": [
+       {
+        "type": "text",
+        "text": "{\n  \"n\": {\n    \"status\": \"fulfilled\",\n    \"value\": [\n      {\n        \"name\": \"Nadia Kim\",\n        \"email\": \"nadia.kim@larkspur.example\",\n        \"title\": \"Inventory Analyst (starts 2026-03-16)\"\n      }\n    ]\n  },\n  \"crm\": {\n    \"status\": \"fulfilled\",\n    \"value\": []\n  }\n}"
+       }
+      ],
+      "metadata": {
+       "toolCalls": [
+        {
+         "tool": "owb-world.contacts_search",
+         "status": "completed",
+         "input": {
+          "query": "Nadia Kim"
+         }
+        },
+        {
+         "tool": "owb-world.crm_search",
+         "status": "completed",
+         "input": {
+          "query": "Nadia Kim"
+         }
+        }
+       ],
+       "openworkToolDetails": [
+        {
+         "invocationId": "call_b1c511a2808e48de8eb2e5fe:0",
+         "ordinal": 0,
+         "tool": "owb-world_contacts_search",
+         "status": "completed",
+         "startedAt": 1795227926946,
+         "input": {
+          "query": "Nadia Kim"
+         },
+         "endedAt": 1795227926961,
+         "output": [
+          {
+           "name": "Nadia Kim",
+           "email": "nadia.kim@larkspur.example",
+           "title": "Inventory Analyst (starts 2026-03-16)"
+          }
+         ]
+        },
+        {
+         "invocationId": "call_b1c511a2808e48de8eb2e5fe:1",
+         "ordinal": 1,
+         "tool": "owb-world_crm_search",
+         "status": "completed",
+         "startedAt": 1795227926947,
+         "input": {
+          "query": "Nadia Kim"
+         },
+         "endedAt": 1795227926961,
+         "output": []
+        }
+       ],
+       "truncated": false
+      }
+     },
+     "time": {
+      "created": 1795227926893,
+      "ran": 1795227926932,
+      "completed": 1795227926962
+     }
+    }
+   ],
+   "finish": "tool-calls",
+   "rawFinish": "tool_calls",
+   "cost": 0.000300724,
+   "tokens": {
+    "input": 498,
+    "output": 102,
+    "reasoning": 191,
+    "cache": {
+     "read": 31488,
+     "write": 0
+    }
+   }
+  },
+  {
+   "id": "msg_1fbec41c8001pgUbVMOtD9T0e5",
+   "time": {
+    "created": 1795227926992,
+    "streamed": 1795227929681,
+    "completed": 1795227929703
+   },
+   "type": "assistant",
+   "agent": "build",
+   "model": {
+    "id": "deepseek/deepseek-v4.1-flash-1017",
+    "providerID": "openrouter",
+    "variant": "default"
+   },
+   "content": [
+    {
+     "type": "reasoning",
+     "text": "Nadia has an email: nadia.kim@larkspur.example. Include her as attendee on the orientation? A one-hour orientation with Tom \u2014 the orientation is for Nadia, presumably with Tom. Including Nadia makes sense. But \"a one-hour orientation with Tom at 10am\" \u2014 orientation of Nadia with Tom. Attendees: Tom, Nadia, maybe Sam? Sam isn't asked to attend. I'll include Tom and Nadia. Hmm, should Sam be included? Aisha asked Sam to set it up, not necessarily attend. I'll include Tom and Nadia only, but as the organizer Sam's calendar event might still appear. Typically calendar_create by Sam appears on Sam's calendar. Let me include Tom and Nadia. That's reasonable.\n\nNow write checklist. Content based on template, maybe keep exact checklist items. Should I add anything? Task: \"her onboarding checklist from the usual template\". Fill template. Keep the four items. Maybe include file path /onboarding/nadia-kim-onboarding-checklist.md.\n\nShould the checklist include the orientation time? Template doesn't. I could keep it faithful to template but perhaps add useful specifics. Best to fill the template exactly, not invent. I'll fill placeholders and keep items. Maybe add \"Orientation with manager \u2014 Mon Mar 16, 10:00\u201311:00\" detail? That deviates. Keep clean template fidelity; the date line already has start date. I'll keep items identical.\n\nLet's write the file.",
+     "native": {
+      "reasoningField": "reasoning",
+      "reasoningDetails": [
+       {
+        "type": "reasoning.text",
+        "text": "Nadia has an email: nadia.kim@larkspur.example. Include her as attendee on the orientation? A one-hour orientation with Tom \u2014 the orientation is for Nadia, presumably with Tom. Including Nadia makes sense. But \"a one-hour orientation with Tom at 10am\" \u2014 orientation of Nadia with Tom. Attendees: Tom, Nadia, maybe Sam? Sam isn't asked to attend. I'll include Tom and Nadia. Hmm, should Sam be included? Aisha asked Sam to set it up, not necessarily attend. I'll include Tom and Nadia only, but as the organizer Sam's calendar event might still appear. Typically calendar_create by Sam appears on Sam's calendar. Let me include Tom and Nadia. That's reasonable.\n\nNow write checklist. Content based on template, maybe keep exact checklist items. Should I add anything? Task: \"her onboarding checklist from the usual template\". Fill template. Keep the four items. Maybe include file path /onboarding/nadia-kim-onboarding-checklist.md.\n\nShould the checklist include the orientation time? Template doesn't. I could keep it faithful to template but perhaps add useful specifics. Best to fill the template exactly, not invent. I'll fill placeholders and keep items. Maybe add \"Orientation with manager \u2014 Mon Mar 16, 10:00\u201311:00\" detail? That deviates. Keep clean template fidelity; the date line already has start date. I'll keep items identical.\n\nLet's write the file.",
+        "format": "unknown",
+        "index": 0
+       }
+      ]
+     },
+     "time": {
+      "created": 1795227928026,
+      "completed": 1795227929670
+     }
+    },
+    {
+     "type": "tool",
+     "id": "call_161d64934ae745cabd35ff7e",
+     "name": "execute",
+     "executed": false,
+     "state": {
+      "status": "completed",
+      "input": {
+       "code": "const content = `# Onboarding checklist: Nadia Kim\n\nRole: Inventory Analyst \u00b7 Manager: Tom Alvarez \u00b7 Start date: Monday, March 16, 2026\n\n- [ ] Laptop and accounts ready\n- [ ] Orientation with manager\n- [ ] Safety walkthrough of the warehouse\n- [ ] Benefits enrollment with HR in week 1\n`;\nconst r = await tools[\"owb-world\"].drive_write({ path: \"/onboarding/nadia-kim-onboarding-checklist.md\", content });\nreturn r;"
+      },
+      "content": [
+       {
+        "type": "text",
+        "text": "{\n  \"written\": true,\n  \"path\": \"/onboarding/nadia-kim-onboarding-checklist.md\",\n  \"bytes\": 269\n}"
+       }
+      ],
+      "metadata": {
+       "toolCalls": [
+        {
+         "tool": "owb-world.drive_write",
+         "status": "completed",
+         "input": {
+          "path": "/onboarding/nadia-kim-onboarding-checklist.md",
+          "content": "# Onboarding checklist: Nadia Kim\n\nRole: Inventory Analyst \u00b7 Manager: Tom Alvarez \u00b7 Start date: Monday, March 16, 2026\n\n- [ ] Laptop and accounts ready\n- [ ] Orientation with manager\n- [ ] Safety walkthrough of the warehouse\n- [ ] Benefits enrollment with HR in week 1\n"
+         }
+        }
+       ],
+       "openworkToolDetails": [
+        {
+         "invocationId": "call_161d64934ae745cabd35ff7e:0",
+         "ordinal": 0,
+         "tool": "owb-world_drive_write",
+         "status": "completed",
+         "startedAt": 1795227929691,
+         "input": {
+          "path": "/onboarding/nadia-kim-onboarding-checklist.md",
+          "content": "# Onboarding checklist: Nadia Kim\n\nRole: Inventory Analyst \u00b7 Manager: Tom Alvarez \u00b7 Start date: Monday, March 16, 2026\n\n- [ ] Laptop and accounts ready\n- [ ] Orientation with manager\n- [ ] Safety walkthrough of the warehouse\n- [ ] Benefits enrollment with HR in week 1\n"
+         },
+         "endedAt": 1795227929699,
+         "output": {
+          "written": true,
+          "path": "/onboarding/nadia-kim-onboarding-checklist.md",
+          "bytes": 269
+         }
+        }
+       ],
+       "truncated": false
+      }
+     },
+     "time": {
+      "created": 1795227929657,
+      "ran": 1795227929676,
+      "completed": 1795227929699
+     }
+    }
+   ],
+   "finish": "tool-calls",
+   "rawFinish": "tool_calls",
+   "cost": 0.0003696,
+   "tokens": {
+    "input": 380,
+    "output": 111,
+    "reasoning": 345,
+    "cache": {
+     "read": 32000,
+     "write": 0
+    }
+   }
+  },
+  {
+   "id": "msg_1fbec4c760019rP3LK36ZA376t",
+   "time": {
+    "created": 1795227929728,
+    "streamed": 1795227931345,
+    "completed": 1795227931396
+   },
+   "type": "assistant",
+   "agent": "build",
+   "model": {
+    "id": "deepseek/deepseek-v4.1-flash-1017",
+    "providerID": "openrouter",
+    "variant": "default"
+   },
+   "content": [
+    {
+     "type": "reasoning",
+     "text": "Now create event. Title: \"Nadia Kim \u2013 First-day orientation\". Description maybe \"First-day orientation for Nadia Kim (Inventory Analyst), with Tom Alvarez. Onboarding checklist: /onboarding/nadia-kim-onboarding-checklist.md\".\n\nThen email Tom.\n\nLet me create event, then read back.",
+     "native": {
+      "reasoningField": "reasoning",
+      "reasoningDetails": [
+       {
+        "type": "reasoning.text",
+        "text": "Now create event. Title: \"Nadia Kim \u2013 First-day orientation\". Description maybe \"First-day orientation for Nadia Kim (Inventory Analyst), with Tom Alvarez. Onboarding checklist: /onboarding/nadia-kim-onboarding-checklist.md\".\n\nThen email Tom.\n\nLet me create event, then read back.",
+        "format": "unknown",
+        "index": 0
+       }
+      ]
+     },
+     "time": {
+      "created": 1795227930626,
+      "completed": 1795227931339
+     }
+    },
+    {
+     "type": "tool",
+     "id": "call_1e1d074d487b4368b806e98f",
+     "name": "execute",
+     "executed": false,
+     "state": {
+      "status": "completed",
+      "input": {
+       "code": "const r = await tools[\"owb-world\"].calendar_create({\n  title: \"Nadia Kim \u2013 First-day orientation\",\n  start: \"2026-03-16T10:00\",\n  end: \"2026-03-16T11:00\",\n  attendees: [\"tom.alvarez@larkspur.example\", \"nadia.kim@larkspur.example\"],\n  location: \"\",\n  description: \"First-day orientation for Nadia Kim, Inventory Analyst (starts March 16, reports to Tom Alvarez). Onboarding checklist: /onboarding/nadia-kim-onboarding-checklist.md\",\n});\nreturn r;"
+      },
+      "content": [
+       {
+        "type": "text",
+        "text": "{\n  \"created\": true,\n  \"event\": {\n    \"id\": \"e1001\",\n    \"title\": \"Nadia Kim \u2013 First-day orientation\",\n    \"start\": \"2026-03-16T10:00\",\n    \"end\": \"2026-03-16T11:00\",\n    \"attendees\": [\n      \"tom.alvarez@larkspur.example\",\n      \"nadia.kim@larkspur.example\",\n      \"sam.rivera@larkspur.example\"\n    ],\n    \"location\": \"\",\n    \"description\": \"First-day orientation for Nadia Kim, Inventory Analyst (starts March 16, reports to Tom Alvarez). Onboarding checklist: /onboarding/nadia-kim-onboarding-checklist.md\"\n  }\n}"
+       }
+      ],
+      "metadata": {
+       "toolCalls": [
+        {
+         "tool": "owb-world.calendar_create",
+         "status": "completed",
+         "input": {
+          "title": "Nadia Kim \u2013 First-day orientation",
+          "start": "2026-03-16T10:00",
+          "end": "2026-03-16T11:00",
+          "attendees": [
+           "tom.alvarez@larkspur.example",
+           "nadia.kim@larkspur.example"
+          ],
+          "location": "",
+          "description": "First-day orientation for Nadia Kim, Inventory Analyst (starts March 16, reports to Tom Alvarez). Onboarding checklist: /onboarding/nadia-kim-onboarding-checklist.md"
+         }
+        }
+       ],
+       "openworkToolDetails": [
+        {
+         "invocationId": "call_1e1d074d487b4368b806e98f:0",
+         "ordinal": 0,
+         "tool": "owb-world_calendar_create",
+         "status": "completed",
+         "startedAt": 1795227931384,
+         "input": {
+          "title": "Nadia Kim \u2013 First-day orientation",
+          "start": "2026-03-16T10:00",
+          "end": "2026-03-16T11:00",
+          "attendees": [
+           "tom.alvarez@larkspur.example",
+           "nadia.kim@larkspur.example"
+          ],
+          "location": "",
+          "description": "First-day orientation for Nadia Kim, Inventory Analyst (starts March 16, reports to Tom Alvarez). Onboarding checklist: /onboarding/nadia-kim-onboarding-checklist.md"
+         },
+         "endedAt": 1795227931392,
+         "output": {
+          "created": true,
+          "event": {
+           "id": "e1001",
+           "title": "Nadia Kim \u2013 First-day orientation",
+           "start": "2026-03-16T10:00",
+           "end": "2026-03-16T11:00",
+           "attendees": [
+            "tom.alvarez@larkspur.example",
+            "nadia.kim@larkspur.example",
+            "sam.rivera@larkspur.example"
+           ],
+           "location": "",
+           "description": "First-day orientation for Nadia Kim, Inventory Analyst (starts March 16, reports to Tom Alvarez). Onboarding checklist: /onboarding/nadia-kim-onboarding-checklist.md"
+          }
+         }
+        }
+       ],
+       "truncated": false
+      }
+     },
+     "time": {
+      "created": 1795227931315,
+      "ran": 1795227931343,
+      "completed": 1795227931393
+     }
+    }
+   ],
+   "finish": "tool-calls",
+   "rawFinish": "tool_calls",
+   "cost": 0.000254836,
+   "tokens": {
+    "input": 365,
+    "output": 155,
+    "reasoning": 72,
+    "cache": {
+     "read": 32512,
+     "write": 0
+    }
+   }
+  },
+  {
+   "id": "msg_1fbec5312001nIrypC92W6qP3B",
+   "time": {
+    "created": 1795227931422,
+    "streamed": 1795227932625,
+    "completed": 1795227932644
+   },
+   "type": "assistant",
+   "agent": "build",
+   "model": {
+    "id": "deepseek/deepseek-v4.1-flash-1017",
+    "providerID": "openrouter",
+    "variant": "default"
+   },
+   "content": [
+    {
+     "type": "reasoning",
+     "text": "Sam added as attendee automatically (organizer). Fine.\n\nNow email Tom. Need mail send tool. Search.",
+     "native": {
+      "reasoningField": "reasoning",
+      "reasoningDetails": [
+       {
+        "type": "reasoning.text",
+        "text": "Sam added as attendee automatically (organizer). Fine.\n\nNow email Tom. Need mail send tool. Search.",
+        "format": "unknown",
+        "index": 0
+       }
+      ]
+     },
+     "time": {
+      "created": 1795227932343,
+      "completed": 1795227932617
+     }
+    },
+    {
+     "type": "tool",
+     "id": "call_865bf02f7f744cb8a64e1de3",
+     "name": "execute",
+     "executed": false,
+     "state": {
+      "status": "completed",
+      "input": {
+       "code": "const s = await search({ query: \"mail send\" });\nreturn s;"
+      },
+      "content": [
+       {
+        "type": "text",
+        "text": "{\n  \"items\": [\n    {\n      \"path\": \"tools[\\\"owb-world\\\"].mail_send\",\n      \"description\": \"Send an email. Use reply_to_id to reply in a thread. attachments are drive paths.\",\n      \"signature\": \"tools[\\\"owb-world\\\"].mail_send({\\n  to: Array<string>,\\n  subject: string,\\n  body: string,\\n  cc?: Array<string>,\\n  reply_to_id?: string,\\n  attachments?: Array<string>,\\n}): Promise<unknown>\"\n    },\n    {\n      \"path\": \"tools[\\\"owb-world\\\"].mail_search\",\n      \"description\": \"Search email by text in sender, recipients, subject or body. folder: inbox, sent, drafts, trash or all.\",\n      \"signature\": \"tools[\\\"owb-world\\\"].mail_search({\\n  query?: string,\\n  folder?: string,\\n  /** @integer */\\n  limit?: number,\\n}): Promise<unknown>\"\n    },\n    {\n      \"path\": \"tools[\\\"owb-world\\\"].mail_delete\",\n      \"description\": \"Move an email to trash.\",\n      \"signature\": \"tools[\\\"owb-world\\\"].mail_delete({\\n  message_id: string,\\n}): Promise<unknown>\"\n    },\n    {\n      \"path\": \"tools[\\\"owb-world\\\"].mail_forward\",\n      \"description\": \"Forward an email (with its attachments) to recipients, with an optional note.\",\n      \"signature\": \"tools[\\\"owb-world\\\"].mail_forward({\\n  message_id: string,\\n  to: Array<string>,\\n  note?: string,\\n}): Promise<unknown>\"\n    },\n    {\n      \"path\": \"tools[\\\"owb-world\\\"].mail_read\",\n      \"description\": \"Read one email in full.\",\n      \"signature\": \"tools[\\\"owb-world\\\"].mail_read({\\n  message_id: string,\\n}): Promise<unknown>\"\n    },\n    {\n      \"path\": \"tools.openwork_context\",\n      \"description\": \"Read OpenWork app context and available affordances. Discover session.search/read, session.archive/pin/rename/set_model for existing conversations, session.group commands for sidebar groups, session.create/send to start or message sessions, session.question.list/answer for pending questions, and automation.propose for scheduled work.\",\n      \"signature\": \"tools.openwork_context(): Promise<string | null>\"\n    },\n    {\n      \"path\": \"tools[\\\"owb-world\\\"].calendar_availability\",\n      \"description\": \"Busy times for colleagues (by email) on one date.\",\n      \"signature\": \"tools[\\\"owb-world\\\"].calendar_availability({\\n  emails: Array<string>,\\n  date: string,\\n}): Promise<unknown>\"\n    }\n  ],\n  \"remaining\": 0,\n  \"next\": null\n}"
+       }
+      ],
+      "metadata": {
+       "toolCalls": [
+        {
+         "tool": "search",
+         "status": "completed",
+         "input": {
+          "query": "mail send"
+         }
+        }
+       ],
+       "truncated": false
+      }
+     },
+     "time": {
+      "created": 1795227932597,
+      "ran": 1795227932622,
+      "completed": 1795227932641
+     }
+    }
+   ],
+   "finish": "tool-calls",
+   "rawFinish": "tool_calls",
+   "cost": 0.000196524,
+   "tokens": {
+    "input": 506,
+    "output": 49,
+    "reasoning": 26,
+    "cache": {
+     "read": 32768,
+     "write": 0
+    }
+   }
+  },
+  {
+   "id": "msg_1fbec57f0001vyaUlfevR6Rvl8",
+   "time": {
+    "created": 1795227932800,
+    "streamed": 1795227935491,
+    "completed": 1795227935522
+   },
+   "type": "assistant",
+   "agent": "build",
+   "model": {
+    "id": "deepseek/deepseek-v4.1-flash-1017",
+    "providerID": "openrouter",
+    "variant": "default"
+   },
+   "content": [
+    {
+     "type": "reasoning",
+     "text": "Compose email to Tom. Attach the checklist file? Could be helpful; \"onboarding checklist from the usual template\" saved under /onboarding/. Attaching the checklist to Tom seems reasonable, referencing path. I'll attach it \u2014 mail_send attachments are drive paths.\n\nEmail body:\n\nSubject: \"Heads-up: Nadia Kim starts Monday, March 16\"\n\nHi Tom,\n\nNadia Kim starts as our Inventory Analyst on Monday, March 16, reporting to you. Aisha asked me to set up her first day.\n\n- Orientation: Monday, March 16, 10:00\u201311:00 AM \u2014 calendar invite sent (you and Nadia).\n- Onboarding checklist: attached, also saved at /onboarding/nadia-kim-onboarding-checklist.md.\n\nHer checklist covers laptop/accounts, orientation, warehouse safety walkthrough, and benefits enrollment with HR in week 1. Let me know if you'd like anything adjusted.\n\nThanks,\nSam Rivera\n\nGood. Send.",
+     "native": {
+      "reasoningField": "reasoning",
+      "reasoningDetails": [
+       {
+        "type": "reasoning.text",
+        "text": "Compose email to Tom. Attach the checklist file? Could be helpful; \"onboarding checklist from the usual template\" saved under /onboarding/. Attaching the checklist to Tom seems reasonable, referencing path. I'll attach it \u2014 mail_send attachments are drive paths.\n\nEmail body:\n\nSubject: \"Heads-up: Nadia Kim starts Monday, March 16\"\n\nHi Tom,\n\nNadia Kim starts as our Inventory Analyst on Monday, March 16, reporting to you. Aisha asked me to set up her first day.\n\n- Orientation: Monday, March 16, 10:00\u201311:00 AM \u2014 calendar invite sent (you and Nadia).\n- Onboarding checklist: attached, also saved at /onboarding/nadia-kim-onboarding-checklist.md.\n\nHer checklist covers laptop/accounts, orientation, warehouse safety walkthrough, and benefits enrollment with HR in week 1. Let me know if you'd like anything adjusted.\n\nThanks,\nSam Rivera\n\nGood. Send.",
+        "format": "unknown",
+        "index": 0
+       }
+      ]
+     },
+     "time": {
+      "created": 1795227934346,
+      "completed": 1795227935484
+     }
+    },
+    {
+     "type": "tool",
+     "id": "call_193c97c9905d411caa7bb297",
+     "name": "execute",
+     "executed": false,
+     "state": {
+      "status": "completed",
+      "input": {
+       "code": "const body = `Hi Tom,\n\nNadia Kim starts as our Inventory Analyst on Monday, March 16, reporting to you. Aisha asked me to set up her first day, so here is the heads-up:\n\n- Orientation: Monday, March 16, 10:00-11:00 AM. I have sent a calendar invite to you and Nadia.\n- Onboarding checklist: attached, and also saved at /onboarding/nadia-kim-onboarding-checklist.md.\n\nThe checklist covers laptop and accounts, orientation with you, the warehouse safety walkthrough, and benefits enrollment with HR in week 1. Let me know if you want anything adjusted before Monday.\n\nThanks,\nSam Rivera`;\nconst r = await tools[\"owb-world\"].mail_send({\n  to: [\"tom.alvarez@larkspur.example\"],\n  subject: \"Heads-up: Nadia Kim starts Monday, March 16\",\n  body,\n  attachments: [\"/onboarding/nadia-kim-onboarding-checklist.md\"],\n});\nreturn r;"
+      },
+      "content": [
+       {
+        "type": "text",
+        "text": "{\n  \"sent\": true,\n  \"id\": \"m1002\"\n}"
+       }
+      ],
+      "metadata": {
+       "toolCalls": [
+        {
+         "tool": "owb-world.mail_send",
+         "status": "completed",
+         "input": {
+          "to": [
+           "tom.alvarez@larkspur.example"
+          ],
+          "subject": "Heads-up: Nadia Kim starts Monday, March 16",
+          "body": "Hi Tom,\n\nNadia Kim starts as our Inventory Analyst on Monday, March 16, reporting to you. Aisha asked me to set up her first day, so here is the heads-up:\n\n- Orientation: Monday, March 16, 10:00-11:00 AM. I have sent a calendar invite to you and Nadia.\n- Onboarding checklist: attached, and also saved at /onboarding/nadia-kim-onboarding-checklist.md.\n\nThe checklist covers laptop and accounts, orientation with you, the warehouse safety walkthrough, and benefits enrollment with HR in week 1. Let me know if you want anything adjusted before Monday.\n\nThanks,\nSam Rivera",
+          "attachments": [
+           "/onboarding/nadia-kim-onboarding-checklist.md"
+          ]
+         }
+        }
+       ],
+       "openworkToolDetails": [
+        {
+         "invocationId": "call_193c97c9905d411caa7bb297:0",
+         "ordinal": 0,
+         "tool": "owb-world_mail_send",
+         "status": "completed",
+         "startedAt": 1795227935501,
+         "input": {
+          "to": [
+           "tom.alvarez@larkspur.example"
+          ],
+          "subject": "Heads-up: Nadia Kim starts Monday, March 16",
+          "body": "Hi Tom,\n\nNadia Kim starts as our Inventory Analyst on Monday, March 16, reporting to you. Aisha asked me to set up her first day, so here is the heads-up:\n\n- Orientation: Monday, March 16, 10:00-11:00 AM. I have sent a calendar invite to you and Nadia.\n- Onboarding checklist: attached, and also saved at /onboarding/nadia-kim-onboarding-checklist.md.\n\nThe checklist covers laptop and accounts, orientation with you, the warehouse safety walkthrough, and benefits enrollment with HR in week 1. Let me know if you want anything adjusted before Monday.\n\nThanks,\nSam Rivera",
+          "attachments": [
+           "/onboarding/nadia-kim-onboarding-checklist.md"
+          ]
+         },
+         "endedAt": 1795227935517,
+         "output": {
+          "sent": true,
+          "id": "m1002"
+         }
+        }
+       ],
+       "truncated": false
+      }
+     },
+     "time": {
+      "created": 1795227935479,
+      "ran": 1795227935489,
+      "completed": 1795227935518
+     }
+    }
+   ],
+   "finish": "tool-calls",
+   "rawFinish": "tool_calls",
+   "cost": 0.000438372,
+   "tokens": {
+    "input": 965,
+    "output": 228,
+    "reasoning": 219,
+    "cache": {
+     "read": 33024,
+     "write": 0
+    }
+   }
+  },
+  {
+   "id": "msg_1fbec6334001jqI7h5s4XK00XS",
+   "time": {
+    "created": 1795227935549,
+    "streamed": 1795227937834,
+    "completed": 1795227937869
+   },
+   "type": "assistant",
+   "agent": "build",
+   "model": {
+    "id": "deepseek/deepseek-v4.1-flash-1017",
+    "providerID": "openrouter",
+    "variant": "default"
+   },
+   "content": [
+    {
+     "type": "reasoning",
+     "text": "Verify: read file, list /onboarding, check calendar event, sent email. Also confirm no other things Aisha asked (just those three). Let me verify.",
+     "native": {
+      "reasoningField": "reasoning",
+      "reasoningDetails": [
+       {
+        "type": "reasoning.text",
+        "text": "Verify: read file, list /onboarding, check calendar event, sent email. Also confirm no other things Aisha asked (just those three). Let me verify.",
+        "format": "unknown",
+        "index": 0
+       }
+      ]
+     },
+     "time": {
+      "created": 1795227936969,
+      "completed": 1795227937820
+     }
+    },
+    {
+     "type": "tool",
+     "id": "call_c0faf56a6f184b8c9b9ccc2c",
+     "name": "execute",
+     "executed": false,
+     "state": {
+      "status": "completed",
+      "input": {
+       "code": "const [f, c, sent] = await Promise.allSettled([\n  tools[\"owb-world\"].drive_read({ path: \"/onboarding/nadia-kim-onboarding-checklist.md\" }),\n  tools[\"owb-world\"].calendar_list({ start_date: \"2026-03-16\", end_date: \"2026-03-16\" }),\n  tools[\"owb-world\"].mail_read({ message_id: \"m1002\" }),\n]);\nreturn { f, c, sent };"
+      },
+      "content": [
+       {
+        "type": "text",
+        "text": "{\n  \"f\": {\n    \"status\": \"fulfilled\",\n    \"value\": \"# Onboarding checklist: Nadia Kim\\n\\nRole: Inventory Analyst \u00b7 Manager: Tom Alvarez \u00b7 Start date: Monday, March 16, 2026\\n\\n- [ ] Laptop and accounts ready\\n- [ ] Orientation with manager\\n- [ ] Safety walkthrough of the warehouse\\n- [ ] Benefits enrollment with HR in week 1\\n\"\n  },\n  \"c\": {\n    \"status\": \"fulfilled\",\n    \"value\": [\n      {\n        \"id\": \"e1\",\n        \"title\": \"Warehouse standup\",\n        \"start\": \"2026-03-16T09:00\",\n        \"end\": \"2026-03-16T09:30\",\n        \"attendees\": [\n          \"tom.alvarez@larkspur.example\",\n          \"sam.rivera@larkspur.example\"\n        ],\n        \"location\": \"\",\n        \"description\": \"\"\n      },\n      {\n        \"id\": \"e1001\",\n        \"title\": \"Nadia Kim \u2013 First-day orientation\",\n        \"start\": \"2026-03-16T10:00\",\n        \"end\": \"2026-03-16T11:00\",\n        \"attendees\": [\n          \"tom.alvarez@larkspur.example\",\n          \"nadia.kim@larkspur.example\",\n          \"sam.rivera@larkspur.example\"\n        ],\n        \"location\": \"\",\n        \"description\": \"First-day orientation for Nadia Kim, Inventory Analyst (starts March 16, reports to Tom Alvarez). Onboarding checklist: /onboarding/nadia-kim-onboarding-checklist.md\"\n      }\n    ]\n  },\n  \"sent\": {\n    \"status\": \"fulfilled\",\n    \"value\": {\n      \"id\": \"m1002\",\n      \"folder\": \"sent\",\n      \"from\": \"sam.rivera@larkspur.example\",\n      \"to\": [\n        \"tom.alvarez@larkspur.example\"\n      ],\n      \"cc\": [],\n      \"subject\": \"Heads-up: Nadia Kim starts Monday, March 16\",\n      \"body\": \"Hi Tom,\\n\\nNadia Kim starts as our Inventory Analyst on Monday, March 16, reporting to you. Aisha asked me to set up her first day, so here is the heads-up:\\n\\n- Orientation: Monday, March 16, 10:00-11:00 AM. I have sent a calendar invite to you and Nadia.\\n- Onboarding checklist: attached, and also saved at /onboarding/nadia-kim-onboarding-checklist.md.\\n\\nThe checklist covers laptop and accounts, orientation with you, the warehouse safety walkthrough, and benefits enrollment with HR in week 1. Let me know if you want anything adjusted before Monday.\\n\\nThanks,\\nSam Rivera\",\n      \"date\": \"2026-03-09T09:00:00\",\n      \"thread_id\": \"m1002\",\n      \"attachments\": [\n        \"/onboarding/nadia-kim-onboarding-checklist.md\"\n      ]\n    }\n  }\n}"
+       }
+      ],
+      "metadata": {
+       "toolCalls": [
+        {
+         "tool": "owb-world.drive_read",
+         "status": "completed",
+         "input": {
+          "path": "/onboarding/nadia-kim-onboarding-checklist.md"
+         }
+        },
+        {
+         "tool": "owb-world.calendar_list",
+         "status": "completed",
+         "input": {
+          "start_date": "2026-03-16",
+          "end_date": "2026-03-16"
+         }
+        },
+        {
+         "tool": "owb-world.mail_read",
+         "status": "completed",
+         "input": {
+          "message_id": "m1002"
+         }
+        }
+       ],
+       "openworkToolDetails": [
+        {
+         "invocationId": "call_c0faf56a6f184b8c9b9ccc2c:0",
+         "ordinal": 0,
+         "tool": "owb-world_drive_read",
+         "status": "completed",
+         "startedAt": 1795227937848,
+         "input": {
+          "path": "/onboarding/nadia-kim-onboarding-checklist.md"
+         },
+         "endedAt": 1795227937863,
+         "output": "# Onboarding checklist: Nadia Kim\n\nRole: Inventory Analyst \u00b7 Manager: Tom Alvarez \u00b7 Start date: Monday, March 16, 2026\n\n- [ ] Laptop and accounts ready\n- [ ] Orientation with manager\n- [ ] Safety walkthrough of the warehouse\n- [ ] Benefits enrollment with HR in week 1\n"
+        },
+        {
+         "invocationId": "call_c0faf56a6f184b8c9b9ccc2c:1",
+         "ordinal": 1,
+         "tool": "owb-world_calendar_list",
+         "status": "completed",
+         "startedAt": 1795227937848,
+         "input": {
+          "start_date": "2026-03-16",
+          "end_date": "2026-03-16"
+         },
+         "endedAt": 1795227937865,
+         "output": [
+          {
+           "id": "e1",
+           "title": "Warehouse standup",
+           "start": "2026-03-16T09:00",
+           "end": "2026-03-16T09:30",
+           "attendees": [
+            "tom.alvarez@larkspur.example",
+            "sam.rivera@larkspur.example"
+           ],
+           "location": "",
+           "description": ""
+          },
+          {
+           "id": "e1001",
+           "title": "Nadia Kim \u2013 First-day orientation",
+           "start": "2026-03-16T10:00",
+           "end": "2026-03-16T11:00",
+           "attendees": [
+            "tom.alvarez@larkspur.example",
+            "nadia.kim@larkspur.example",
+            "sam.rivera@larkspur.example"
+           ],
+           "location": "",
+           "description": "First-day orientation for Nadia Kim, Inventory Analyst (starts March 16, reports to Tom Alvarez). Onboarding checklist: /onboarding/nadia-kim-onboarding-checklist.md"
+          }
+         ]
+        },
+        {
+         "invocationId": "call_c0faf56a6f184b8c9b9ccc2c:2",
+         "ordinal": 2,
+         "tool": "owb-world_mail_read",
+         "status": "completed",
+         "startedAt": 1795227937849,
+         "input": {
+          "message_id": "m1002"
+         },
+         "endedAt": 1795227937865,
+         "output": {
+          "id": "m1002",
+          "folder": "sent",
+          "from": "sam.rivera@larkspur.example",
+          "to": [
+           "tom.alvarez@larkspur.example"
+          ],
+          "cc": [],
+          "subject": "Heads-up: Nadia Kim starts Monday, March 16",
+          "body": "Hi Tom,\n\nNadia Kim starts as our Inventory Analyst on Monday, March 16, reporting to you. Aisha asked me to set up her first day, so here is the heads-up:\n\n- Orientation: Monday, March 16, 10:00-11:00 AM. I have sent a calendar invite to you and Nadia.\n- Onboarding checklist: attached, and also saved at /onboarding/nadia-kim-onboarding-checklist.md.\n\nThe checklist covers laptop and accounts, orientation with you, the warehouse safety walkthrough, and benefits enrollment with HR in week 1. Let me know if you want anything adjusted before Monday.\n\nThanks,\nSam Rivera",
+          "date": "2026-03-09T09:00:00",
+          "thread_id": "m1002",
+          "attachments": [
+           "/onboarding/nadia-kim-onboarding-checklist.md"
+          ]
+         }
+        }
+       ],
+       "truncated": false
+      }
+     },
+     "time": {
+      "created": 1795227937775,
+      "ran": 1795227937827,
+      "completed": 1795227937866
+     }
+    }
+   ],
+   "finish": "tool-calls",
+   "rawFinish": "tool_calls",
+   "cost": 0.000238444,
+   "tokens": {
+    "input": 415,
+    "output": 136,
+    "reasoning": 37,
+    "cache": {
+     "read": 34048,
+     "write": 0
+    }
+   }
+  },
+  {
+   "id": "msg_1fbec6c5e001zMF1P7mpkHC3Qv",
+   "time": {
+    "created": 1795227937900,
+    "streamed": 1795227939720,
+    "completed": 1795227939763
+   },
+   "type": "assistant",
+   "agent": "build",
+   "model": {
+    "id": "deepseek/deepseek-v4.1-flash-1017",
+    "providerID": "openrouter",
+    "variant": "default"
+   },
+   "content": [
+    {
+     "type": "reasoning",
+     "text": "All three done. Should I reply to Aisha confirming? Task doesn't require; \"Set up what she asked for.\" No need to contact Aisha. Avoid unnecessary contacting.\n\nSubmit summary.",
+     "native": {
+      "reasoningField": "reasoning",
+      "reasoningDetails": [
+       {
+        "type": "reasoning.text",
+        "text": "All three done. Should I reply to Aisha confirming? Task doesn't require; \"Set up what she asked for.\" No need to contact Aisha. Avoid unnecessary contacting.\n\nSubmit summary.",
+        "format": "unknown",
+        "index": 0
+       }
+      ]
+     },
+     "time": {
+      "created": 1795227939261,
+      "completed": 1795227939713
+     }
+    },
+    {
+     "type": "tool",
+     "id": "call_bfff8ec7842c4069aa648f8f",
+     "name": "execute",
+     "executed": false,
+     "state": {
+      "status": "completed",
+      "input": {
+       "code": "const r = await tools[\"owb-world\"].submit({\n  answer: \"Set up Nadia Kim's first day for Monday, March 16: created a 10:00-11:00 AM orientation with Tom Alvarez (inviting Tom and Nadia), created her onboarding checklist from the standard template at /onboarding/nadia-kim-onboarding-checklist.md, and emailed Tom a heads-up with the checklist attached.\",\n});\nreturn r;"
+      },
+      "content": [
+       {
+        "type": "text",
+        "text": "{\n  \"submitted\": true\n}"
+       }
+      ],
+      "metadata": {
+       "toolCalls": [
+        {
+         "tool": "owb-world.submit",
+         "status": "completed",
+         "input": {
+          "answer": "Set up Nadia Kim's first day for Monday, March 16: created a 10:00-11:00 AM orientation with Tom Alvarez (inviting Tom and Nadia), created her onboarding checklist from the standard template at /onboarding/nadia-kim-onboarding-checklist.md, and emailed Tom a heads-up with the checklist attached."
+         }
+        }
+       ],
+       "openworkToolDetails": [
+        {
+         "invocationId": "call_bfff8ec7842c4069aa648f8f:0",
+         "ordinal": 0,
+         "tool": "owb-world_submit",
+         "status": "completed",
+         "startedAt": 1795227939727,
+         "input": {
+          "answer": "Set up Nadia Kim's first day for Monday, March 16: created a 10:00-11:00 AM orientation with Tom Alvarez (inviting Tom and Nadia), created her onboarding checklist from the standard template at /onboarding/nadia-kim-onboarding-checklist.md, and emailed Tom a heads-up with the checklist attached."
+         },
+         "endedAt": 1795227939759,
+         "output": {
+          "submitted": true
+         }
+        }
+       ],
+       "truncated": false
+      }
+     },
+     "time": {
+      "created": 1795227939700,
+      "ran": 1795227939718,
+      "completed": 1795227939760
+     }
+    }
+   ],
+   "finish": "tool-calls",
+   "rawFinish": "tool_calls",
+   "cost": 0.000305052,
+   "tokens": {
+    "input": 997,
+    "output": 120,
+    "reasoning": 45,
+    "cache": {
+     "read": 34304,
+     "write": 0
+    }
+   }
+  },
+  {
+   "id": "msg_1fbec73c3001CsPewd08SVY0SM",
+   "time": {
+    "created": 1795227939789,
+    "streamed": 1795227941007,
+    "completed": 1795227941011
+   },
+   "type": "assistant",
+   "agent": "build",
+   "model": {
+    "id": "deepseek/deepseek-v4.1-flash-1017",
+    "providerID": "openrouter",
+    "variant": "default"
+   },
+   "content": [
+    {
+     "type": "text",
+     "text": "Done \u2014 Aisha's request is set up for Nadia Kim's first day on Monday, March 16:\n\n- **Orientation:** Calendar event \"Nadia Kim \u2013 First-day orientation,\" 10:00\u201311:00 AM, with Tom Alvarez and Nadia invited.\n- **Checklist:** Created from the usual template at `/onboarding/nadia-kim-onboarding-checklist.md` (role: Inventory Analyst, manager: Tom Alvarez, start date: March 16, 2026).\n- **Tom's heads-up:** Emailed Tom with the details and the checklist attached.\n\nNo conflicts: the only other event that morning is the warehouse standup at 9:00\u20139:30."
+    }
+   ],
+   "finish": "stop",
+   "rawFinish": "stop",
+   "cost": 0.000227776,
+   "tokens": {
+    "input": 413,
+    "output": 146,
+    "reasoning": 0,
+    "cache": {
+     "read": 35072,
+     "write": 0
+    }
+   }
+  },
+  {
+   "id": "msg_1fbec78a5001p51qA2ZfQI7wmU",
+   "time": {
+    "created": 1795227941029
+   },
+   "type": "idle",
+   "outcome": "succeeded"
+  }
+ ],
+ "actions": [
+  {
+   "step": 1,
+   "tool": "contacts_search",
+   "args": {
+    "query": "Aisha"
+   },
+   "ok": true
+  },
+  {
+   "step": 2,
+   "tool": "mail_search",
+   "args": {
+    "query": "Aisha",
+    "folder": "inbox",
+    "limit": 20
+   },
+   "ok": true
+  },
+  {
+   "step": 3,
+   "tool": "mail_read",
+   "args": {
+    "message_id": "m1"
+   },
+   "ok": true
+  },
+  {
+   "step": 4,
+   "tool": "contacts_search",
+   "args": {
+    "query": "Tom Alvarez"
+   },
+   "ok": true
+  },
+  {
+   "step": 5,
+   "tool": "drive_search",
+   "args": {
+    "query": "onboarding"
+   },
+   "ok": true
+  },
+  {
+   "step": 6,
+   "tool": "calendar_list",
+   "args": {
+    "start_date": "2026-03-16",
+    "end_date": "2026-03-17"
+   },
+   "ok": true
+  },
+  {
+   "step": 7,
+   "tool": "drive_read",
+   "args": {
+    "path": "/templates/onboarding-checklist.md"
+   },
+   "ok": true
+  },
+  {
+   "step": 8,
+   "tool": "drive_list",
+   "args": {},
+   "ok": true
+  },
+  {
+   "step": 9,
+   "tool": "drive_list",
+   "args": {
+    "folder": "/onboarding"
+   },
+   "ok": true
+  },
+  {
+   "step": 10,
+   "tool": "drive_list",
+   "args": {
+    "folder": "/templates"
+   },
+   "ok": true
+  },
+  {
+   "step": 11,
+   "tool": "calendar_availability",
+   "args": {
+    "emails": [
+     "tom.alvarez@larkspur.example",
+     "sam.rivera@larkspur.example"
+    ],
+    "date": "2026-03-16"
+   },
+   "ok": true
+  },
+  {
+   "step": 12,
+   "tool": "calendar_list",
+   "args": {
+    "start_date": "2026-03-09",
+    "end_date": "2026-03-20"
+   },
+   "ok": true
+  },
+  {
+   "step": 13,
+   "tool": "chat_channels",
+   "args": {},
+   "ok": true
+  },
+  {
+   "step": 14,
+   "tool": "chat_list",
+   "args": {
+    "channel": "ops",
+    "limit": 30
+   },
+   "ok": true
+  },
+  {
+   "step": 15,
+   "tool": "chat_list",
+   "args": {
+    "channel": "general",
+    "limit": 30
+   },
+   "ok": true
+  },
+  {
+   "step": 16,
+   "tool": "contacts_search",
+   "args": {
+    "query": "Nadia Kim"
+   },
+   "ok": true
+  },
+  {
+   "step": 17,
+   "tool": "crm_search",
+   "args": {
+    "query": "Nadia Kim"
+   },
+   "ok": true
+  },
+  {
+   "step": 18,
+   "tool": "drive_write",
+   "args": {
+    "path": "/onboarding/nadia-kim-onboarding-checklist.md",
+    "content": "# Onboarding checklist: Nadia Kim\n\nRole: Inventory Analyst \u00b7 Manager: Tom Alvarez \u00b7 Start date: Monday, March 16, 2026\n\n- [ ] Laptop and accounts ready\n- [ ] Orientation with manager\n- [ ] Safety walkthrough of the warehouse\n- [ ] Benefits enrollment with HR in week 1\n"
+   },
+   "ok": true
+  },
+  {
+   "step": 19,
+   "tool": "calendar_create",
+   "args": {
+    "title": "Nadia Kim \u2013 First-day orientation",
+    "start": "2026-03-16T10:00",
+    "end": "2026-03-16T11:00",
+    "attendees": [
+     "tom.alvarez@larkspur.example",
+     "nadia.kim@larkspur.example"
+    ],
+    "location": "",
+    "description": "First-day orientation for Nadia Kim, Inventory Analyst (starts March 16, reports to Tom Alvarez). Onboarding checklist: /onboarding/nadia-kim-onboarding-checklist.md"
+   },
+   "ok": true
+  },
+  {
+   "step": 20,
+   "tool": "mail_send",
+   "args": {
+    "to": [
+     "tom.alvarez@larkspur.example"
+    ],
+    "subject": "Heads-up: Nadia Kim starts Monday, March 16",
+    "body": "Hi Tom,\n\nNadia Kim starts as our Inventory Analyst on Monday, March 16, reporting to you. Aisha asked me to set up her first day, so here is the heads-up:\n\n- Orientation: Monday, March 16, 10:00-11:00 AM. I have sent a calendar invite to you and Nadia.\n- Onboarding checklist: attached, and also saved at /onboarding/nadia-kim-onboarding-checklist.md.\n\nThe checklist covers laptop and accounts, orientation with you, the warehouse safety walkthrough, and benefits enrollment with HR in week 1. Let me know if you want anything adjusted before Monday.\n\nThanks,\nSam Rivera",
+    "attachments": [
+     "/onboarding/nadia-kim-onboarding-checklist.md"
+    ]
+   },
+   "ok": true
+  },
+  {
+   "step": 21,
+   "tool": "drive_read",
+   "args": {
+    "path": "/onboarding/nadia-kim-onboarding-checklist.md"
+   },
+   "ok": true
+  },
+  {
+   "step": 22,
+   "tool": "calendar_list",
+   "args": {
+    "start_date": "2026-03-16",
+    "end_date": "2026-03-16"
+   },
+   "ok": true
+  },
+  {
+   "step": 23,
+   "tool": "mail_read",
+   "args": {
+    "message_id": "m1002"
+   },
+   "ok": true
+  },
+  {
+   "step": 24,
+   "tool": "submit",
+   "args": {
+    "answer": "Set up Nadia Kim's first day for Monday, March 16: created a 10:00-11:00 AM orientation with Tom Alvarez (inviting Tom and Nadia), created her onboarding checklist from the standard template at /onboarding/nadia-kim-onboarding-checklist.md, and emailed Tom a heads-up with the checklist attached."
+   },
+   "ok": true
+  }
+ ],
+ "answer": "Set up Nadia Kim's first day for Monday, March 16: created a 10:00-11:00 AM orientation with Tom Alvarez (inviting Tom and Nadia), created her onboarding checklist from the standard template at /onboarding/nadia-kim-onboarding-checklist.md, and emailed Tom a heads-up with the checklist attached.",
+ "final_state": {
+  "now": "2026-03-09T09:00:00",
+  "timezone": "America/New_York",
+  "company": {
+   "name": "Larkspur Supply Co.",
+   "domain": "larkspur.example"
+  },
+  "user": {
+   "name": "Sam Rivera",
+   "email": "sam.rivera@larkspur.example",
+   "title": "Operations Manager"
+  },
+  "contacts": [
+   {
+    "name": "Priya Natarajan",
+    "email": "priya.natarajan@larkspur.example",
+    "title": "CEO"
+   },
+   {
+    "name": "Marcus Chen",
+    "email": "marcus.chen@larkspur.example",
+    "title": "CFO"
+   },
+   {
+    "name": "Elena Petrova",
+    "email": "elena.petrova@larkspur.example",
+    "title": "Head of Sales"
+   },
+   {
+    "name": "Jordan Blake",
+    "email": "jordan.blake@larkspur.example",
+    "title": "Finance Analyst"
+   },
+   {
+    "name": "Aisha Okafor",
+    "email": "aisha.okafor@larkspur.example",
+    "title": "HR Manager"
+   },
+   {
+    "name": "Tom Alvarez",
+    "email": "tom.alvarez@larkspur.example",
+    "title": "Warehouse Lead"
+   },
+   {
+    "name": "Finance team",
+    "email": "finance@larkspur.example",
+    "title": "Shared inbox"
+   },
+   {
+    "name": "Nadia Kim",
+    "email": "nadia.kim@larkspur.example",
+    "title": "Inventory Analyst (starts 2026-03-16)"
+   }
+  ],
+  "mail": {
+   "messages": [
+    {
+     "id": "m1",
+     "folder": "inbox",
+     "from": "aisha.okafor@larkspur.example",
+     "to": [
+      "sam.rivera@larkspur.example"
+     ],
+     "cc": [],
+     "subject": "New hire Monday - Nadia Kim",
+     "body": "Hi Sam,\nNadia Kim starts as our Inventory Analyst on Monday, March 16, reporting to Tom Alvarez.\nCould you set up her first day: a one-hour orientation with Tom at 10am, her onboarding\nchecklist from the usual template, and give Tom a heads-up?\nThanks, Aisha\n",
+     "date": "2026-03-09T08:50:00",
+     "thread_id": "m1",
+     "attachments": [],
+     "seeded": true
+    },
+    {
+     "id": "m1002",
+     "folder": "sent",
+     "from": "sam.rivera@larkspur.example",
+     "to": [
+      "tom.alvarez@larkspur.example"
+     ],
+     "cc": [],
+     "subject": "Heads-up: Nadia Kim starts Monday, March 16",
+     "body": "Hi Tom,\n\nNadia Kim starts as our Inventory Analyst on Monday, March 16, reporting to you. Aisha asked me to set up her first day, so here is the heads-up:\n\n- Orientation: Monday, March 16, 10:00-11:00 AM. I have sent a calendar invite to you and Nadia.\n- Onboarding checklist: attached, and also saved at /onboarding/nadia-kim-onboarding-checklist.md.\n\nThe checklist covers laptop and accounts, orientation with you, the warehouse safety walkthrough, and benefits enrollment with HR in week 1. Let me know if you want anything adjusted before Monday.\n\nThanks,\nSam Rivera",
+     "date": "2026-03-09T09:00:00",
+     "thread_id": "m1002",
+     "attachments": [
+      "/onboarding/nadia-kim-onboarding-checklist.md"
+     ],
+     "seeded": false
+    }
+   ]
+  },
+  "calendar": {
+   "events": [
+    {
+     "id": "e1",
+     "title": "Warehouse standup",
+     "start": "2026-03-16T09:00",
+     "end": "2026-03-16T09:30",
+     "attendees": [
+      "tom.alvarez@larkspur.example",
+      "sam.rivera@larkspur.example"
+     ],
+     "location": "",
+     "description": "",
+     "seeded": true
+    },
+    {
+     "id": "e1001",
+     "title": "Nadia Kim \u2013 First-day orientation",
+     "start": "2026-03-16T10:00",
+     "end": "2026-03-16T11:00",
+     "attendees": [
+      "tom.alvarez@larkspur.example",
+      "nadia.kim@larkspur.example",
+      "sam.rivera@larkspur.example"
+     ],
+     "location": "",
+     "description": "First-day orientation for Nadia Kim, Inventory Analyst (starts March 16, reports to Tom Alvarez). Onboarding checklist: /onboarding/nadia-kim-onboarding-checklist.md",
+     "seeded": false
+    }
+   ]
+  },
+  "drive": {
+   "files": {
+    "/templates/onboarding-checklist.md": {
+     "content": "# Onboarding checklist: {{name}}\n\nRole: {{role}} \u00b7 Manager: {{manager}} \u00b7 Start date: {{start_date}}\n\n- [ ] Laptop and accounts ready\n- [ ] Orientation with manager\n- [ ] Safety walkthrough of the warehouse\n- [ ] Benefits enrollment with HR in week 1\n",
+     "seeded": true
+    },
+    "/onboarding/nadia-kim-onboarding-checklist.md": {
+     "content": "# Onboarding checklist: Nadia Kim\n\nRole: Inventory Analyst \u00b7 Manager: Tom Alvarez \u00b7 Start date: Monday, March 16, 2026\n\n- [ ] Laptop and accounts ready\n- [ ] Orientation with manager\n- [ ] Safety walkthrough of the warehouse\n- [ ] Benefits enrollment with HR in week 1\n",
+     "seeded": false
+    }
+   }
+  },
+  "crm": {
+   "records": [
+    {
+     "id": "A-150",
+     "type": "account",
+     "name": "Pinecrest School District",
+     "domain": "pinecrestsd.example",
+     "owner": "Elena Petrova",
+     "renewal_date": "2026-07-01",
+     "segment": "Education",
+     "seeded": true
+    },
+    {
+     "id": "A-205",
+     "type": "account",
+     "name": "Brightwater Hotels",
+     "domain": "brightwaterhotels.example",
+     "owner": "Elena Petrova",
+     "segment": "Hospitality",
+     "seeded": true
+    },
+    {
+     "id": "A-310",
+     "type": "account",
+     "name": "Fernwood Grocers",
+     "domain": "fernwoodgrocers.example",
+     "owner": "Elena Petrova",
+     "segment": "Retail",
+     "seeded": true
+    },
+    {
+     "id": "A-322",
+     "type": "account",
+     "name": "Halcyon Cafe",
+     "domain": "halcyoncafe.example",
+     "owner": "Elena Petrova",
+     "segment": "Hospitality",
+     "seeded": true
+    },
+    {
+     "id": "A-340",
+     "type": "account",
+     "name": "Oakline Markets",
+     "domain": "oaklinemarkets.example",
+     "owner": "Elena Petrova",
+     "segment": "Retail",
+     "seeded": true
+    },
+    {
+     "id": "A-355",
+     "type": "account",
+     "name": "Ridgeview Clinic",
+     "domain": "ridgeviewclinic.example",
+     "owner": "Elena Petrova",
+     "segment": "Healthcare",
+     "seeded": true
+    }
+   ],
+   "stages": [
+    "Prospecting",
+    "Proposal",
+    "Negotiation",
+    "Closed Won",
+    "Closed Lost"
+   ]
+  },
+  "chat": {
+   "channels": {
+    "general": [],
+    "sales": [],
+    "ops": []
+   }
+  }
+ }
+}

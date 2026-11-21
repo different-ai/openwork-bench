@@ -23,8 +23,8 @@ CLIENT, HOST = "client-secret", "host-secret"
 
 
 class FakeOpenWork:
-    def __init__(self, steps, hang=False):
-        self.steps, self.hang = steps, hang
+    def __init__(self, steps, hang=False, v2=False):
+        self.steps, self.hang, self.v2 = steps, hang, v2
         self.config, self.prompts, self.calls, self.busy, self.aborted = {}, [], [], False, False
         fake = self
 
@@ -50,7 +50,17 @@ class FakeOpenWork:
                 if p == "/workspaces/local":
                     if self.headers.get("X-OpenWork-Host-Token") != HOST:
                         return self._send(401, {"error": "host token"})
-                    return self._send(200, {"workspace": {"id": "ws_1", "path": self._body()["folderPath"]}})
+                    folder = self._body()["folderPath"]
+                    return self._send(
+                        200,
+                        {
+                            "activeId": "ws_1",
+                            "workspaces": [
+                                {"id": "ws_0", "path": "/other", "workspaceType": "local"},
+                                {"id": "ws_1", "path": folder, "workspaceType": "local"},
+                            ],
+                        },
+                    )
                 if self.headers.get("Authorization") != f"Bearer {CLIENT}":
                     return self._send(401, {"error": "client token"})
                 if method == "PATCH" and p == "/workspace/ws_1/config":
@@ -59,7 +69,61 @@ class FakeOpenWork:
                 if p == "/workspace/ws_1/engine/reload":
                     return self._send(200, {"ok": True})
                 if method == "POST" and p == "/workspace/ws_1/opencode/session":
+                    if fake.v2:
+                        return self._send(
+                            409,
+                            {
+                                "code": "engine_v1_history_adopted",
+                                "message": "This history is owned by OpenCode v2.",
+                            },
+                        )
                     return self._send(200, {"id": "ses_1"})
+                if p == "/experimental/engine-v2-preview/status":
+                    return self._send(200, {"enabled": fake.v2, "chatRouting": fake.v2})
+                if fake.v2 and method == "PUT" and p == "/workspace/ws_1/opencode/auth/openrouter":
+                    fake.saved_key = self._body()
+                    return self._send(200, True)
+                if fake.v2 and p == "/workspace/ws_1/opencode2/api/session/active":
+                    return self._send(200, {"data": {"ses_1": {"type": "running"}} if fake.busy else {}})
+                if fake.v2 and method == "GET" and p == "/workspace/ws_1/opencode2/api/session/ses_1":
+                    return self._send(
+                        200,
+                        {
+                            "data": {
+                                "id": "ses_1",
+                                "model": {"providerID": "openrouter", "id": "z-ai/glm-5.3"},
+                                "cost": 0.0031,
+                                "tokens": {
+                                    "input": 2000,
+                                    "output": 400,
+                                    "reasoning": 100,
+                                    "cache": {"read": 0, "write": 0},
+                                },
+                                "outcome": "completed",
+                            }
+                        },
+                    )
+                if fake.v2 and p.startswith("/workspace/ws_1/opencode2/api/session/ses_1/message"):
+                    return self._send(
+                        200,
+                        {
+                            "data": [
+                                {"id": "m1", "role": "user", "text": "brief"},
+                                {"id": "m2", "role": "assistant", "text": "Replied to Jordan."},
+                            ]
+                        },
+                    )
+                if fake.v2 and p == "/workspace/ws_1/opencode2/api/session":
+                    fake.v2_create = self._body()
+                    return self._send(200, {"data": {"info": {"id": "ses_1"}}})
+                if fake.v2 and p == "/workspace/ws_1/opencode2/api/session/ses_1/model":
+                    fake.v2_model = self._body()
+                    return self._send(200, {"ok": True})
+                if fake.v2 and p == "/workspace/ws_1/opencode2/api/session/ses_1/prompt":
+                    fake.prompts.append(self._body())
+                    fake.busy = True
+                    threading.Thread(target=fake.play, daemon=True).start()
+                    return self._send(200, {"ok": True})
                 if p == "/workspace/ws_1/opencode/session/ses_1/prompt_async":
                     fake.prompts.append(self._body())
                     fake.busy = True
@@ -127,6 +191,9 @@ class FakeOpenWork:
 
             def do_PATCH(self):
                 self._route("PATCH")
+
+            def do_PUT(self):
+                self._route("PUT")
 
         self.httpd = ThreadingHTTPServer(("127.0.0.1", 0), H)
         self.url = f"http://127.0.0.1:{self.httpd.server_address[1]}"
@@ -221,3 +288,22 @@ def test_server_errors_are_infrastructure_errors(env, by_id):
     b = by_id["vendor-shortlist"]
     row, _ = run_one(_subject("http://127.0.0.1:9"), b, 1, "run-test", "v0.1", scoring=ScoringConfig())
     assert row["status"] == "error" and row["error"]
+
+
+def test_v2_desktop_uses_native_session_routes(env, by_id):
+    from openwork_bench.grading import ScoringConfig
+    from openwork_bench.harness import openwork_desktop
+
+    openwork_desktop._SAVED_KEYS.clear()
+
+    b = by_id["expense-policy-answer"]
+    fake = FakeOpenWork(b.reference, v2=True)
+    row, _ = run_one(_subject(fake.url), b, 1, "run-test", "v0.1", scoring=ScoringConfig())
+    assert row["status"] == "completed" and row["score"] == 1.0
+    assert fake.v2_create["model"] == {"providerID": "openrouter", "id": "z-ai/glm-5.3"}
+    assert fake.v2_model == {"model": {"providerID": "openrouter", "id": "z-ai/glm-5.3"}}
+    assert fake.prompts[0]["delivery"] == "steer" and "Reply to Jordan" in fake.prompts[0]["text"]
+    assert fake.saved_key == {"type": "api", "key": "test-key"}
+    assert fake.config["provider"] == {"openrouter": None}  # v2 mirrors the native provider instead
+    assert row["cost_usd"] == pytest.approx(0.0031) and row["usage"]["output_tokens"] == 500
+    assert row["served_by"] == ["openrouter/z-ai/glm-5.3"]

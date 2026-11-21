@@ -31,6 +31,12 @@ class Usage:
         self.cache_write_tokens += other.cache_write_tokens
 
     @property
+    def budgeted(self) -> int:
+        """Tokens that count toward a task's budget: new input and output. Cached prompt reads are
+        excluded, so a harness that reuses a large cached context is not penalised for caching."""
+        return self.input_tokens + self.output_tokens + self.cache_write_tokens
+
+    @property
     def total(self) -> int:
         return self.input_tokens + self.output_tokens + self.cache_read_tokens + self.cache_write_tokens
 

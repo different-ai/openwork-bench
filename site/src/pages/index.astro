@@ -135,7 +135,8 @@ uv run owb world plan</pre>
   const TARGETS = DATA.index.targets || {};
   const hasOpen = DATA.subjects.some((s) => s.board === "open-weights");
   const hasReal = DATA.subjects.some((s) => s.type === "model" || s.type === "product");
-  const state = { board: hasOpen ? "open" : "all", harness: hasOpen ? "openwork" : "both", showTest: !hasReal };
+  const appModels = DATA.subjects.filter((s) => s.board === "open-weights" && s.type === "product").length;
+  const state = { board: hasOpen ? "open" : "all", harness: appModels >= 2 ? "openwork" : "both", showTest: !hasReal };
 
   const fmt = (v, d = 1) => (v == null || Number.isNaN(v) ? "–" : Number(v).toFixed(d));
   const money = (v) => (v == null ? "n/a" : v < 0.01 ? "$" + v.toFixed(4) : "$" + v.toFixed(v < 1 ? 3 : 2));
@@ -375,6 +376,7 @@ uv run owb world plan</pre>
   function notice() {
     const n = document.getElementById("notice");
     if (!hasReal) { n.hidden = false; n.innerHTML = "<b>Sample data.</b> No model results are published yet. These rows come from reference and simulated test subjects that exercise the pipeline offline."; }
+    else if (DATA.note) { n.hidden = false; n.textContent = DATA.note; }
     else if (DATA.subjects.some((s) => s.simulated) && state.showTest) { n.hidden = false; n.innerHTML = "<b>Includes test subjects.</b> Simulated rows come from a seeded test agent, not a real model."; }
     else n.hidden = true;
   }

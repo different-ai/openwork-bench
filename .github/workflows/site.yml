@@ -1,0 +1,65 @@
+name: site
+
+# Builds the leaderboard and docs (site/, Astro) on every pull request and publishes them to
+# GitHub Pages from pre-release. Until leaderboard/published.yaml pins a results revision, the
+# leaderboard comes from the offline demo and says so.
+on:
+  push:
+    branches: [pre-release]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pages-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v10.4.0
+        with:
+          python-version: "3.13"
+      - run: uv sync --all-extras
+      - name: Leaderboard data
+        run: |
+          REV=$(uv run python -c "import yaml;print(yaml.safe_load(open('leaderboard/published.yaml')).get('results_revision') or '')")
+          IDX=$(uv run python -c "import yaml;print(yaml.safe_load(open('leaderboard/published.yaml'))['index_version'])")
+          if [ -n "$REV" ]; then
+            uv run owb hub pull-results --revision "$REV" --dest hub-results
+            uv run owb leaderboard --runs hub-results --index "$IDX" --out site/public/leaderboard.json
+          else
+            uv run owb demo --out runs-demo --site-data site/public/leaderboard.json
+          fi
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: site/package-lock.json
+      - run: npm ci
+        working-directory: site
+      # Syncs docs/, builds the leaderboard page and the docs, and checks every docs link.
+      - run: npm run build
+        working-directory: site
+      - uses: actions/upload-pages-artifact@v5
+        if: github.event_name != 'pull_request'
+        with:
+          path: site/dist
+
+  deploy:
+    if: github.event_name != 'pull_request'
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v5

@@ -102,8 +102,8 @@ errata.
 
 Engine modules (`src/openwork_bench/`): `world` (simulated workplace), `mcp_server` (the world over
 MCP, stdio or HTTP), `harness/` (OpenWork Desktop driver, `owb-agent`, scripted), `providers/`,
-`grading/`, `runner`, `index`, `models` (catalog and weight verification), `site/`, `hub`,
-`validate`, `world_plan`.
+`grading/`, `runner`, `index`, `models` (catalog and weight verification), `hub`, `validate`,
+`world_plan`. The website (leaderboard and docs) is an Astro site in `site/`.
 
 GitHub holds what people review: tasks, method, catalog, corrections and the pin to the official
 results revision. Hugging Face holds what is large and append-only: published tasks, every run's

@@ -30,12 +30,14 @@ model: *Delegable*, *Ready with review* or *Not ready*.
 git clone https://github.com/different-ai/openwork-bench && cd openwork-bench
 uv sync --all-extras          # or: pip install -e ".[all,dev]"
 uv run owb validate           # every task: solvable by its reference, ~0 for an empty answer
-uv run owb demo --open        # offline: run reference + simulated subjects, build the site
+uv run owb demo               # offline: run reference + simulated subjects, write the leaderboard
+cd site && npm ci && npm run dev   # the leaderboard and docs at http://localhost:4321/openwork-bench/
 ```
 
 `owb demo` needs no API keys. It runs an oracle, a no-op and four *simulated* agents (seeded
 test agents with made-up cost and speed, clearly labelled) through every task three times, builds
-`runs-demo/leaderboard.json` and opens `site/dist/index.html`.
+`runs-demo/leaderboard.json` and copies it to `site/public/leaderboard.json`, which the site
+([`site/`](site/README.md), Astro) is built from.
 
 ### Run an open-weight model
 
@@ -44,7 +46,7 @@ uv run owb models verify                       # check weights, licenses and rev
 export OPENROUTER_API_KEY=...
 uv run owb run glm-5.3@owb-agent --tasks all --repeats 3      # control harness
 uv run owb world plan --world worlds/openwork-bench.world.yaml # the OpenWork Desktop run, priced first
-uv run owb leaderboard --runs runs runs-demo && uv run owb site --open
+uv run owb leaderboard --runs runs runs-demo --out site/public/leaderboard.json
 ```
 
 Running models costs money. `owb world plan` prints the run matrix, estimated tokens, cost and

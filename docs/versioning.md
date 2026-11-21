@@ -24,8 +24,8 @@ commit of code, tasks and results that produced it.
 1. `owb run <subject>` writes `runs/<run_id>/` with manifest, results and trajectories.
 2. `owb hub push-run runs/<run_id>` opens a **pull request on the Hugging Face results dataset**.
 3. A maintainer reviews (manifest revisions, error rate, spot-check trajectories) and merges.
-4. To publish: a GitHub PR updates `leaderboard/published.yaml` to the merged HF revision; CI
-   rebuilds the site from exactly that revision.
+4. To publish: a GitHub PR into `pre-release` updates `leaderboard/published.yaml` to the merged
+   HF revision; when it merges, CI rebuilds and publishes the site from exactly that revision.
 
 ### Fix a task (wrong expected value, ambiguous brief)
 1. PR edits the task and **bumps `version`**; CI re-validates (oracle 1.0, no-op ≤ 0.15).

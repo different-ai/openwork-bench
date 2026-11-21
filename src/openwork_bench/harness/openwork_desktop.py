@@ -316,7 +316,7 @@ class OpenWorkDesktopAgent(Agent):
         meta["outcome"] = info.get("outcome")
         if usage.total == 0 and not world.actions:
             status = "error"  # the model never ran: provider or engine failure, not a score
-        elif usage.total >= budgets.max_tokens and status == "completed":
+        elif usage.budgeted >= budgets.max_tokens and status == "completed":
             status = "budget_tokens"
         if world.answer is None:
             texts = [
@@ -428,7 +428,7 @@ class OpenWorkDesktopAgent(Agent):
             )
 
         usage, cost, turns, models, last_text = _sum_messages(msgs)
-        if usage.total >= budgets.max_tokens and status == "completed":
+        if usage.budgeted >= budgets.max_tokens and status == "completed":
             status = "budget_tokens"
         if world.answer is None:
             world.answer = last_text

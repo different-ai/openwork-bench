@@ -1,0 +1,50 @@
+# The OpenWork Bench open-weight board.
+#
+# Every model here must have downloadable weights on Hugging Face. `owb models verify` checks
+# each repo is public, ungated or openly licensed, and actually contains weight files, then
+# pins the exact revision and license in models/open-weights.lock.json. Runs record that pin,
+# the serving provider that answered, and the quantization, so every number is traceable to
+# exact weights.
+#
+# Subjects are generated as model x harness, e.g. glm-5.3@openwork-desktop and glm-5.3@owb-agent.
+# Prices are OpenRouter list prices on 2026-11-20 for planning; runs record the billed cost
+# OpenRouter returns for each call.
+schema: 1
+harnesses: [openwork-desktop, owb-agent]
+defaults:
+  provider: openai              # OpenAI-compatible Chat Completions
+  base_url: https://openrouter.ai/api/v1
+  api_key_env: OPENROUTER_API_KEY
+  max_output_tokens: 16000
+  max_tokens_param: max_tokens
+  serving:
+    mode: hosted                # hosted (OpenRouter, provider pinned) | self-hosted (vLLM/SGLang in a GPU sandbox)
+    allow_fallbacks: false      # never silently route to a different provider mid-run
+    quantizations: [bf16, fp8]  # refuse providers serving heavier quantization
+models:
+  # Frontier open-weight models
+  - {key: kimi-k3.1-pro, label: Kimi K3.1 Pro, family: moonshot, tier: frontier,
+     route: moonshotai/kimi-k3.1-pro, hf_repo: moonshotai/Kimi-K3.1-Pro, pricing: {input_per_mtok: 0.25, output_per_mtok: 8.80}}
+  - {key: glm-5.3, label: GLM-5.3, family: zhipu, tier: frontier,
+     route: z-ai/glm-5.3, hf_repo: zai-org/GLM-5.3, pricing: {input_per_mtok: 0.07, output_per_mtok: 1.40}}
+  - {key: deepseek-v4.1-flash, label: DeepSeek V4.1 Flash (1017), family: deepseek, tier: frontier,
+     route: deepseek/deepseek-v4.1-flash-1017, hf_repo: deepseek-ai/DeepSeek-V4.1-Flash-1017, pricing: {input_per_mtok: 0.04, output_per_mtok: 0.50}}
+  - {key: deepseek-v4-pro, label: DeepSeek V4 Pro (0813), family: deepseek, tier: frontier,
+     route: deepseek/deepseek-v4-pro-0813, hf_repo: deepseek-ai/DeepSeek-V4-Pro-0813, pricing: {input_per_mtok: 1.32, output_per_mtok: 3.96}}
+  - {key: qwen3.8-2.4t, label: Qwen3.8 2.4T-A95B, family: qwen, tier: frontier,
+     route: qwen/qwen3.8-2.4t-a95b, hf_repo: Qwen/Qwen3.8-2.4T-A95B, pricing: {input_per_mtok: 2.00, output_per_mtok: 6.00}}
+  - {key: mistral-large-4, label: Mistral Large 4, family: mistral, tier: frontier,
+     route: mistralai/mistral-large-4-0, hf_repo: mistralai/Mistral-Large-4-1T-A52B, pricing: {input_per_mtok: 0.70, output_per_mtok: 2.10}}
+  - {key: muse-spark-open, label: Muse Spark Open, family: meta, tier: frontier,
+     route: meta/muse-spark-open, hf_repo: meta-models/Muse-Spark-Open-816B-A42B, pricing: {input_per_mtok: 1.25, output_per_mtok: 4.25}}
+  - {key: minimax-m3.1-flash, label: MiniMax M3.1 Flash, family: minimax, tier: frontier,
+     route: minimax/minimax-m3.1-flash, hf_repo: MiniMaxAI/MiniMax-M3.1-Flash, pricing: {input_per_mtok: 0.07, output_per_mtok: 0.30}}
+  # Efficient models that fit on one GPU node: the self-hosting story
+  - {key: qwen3.8-27b, label: Qwen3.8 27B, family: qwen, tier: efficient,
+     route: qwen/qwen3.8-27b, hf_repo: Qwen/Qwen3.8-27B, pricing: {input_per_mtok: 0.06, output_per_mtok: 1.96}}
+  - {key: nemotron-3.5-super, label: Nemotron 3.5 Super (120B-A12B), family: nvidia, tier: efficient,
+     route: nvidia/nemotron-3.5-super-vl, hf_repo: nvidia/NVIDIA-Nemotron-3.5-Super-VL-120B-A12B-BF16, pricing: {input_per_mtok: 0.15, output_per_mtok: 0.50}}
+  - {key: glm-5.3-flash, label: GLM-5.3 Flash, family: zhipu, tier: efficient,
+     route: z-ai/glm-5.3-flash, hf_repo: zai-org/GLM-5.3-Flash, pricing: {input_per_mtok: 0.04, output_per_mtok: 0.08}}
+  - {key: nemotron-3.5-lightning, label: Nemotron 3.5 Lightning (30B-A3B), family: nvidia, tier: efficient,
+     route: nvidia/nemotron-3.5-lightning, hf_repo: nvidia/NVIDIA-Nemotron-3.5-Lightning-30B-A3B-BF16, pricing: {input_per_mtok: 0.07, output_per_mtok: 0.20}}

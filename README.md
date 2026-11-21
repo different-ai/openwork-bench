@@ -1,11 +1,11 @@
 # OpenWork Bench
 
-**Which AI agents do real knowledge work best, and at what cost, speed and risk?**
+**Which open models can you trust with real knowledge work, and at what cost, speed and risk?**
 
-OpenWork Bench is an open, reproducible benchmark and leaderboard for AI agents doing
-knowledge work. It is modelled on [Artificial Analysis](https://artificialanalysis.ai): one
-headline index, quality plotted against cost and speed, versioned methodology, confidence
-intervals. It is built for office work rather than exams:
+OpenWork Bench is an open, reproducible benchmark and leaderboard for AI agents doing knowledge
+work. It answers one question: **which open-weight models can you trust with real work?** One
+index, quality plotted against cost and speed, confidence intervals, and a clear verdict for each
+model: *Delegable*, *Ready with review* or *Not ready*.
 
 - **Real workplace tasks.** Agents work inside a simulated company with email, calendar, files,
   CRM, chat and a directory. They draft memos, reconcile invoices, reschedule meetings, triage
@@ -13,14 +13,16 @@ intervals. It is built for office work rather than exams:
 - **Graded on outcomes and side effects.** Deterministic checks read the final state: the right
   email went to the right people, the numbers in the spreadsheet are right, nothing was deleted,
   nothing leaked to an outside address. An unsafe attempt scores 0.
-- **Scores the agent system, not only the model.** A subject is `model × harness`. Compare models
-  through the neutral built-in harness, or connect any agent product over MCP.
+- **Open-weight models, legitimately.** Every model's weights are verified on Hugging Face and
+  pinned to a revision; serving providers and precision are pinned and recorded per call.
+- **Run in a real agent app.** Each task runs in a desktop agent app (OpenWork) inside an isolated
+  sandbox, with a plain tool-calling loop alongside as a control.
 - **Everything is open.** Tasks, worlds, harness, graders, every run's full trajectory, and the
   method that turns them into a score. Code on GitHub, data on Hugging Face, both versioned.
 
-> Status: **v0.1 preview.** 12 sample tasks across all six categories, offline reference and
-> simulated subjects, Claude and OpenAI-compatible model adapters, MCP world server, leaderboard
-> site, Hugging Face publishing. No official model results are published yet.
+> Status: **preview.** 12 sample tasks across six categories, a verified catalog of 12 open-weight
+> models, the sandboxed agent-app runner, offline reference and simulated subjects, MCP world
+> server, leaderboard site and Hugging Face publishing. No official results are published yet.
 
 ## Quick start
 
@@ -35,17 +37,18 @@ uv run owb demo --open        # offline: run reference + simulated subjects, bui
 test agents with made-up cost and speed, clearly labelled) through every task three times, builds
 `runs-demo/leaderboard.json` and opens `site/dist/index.html`.
 
-### Run a real model
+### Run an open-weight model
 
 ```bash
-export ANTHROPIC_API_KEY=...          # or `ant auth login`
-uv run owb run claude-sonnet-5-5 --tasks all --repeats 3
-uv run owb leaderboard --runs runs runs-demo
-uv run owb site --open
+uv run owb models verify                       # check weights, licenses and revisions on Hugging Face
+export OPENROUTER_API_KEY=...
+uv run owb run glm-5.3@owb-agent --tasks all --repeats 3      # control harness
+uv run owb world plan --world worlds/openwork-bench.world.yaml # the OpenWork Desktop run, priced first
+uv run owb leaderboard --runs runs runs-demo && uv run owb site --open
 ```
 
-Any OpenAI-compatible endpoint works too: copy `subjects/openai-compatible.example.yaml.txt` to
-`subjects/<id>.yaml`. Running models costs money: a full v0.1 pass is 12 tasks × 3 repeats.
+Running models costs money. `owb world plan` prints the run matrix, estimated tokens, cost and
+sandbox hours before anything starts. See [docs/openwork-desktop.md](docs/openwork-desktop.md).
 
 ### Explore
 
@@ -87,7 +90,9 @@ Full method: [docs/methodology.md](docs/methodology.md).
 ```
 tasks/<category>/<task-id>/   task.yaml · world.yaml · reference.yaml · workspace/   (CC BY 4.0)
 tasks/_shared/                shared fictional company (Larkspur Supply Co.)
-subjects/                     what gets scored: model × harness configs
+models/open-weights.yaml      open-weight catalog (+ .lock.json: verified revisions and licenses)
+worlds/                       OpenWork world run specs
+subjects/                     reference, simulated and closed-anchor subjects
 index/v0.1.yaml               index definition: splits, weights, scoring, repeats
 pricing.yaml                  list prices for cost per task
 errata/                       every correction to published results
@@ -98,13 +103,15 @@ docs/                         plan, methodology, task format, versioning, data, 
 
 ## Docs
 
-- [Plan and roadmap](docs/PLAN.md)
+- [Design and roadmap](docs/PLAN.md)
+- [The open-weight board](docs/open-weights.md)
+- [Running tasks in the agent app](docs/openwork-desktop.md)
 - [Methodology](docs/methodology.md)
 - [Writing tasks](docs/task-format.md)
 - [Versioning, revisions and corrections](docs/versioning.md)
 - [Data on Hugging Face](docs/data-on-hugging-face.md)
 - [Harness adapters and agent products](docs/harness-adapters.md)
-- [Fair play](docs/fair-play.md): OpenWork maintains this benchmark and appears on it; these rules keep it honest.
+- [Fair play](docs/fair-play.md): the rules that keep results honest, including for the maintainers' own app.
 
 ## Contributing
 

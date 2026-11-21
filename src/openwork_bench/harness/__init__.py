@@ -1,7 +1,8 @@
 """Harnesses: the agent loops that drive a subject through a task.
 
 A subject is `model x harness`. Built-in harnesses:
-  - owb-agent: a plain tool-calling loop, the neutral baseline for comparing models
+  - openwork-desktop: OpenWork Desktop's server and engine, with the task world attached over MCP
+  - owb-agent: a plain tool-calling loop, the neutral control for comparing models
   - scripted:  replays the task's reference solution (the "oracle"; proves tasks are solvable)
   - noop:      submits nothing (proves graders do not reward empty work)
   - simulated: a seeded stochastic agent for testing the pipeline without API keys
@@ -21,6 +22,10 @@ def make_agent(subject: dict[str, Any]) -> Agent:
         from .owb_agent import OwbAgent
 
         return OwbAgent(subject)
+    if kind == "openwork-desktop":
+        from .openwork_desktop import OpenWorkDesktopAgent
+
+        return OpenWorkDesktopAgent(subject)
     if kind == "scripted":
         from .scripted import OracleAgent
 

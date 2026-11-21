@@ -18,6 +18,9 @@ class AgentOutcome:
     transcript: list[dict[str, Any]] = field(default_factory=list)
     error: str | None = None
     simulated_wall_s: float | None = None
+    billed_usd: float | None = None
+    served_by: list[str] = field(default_factory=list)
+    meta: dict[str, Any] = field(default_factory=dict)
 
 
 class Agent:
@@ -43,3 +46,8 @@ def system_prompt(world: World) -> str:
         "outside addresses.\n\n"
         "When the task is done, call submit with the answer the task asks for, or a one-line summary of what you did."
     )
+
+
+def work_context(world: World) -> str:
+    """The same role, date and rules every harness gives the agent, so subjects are compared fairly."""
+    return system_prompt(world)

@@ -136,6 +136,38 @@ def run_one(
     return row, trajectory
 
 
+class SpendLimit:
+    """A hard stop on model spend, shared by every run that uses the same ledger file.
+
+    Rows add their recorded cost as they finish. Once the total reaches the limit, runs stop
+    starting new attempts; attempts already in flight finish, so the total can overshoot by them.
+    """
+
+    def __init__(self, limit_usd: float, ledger: Path | None = None):
+        import threading
+
+        self._lock = threading.Lock()
+        self.limit = float(limit_usd)
+        self.ledger = Path(ledger) if ledger else None
+        self.spent = 0.0
+        if self.ledger and self.ledger.exists():
+            self.spent = float(json.loads(self.ledger.read_text()).get("spent_usd", 0.0))
+
+    def add(self, usd: float | None) -> None:
+        with self._lock:
+            self._add(usd)
+
+    def _add(self, usd: float | None) -> None:
+        self.spent += float(usd or 0.0)
+        if self.ledger:
+            self.ledger.parent.mkdir(parents=True, exist_ok=True)
+            self.ledger.write_text(json.dumps({"spent_usd": round(self.spent, 6), "limit_usd": self.limit}))
+
+    @property
+    def reached(self) -> bool:
+        return self.spent >= self.limit
+
+
 def make_run_id(subject_id: str) -> str:
     return f"{datetime.now(UTC).strftime('%Y%m%d-%H%M%S')}-{subject_id}-{uuid.uuid4().hex[:6]}"
 
@@ -150,6 +182,7 @@ def run_subject(
     scoring: ScoringConfig | None = None,
     judge_panel: Any = None,
     progress: Any = None,
+    spend: SpendLimit | None = None,
 ) -> Path:
     scoring = scoring or ScoringConfig()
     run_id = make_run_id(subject["id"])
@@ -175,14 +208,25 @@ def run_subject(
 
     jobs = [(b, r) for b in bundles for r in range(1, repeats + 1)]
     rows: list[dict[str, Any]] = []
+    stopped = bool(spend and spend.reached)
+
+    def attempt(b: TaskBundle, r: int):
+        # Checked when the attempt starts, so a fast run cannot slip past the limit.
+        if spend and spend.reached:
+            return None, None
+        row, traj = run_one(subject, b, r, run_id, index_version, scoring, judge_panel)
+        if spend:
+            spend.add(row.get("cost_usd"))
+        return row, traj
+
     with ThreadPoolExecutor(max_workers=max(1, workers)) as pool:
-        futures = {
-            pool.submit(run_one, subject, b, r, run_id, index_version, scoring, judge_panel): (b, r)
-            for b, r in jobs
-        }
+        futures = {pool.submit(attempt, b, r): (b, r) for b, r in ([] if stopped else jobs)}
         for fut in as_completed(futures):
             b, r = futures[fut]
             row, traj = fut.result()
+            if row is None:
+                stopped = True
+                continue
             rows.append(row)
             (run_dir / "trajectories" / f"{b.id}__r{r}.json").write_text(
                 json.dumps(traj, indent=1, default=str)
@@ -194,7 +238,10 @@ def run_subject(
     with (run_dir / "results.jsonl").open("w") as f:
         for row in rows:
             f.write(json.dumps(row, default=str) + "\n")
-    manifest["status"] = "complete"
+    stopped = stopped or bool(spend and spend.reached and len(rows) < len(jobs))
+    manifest["status"] = "stopped_spend_limit" if stopped else "complete"
+    if spend:
+        manifest["spend"] = {"spent_usd": round(spend.spent, 4), "limit_usd": spend.limit}
     manifest["completed_at"] = _now()
     manifest["summary"] = {
         "rows": len(rows),

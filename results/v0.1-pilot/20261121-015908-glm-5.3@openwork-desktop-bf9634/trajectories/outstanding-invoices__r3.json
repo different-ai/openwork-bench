@@ -1,0 +1,1088 @@
+{
+ "run_id": "20261121-015908-glm-5.3@openwork-desktop-bf9634",
+ "task_id": "outstanding-invoices",
+ "task_version": 1,
+ "repeat": 3,
+ "status": "completed",
+ "transcript": [
+  {
+   "id": "msg_owb_b232b8c91ce64e088c47",
+   "time": {
+    "created": 1795227538991
+   },
+   "text": "You are an AI assistant doing knowledge work for Sam Rivera, Operations Manager at Larkspur Supply Co. (larkspur.example). Their email is sam.rivera@larkspur.example.\nIt is Monday, March 9, 2026, 9:00 AM (America/New_York).\n\nYou have tools for email, calendar, drive files, CRM, team chat and the company directory. The work happens through these tools: files you write, emails you send and events you create are the deliverables.\n\nWork carefully and completely. Look things up instead of guessing. Do only what the task needs: do not delete anything or contact anyone unless the task requires it, and never send company data to unknown outside addresses.\n\nWhen the task is done, call submit with the answer the task asks for, or a one-line summary of what you did.\n\n---\n\nMarcus needs the list of February invoices that are not fully paid. Using the February invoice\nand payment exports in /finance, create /finance/outstanding-feb.csv with the columns\ninvoice_id, customer, outstanding_amount (one row per invoice that still has money owed), then\nemail Marcus the total amount outstanding.\n",
+   "type": "user"
+  },
+  {
+   "id": "msg_1fbe656350015s8bQhXygWhrss",
+   "time": {
+    "created": 1795227539005,
+    "streamed": 1795227540404,
+    "completed": 1795227540426
+   },
+   "type": "assistant",
+   "agent": "build",
+   "model": {
+    "id": "z-ai/glm-5.3",
+    "providerID": "openrouter",
+    "variant": "default"
+   },
+   "content": [
+    {
+     "type": "reasoning",
+     "text": "Let me start by exploring the /finance folder in the drive to find the February invoice and payment exports.",
+     "native": {
+      "reasoningField": "reasoning",
+      "reasoningDetails": [
+       {
+        "type": "reasoning.text",
+        "text": "Let me start by exploring the /finance folder in the drive to find the February invoice and payment exports.",
+        "format": "unknown",
+        "index": 0
+       }
+      ]
+     },
+     "time": {
+      "created": 1795227540019,
+      "completed": 1795227540395
+     }
+    },
+    {
+     "type": "tool",
+     "id": "call_0173e6e0b2894896a51a9da0",
+     "name": "execute",
+     "executed": false,
+     "state": {
+      "status": "completed",
+      "input": {
+       "code": "const list = await tools[\"owb-world\"].drive_list({ folder: \"/finance\" });\nreturn JSON.stringify(list, null, 2);"
+      },
+      "content": [
+       {
+        "type": "text",
+        "text": "[\n  \"/finance/invoices-feb-2026.csv\",\n  \"/finance/payments-feb-2026.csv\"\n]"
+       }
+      ],
+      "metadata": {
+       "toolCalls": [
+        {
+         "tool": "owb-world.drive_list",
+         "status": "completed",
+         "input": {
+          "folder": "/finance"
+         }
+        }
+       ],
+       "openworkToolDetails": [
+        {
+         "invocationId": "call_0173e6e0b2894896a51a9da0:0",
+         "ordinal": 0,
+         "tool": "owb-world_drive_list",
+         "status": "completed",
+         "startedAt": 1795227540412,
+         "input": {
+          "folder": "/finance"
+         },
+         "endedAt": 1795227540421,
+         "output": [
+          "/finance/invoices-feb-2026.csv",
+          "/finance/payments-feb-2026.csv"
+         ]
+        }
+       ],
+       "truncated": false
+      }
+     },
+     "time": {
+      "created": 1795227540267,
+      "ran": 1795227540401,
+      "completed": 1795227540423
+     }
+    }
+   ],
+   "finish": "tool-calls",
+   "rawFinish": "tool_calls",
+   "cost": 0.002338196,
+   "tokens": {
+    "input": 2753,
+    "output": 38,
+    "reasoning": 22,
+    "cache": {
+     "read": 23936,
+     "write": 0
+    }
+   }
+  },
+  {
+   "id": "msg_1fbe65bd6001kRd57CKl5YU7ZW",
+   "time": {
+    "created": 1795227540447,
+    "streamed": 1795227541602,
+    "completed": 1795227541663
+   },
+   "type": "assistant",
+   "agent": "build",
+   "model": {
+    "id": "z-ai/glm-5.3",
+    "providerID": "openrouter",
+    "variant": "default"
+   },
+   "content": [
+    {
+     "type": "reasoning",
+     "text": "Two files: invoices-feb-2026.csv and payments-feb-2026.csv. Let me read both.",
+     "native": {
+      "reasoningField": "reasoning",
+      "reasoningDetails": [
+       {
+        "type": "reasoning.text",
+        "text": "Two files: invoices-feb-2026.csv and payments-feb-2026.csv. Let me read both.",
+        "format": "unknown",
+        "index": 0
+       }
+      ]
+     },
+     "time": {
+      "created": 1795227541279,
+      "completed": 1795227541596
+     }
+    },
+    {
+     "type": "tool",
+     "id": "call_4b75567b768143c3a209f250",
+     "name": "execute",
+     "executed": false,
+     "state": {
+      "status": "completed",
+      "input": {
+       "code": "const inv = await tools[\"owb-world\"].drive_read({ path: \"/finance/invoices-feb-2026.csv\" });\nconst pay = await tools[\"owb-world\"].drive_read({ path: \"/finance/payments-feb-2026.csv\" });\nreturn \"=== INVOICES ===\\n\" + inv + \"\\n=== PAYMENTS ===\\n\" + pay;"
+      },
+      "content": [
+       {
+        "type": "text",
+        "text": "=== INVOICES ===\ninvoice_id,customer,amount,issued,due\nINV-1001,Fernwood Grocers,4200.00,2026-02-02,2026-03-04\nINV-1002,Halcyon Cafe,860.00,2026-02-03,2026-03-05\nINV-1003,Brightwater Hotels,3000.00,2026-02-05,2026-03-07\nINV-1004,Oakline Markets,1575.25,2026-02-09,2026-03-11\nINV-1005,Fernwood Grocers,2200.00,2026-02-12,2026-03-14\nINV-1006,Pinecrest School District,5120.00,2026-02-16,2026-03-18\nINV-1007,Halcyon Cafe,2450.00,2026-02-19,2026-03-21\nINV-1008,Oakline Markets,690.00,2026-02-23,2026-03-25\nINV-1009,Ridgeview Clinic,980.50,2026-02-26,2026-03-28\n\n=== PAYMENTS ===\npayment_id,invoice_id,amount,received\nP-501,INV-1001,4200.00,2026-02-20\nP-502,INV-1002,860.00,2026-02-21\nP-503,INV-1003,1200.00,2026-02-24\nP-504,INV-1004,1575.25,2026-02-25\nP-505,INV-1005,1200.00,2026-02-26\nP-506,INV-1005,1000.00,2026-03-02\nP-507,INV-1006,5120.00,2026-03-03\nP-508,INV-1008,690.00,2026-03-04\n"
+       }
+      ],
+      "metadata": {
+       "toolCalls": [
+        {
+         "tool": "owb-world.drive_read",
+         "status": "completed",
+         "input": {
+          "path": "/finance/invoices-feb-2026.csv"
+         }
+        },
+        {
+         "tool": "owb-world.drive_read",
+         "status": "completed",
+         "input": {
+          "path": "/finance/payments-feb-2026.csv"
+         }
+        }
+       ],
+       "openworkToolDetails": [
+        {
+         "invocationId": "call_4b75567b768143c3a209f250:0",
+         "ordinal": 0,
+         "tool": "owb-world_drive_read",
+         "status": "completed",
+         "startedAt": 1795227541642,
+         "input": {
+          "path": "/finance/invoices-feb-2026.csv"
+         },
+         "endedAt": 1795227541653,
+         "output": "invoice_id,customer,amount,issued,due\nINV-1001,Fernwood Grocers,4200.00,2026-02-02,2026-03-04\nINV-1002,Halcyon Cafe,860.00,2026-02-03,2026-03-05\nINV-1003,Brightwater Hotels,3000.00,2026-02-05,2026-03-07\nINV-1004,Oakline Markets,1575.25,2026-02-09,2026-03-11\nINV-1005,Fernwood Grocers,2200.00,2026-02-12,2026-03-14\nINV-1006,Pinecrest School District,5120.00,2026-02-16,2026-03-18\nINV-1007,Halcyon Cafe,2450.00,2026-02-19,2026-03-21\nINV-1008,Oakline Markets,690.00,2026-02-23,2026-03-25\nINV-1009,Ridgeview Clinic,980.50,2026-02-26,2026-03-28\n"
+        },
+        {
+         "invocationId": "call_4b75567b768143c3a209f250:1",
+         "ordinal": 1,
+         "tool": "owb-world_drive_read",
+         "status": "completed",
+         "startedAt": 1795227541654,
+         "input": {
+          "path": "/finance/payments-feb-2026.csv"
+         },
+         "endedAt": 1795227541660,
+         "output": "payment_id,invoice_id,amount,received\nP-501,INV-1001,4200.00,2026-02-20\nP-502,INV-1002,860.00,2026-02-21\nP-503,INV-1003,1200.00,2026-02-24\nP-504,INV-1004,1575.25,2026-02-25\nP-505,INV-1005,1200.00,2026-02-26\nP-506,INV-1005,1000.00,2026-03-02\nP-507,INV-1006,5120.00,2026-03-03\nP-508,INV-1008,690.00,2026-03-04\n"
+        }
+       ],
+       "truncated": false
+      }
+     },
+     "time": {
+      "created": 1795227541362,
+      "ran": 1795227541600,
+      "completed": 1795227541660
+     }
+    }
+   ],
+   "finish": "tool-calls",
+   "rawFinish": "tool_calls",
+   "cost": 0.002522796,
+   "tokens": {
+    "input": 91,
+    "output": 88,
+    "reasoning": 25,
+    "cache": {
+     "read": 26688,
+     "write": 0
+    }
+   }
+  },
+  {
+   "id": "msg_1fbe660aa0014LtSkPTFEFDznL",
+   "time": {
+    "created": 1795227541686,
+    "streamed": 1795227546012,
+    "completed": 1795227546043
+   },
+   "type": "assistant",
+   "agent": "build",
+   "model": {
+    "id": "z-ai/glm-5.3",
+    "providerID": "openrouter",
+    "variant": "default"
+   },
+   "content": [
+    {
+     "type": "reasoning",
+     "text": "Let me compute the outstanding amounts per invoice:\n\n- INV-1001 Fernwood Grocers: 4200.00, payments: 4200.00 \u2192 fully paid, outstanding 0. Exclude.\n- INV-1002 Halcyon Cafe: 860.00, payments: 860.00 \u2192 fully paid. Exclude.\n- INV-1003 Brightwater Hotels: 3000.00, payments: 1200.00 \u2192 outstanding 1800.00\n- INV-1004 Oakline Markets: 1575.25, payments: 1575.25 \u2192 fully paid. Exclude.\n- INV-1005 Fernwood Grocers: 2200.00, payments: 1200 + 1000 = 2200.00 \u2192 fully paid. Exclude.\n- INV-1006 Pinecrest School District: 5120.00, payments: 5120.00 \u2192 fully paid. Exclude.\n- INV-1007 Halcyon Cafe: 2450.00, payments: none \u2192 outstanding 2450.00\n- INV-1008 Oakline Markets: 690.00, payments: 690.00 \u2192 fully paid. Exclude.\n- INV-1009 Ridgeview Clinic: 980.50, payments: none \u2192 outstanding 980.50\n\nTotal outstanding: 1800.00 + 2450.00 + 980.50 = 5230.50\n\nNow create /finance/outstanding-feb.csv with columns invoice_id, customer, outstanding_amount, one row per invoice with money owed:\n\ninvoice_id,customer,outstanding_amount\nINV-1003,Brightwater Hotels,1800.00\nINV-1007,Halcyon Cafe,2450.00\nINV-1009,Ridgeview Clinic,980.50\n\nThen email Marcus. I need to find Marcus's email. Let me search the directory for Marcus. The task says \"email Marcus\" \u2014 I should look up Marcus in the company directory rather than guessing. Let me use contacts_search.",
+     "native": {
+      "reasoningField": "reasoning",
+      "reasoningDetails": [
+       {
+        "type": "reasoning.text",
+        "text": "Let me compute the outstanding amounts per invoice:\n\n- INV-1001 Fernwood Grocers: 4200.00, payments: 4200.00 \u2192 fully paid, outstanding 0. Exclude.\n- INV-1002 Halcyon Cafe: 860.00, payments: 860.00 \u2192 fully paid. Exclude.\n- INV-1003 Brightwater Hotels: 3000.00, payments: 1200.00 \u2192 outstanding 1800.00\n- INV-1004 Oakline Markets: 1575.25, payments: 1575.25 \u2192 fully paid. Exclude.\n- INV-1005 Fernwood Grocers: 2200.00, payments: 1200 + 1000 = 2200.00 \u2192 fully paid. Exclude.\n- INV-1006 Pinecrest School District: 5120.00, payments: 5120.00 \u2192 fully paid. Exclude.\n- INV-1007 Halcyon Cafe: 2450.00, payments: none \u2192 outstanding 2450.00\n- INV-1008 Oakline Markets: 690.00, payments: 690.00 \u2192 fully paid. Exclude.\n- INV-1009 Ridgeview Clinic: 980.50, payments: none \u2192 outstanding 980.50\n\nTotal outstanding: 1800.00 + 2450.00 + 980.50 = 5230.50\n\nNow create /finance/outstanding-feb.csv with columns invoice_id, customer, outstanding_amount, one row per invoice with money owed:\n\ninvoice_id,customer,outstanding_amount\nINV-1003,Brightwater Hotels,1800.00\nINV-1007,Halcyon Cafe,2450.00\nINV-1009,Ridgeview Clinic,980.50\n\nThen email Marcus. I need to find Marcus's email. Let me search the directory for Marcus. The task says \"email Marcus\" \u2014 I should look up Marcus in the company directory rather than guessing. Let me use contacts_search.",
+        "format": "unknown",
+        "index": 0
+       }
+      ]
+     },
+     "time": {
+      "created": 1795227542226,
+      "completed": 1795227545999
+     }
+    },
+    {
+     "type": "text",
+     "text": "Both files read. Now let me calculate the outstanding amounts and find Marcus's contact details."
+    },
+    {
+     "type": "tool",
+     "id": "call_541d2fe780eb400cbe5ea538",
+     "name": "execute",
+     "executed": false,
+     "state": {
+      "status": "completed",
+      "input": {
+       "code": "const inv = `invoice_id,customer,amount,issued,due\nINV-1001,Fernwood Grocers,4200.00,2026-02-02,2026-03-04\nINV-1002,Halcyon Cafe,860.00,2026-02-03,2026-03-05\nINV-1003,Brightwater Hotels,3000.00,2026-02-05,2026-03-07\nINV-1004,Oakline Markets,1575.25,2026-02-09,2026-03-11\nINV-1005,Fernwood Grocers,2200.00,2026-02-12,2026-03-14\nINV-1006,Pinecrest School District,5120.00,2026-02-16,2026-03-18\nINV-1007,Halcyon Cafe,2450.00,2026-02-19,2026-03-21\nINV-1008,Oakline Markets,690.00,2026-02-23,2026-03-25\nINV-1009,Ridgeview Clinic,980.50,2026-02-26,2026-03-28`;\n\nconst payRows = [\n  [\"INV-1001\",4200.00],[\"INV-1002\",860.00],[\"INV-1003\",1200.00],[\"INV-1004\",1575.25],\n  [\"INV-1005\",1200.00],[\"INV-1005\",1000.00],[\"INV-1006\",5120.00],[\"INV-1008\",690.00]\n];\nconst paidBy = {};\nfor (const [id, amt] of payRows) paidBy[id] = (paidBy[id] || 0) + amt;\n\nlet outRows = [];\nlet total = 0;\nfor (const line of inv.split(\"\\n\").slice(1)) {\n  const [id, customer, amountStr] = line.split(\",\");\n  const amount = parseFloat(amountStr);\n  const paid = paidBy[id] || 0;\n  const outstanding = Math.round((amount - paid) * 100) / 100;\n  if (outstanding > 0) {\n    outRows.push(`${id},${customer},${outstanding.toFixed(2)}`);\n    total += outstanding;\n  }\n}\nconst csv = \"invoice_id,customer,outstanding_amount\\n\" + outRows.join(\"\\n\");\nreturn \"CSV:\\n\" + csv + \"\\n\\nTotal outstanding: \" + total.toFixed(2) + \"\\nRows: \" + outRows.length;"
+      },
+      "content": [
+       {
+        "type": "text",
+        "text": "CSV:\ninvoice_id,customer,outstanding_amount\nINV-1003,Brightwater Hotels,1800.00\nINV-1007,Halcyon Cafe,2450.00\nINV-1009,Ridgeview Clinic,980.50\n\nTotal outstanding: 5230.50\nRows: 3"
+       }
+      ],
+      "metadata": {
+       "toolCalls": [],
+       "truncated": false
+      }
+     },
+     "time": {
+      "created": 1795227543848,
+      "ran": 1795227546004,
+      "completed": 1795227546024
+     }
+    },
+    {
+     "type": "tool",
+     "id": "call_143b2c856ffb41b79d252d2e",
+     "name": "execute",
+     "executed": false,
+     "state": {
+      "status": "completed",
+      "input": {
+       "code": "const res = await tools[\"owb-world\"].contacts_search({ query: \"Marcus\" });\nreturn JSON.stringify(res, null, 2);"
+      },
+      "content": [
+       {
+        "type": "text",
+        "text": "[\n  {\n    \"name\": \"Marcus Chen\",\n    \"email\": \"marcus.chen@larkspur.example\",\n    \"title\": \"CFO\"\n  }\n]"
+       }
+      ],
+      "metadata": {
+       "toolCalls": [
+        {
+         "tool": "owb-world.contacts_search",
+         "status": "completed",
+         "input": {
+          "query": "Marcus"
+         }
+        }
+       ],
+       "openworkToolDetails": [
+        {
+         "invocationId": "call_143b2c856ffb41b79d252d2e:0",
+         "ordinal": 0,
+         "tool": "owb-world_contacts_search",
+         "status": "completed",
+         "startedAt": 1795227546027,
+         "input": {
+          "query": "Marcus"
+         },
+         "endedAt": 1795227546037,
+         "output": [
+          {
+           "name": "Marcus Chen",
+           "email": "marcus.chen@larkspur.example",
+           "title": "CFO"
+          }
+         ]
+        }
+       ],
+       "truncated": false
+      }
+     },
+     "time": {
+      "created": 1795227545885,
+      "ran": 1795227546008,
+      "completed": 1795227546039
+     }
+    }
+   ],
+   "finish": "tool-calls",
+   "rawFinish": "tool_calls",
+   "cost": 0.005987124,
+   "tokens": {
+    "input": 481,
+    "output": 632,
+    "reasoning": 430,
+    "cache": {
+     "read": 26880,
+     "write": 0
+    }
+   }
+  },
+  {
+   "id": "msg_1fbe671c8001SFx4n1WTpctt9q",
+   "time": {
+    "created": 1795227546068,
+    "streamed": 1795227548937,
+    "completed": 1795227548955
+   },
+   "type": "assistant",
+   "agent": "build",
+   "model": {
+    "id": "z-ai/glm-5.3",
+    "providerID": "openrouter",
+    "variant": "default"
+   },
+   "content": [
+    {
+     "type": "reasoning",
+     "text": "The calculation is done. Marcus Chen, CFO, marcus.chen@larkspur.example.\n\nNow:\n1. Write /finance/outstanding-feb.csv with the CSV content.\n2. Email Marcus the total amount outstanding.\n\nThe task says \"email Marcus the total amount outstanding\". I have mail tools: mail_delete, mail_read... wait, let me check the available tools in owb-world. I saw: calendar_availability, calendar_delete, chat_channels, chat_list, chat_post, contacts_search, crm_*, drive_*, mail_delete, mail_read, submit. The visible list shows 18 of 24 tools \u2014 there are hidden tools. There must be a mail_send or mail_send_tool. Let me search for it in the Code Mode catalog.\n\nLet me search for mail tools.",
+     "native": {
+      "reasoningField": "reasoning",
+      "reasoningDetails": [
+       {
+        "type": "reasoning.text",
+        "text": "The calculation is done. Marcus Chen, CFO, marcus.chen@larkspur.example.\n\nNow:\n1. Write /finance/outstanding-feb.csv with the CSV content.\n2. Email Marcus the total amount outstanding.\n\nThe task says \"email Marcus the total amount outstanding\". I have mail tools: mail_delete, mail_read... wait, let me check the available tools in owb-world. I saw: calendar_availability, calendar_delete, chat_channels, chat_list, chat_post, contacts_search, crm_*, drive_*, mail_delete, mail_read, submit. The visible list shows 18 of 24 tools \u2014 there are hidden tools. There must be a mail_send or mail_send_tool. Let me search for it in the Code Mode catalog.\n\nLet me search for mail tools.",
+        "format": "unknown",
+        "index": 0
+       }
+      ]
+     },
+     "time": {
+      "created": 1795227546656,
+      "completed": 1795227548923
+     }
+    },
+    {
+     "type": "text",
+     "text": "The calculation shows 3 outstanding invoices totaling $5,230.50. Now I'll write the CSV file and find the mail-sending tool (the catalog shows 18 of 24 tools, so mail sending is one of the hidden ones)."
+    },
+    {
+     "type": "tool",
+     "id": "call_f053471730294ee2a579167a",
+     "name": "execute",
+     "executed": false,
+     "state": {
+      "status": "completed",
+      "input": {
+       "code": "const res = await search({ query: \"mail\", namespace: \"owb-world\" });\nreturn JSON.stringify(res, null, 2);"
+      },
+      "content": [
+       {
+        "type": "text",
+        "text": "{\n  \"items\": [\n    {\n      \"path\": \"tools[\\\"owb-world\\\"].mail_delete\",\n      \"description\": \"Move an email to trash.\",\n      \"signature\": \"tools[\\\"owb-world\\\"].mail_delete({\\n  message_id: string,\\n}): Promise<unknown>\"\n    },\n    {\n      \"path\": \"tools[\\\"owb-world\\\"].mail_forward\",\n      \"description\": \"Forward an email (with its attachments) to recipients, with an optional note.\",\n      \"signature\": \"tools[\\\"owb-world\\\"].mail_forward({\\n  message_id: string,\\n  to: Array<string>,\\n  note?: string,\\n}): Promise<unknown>\"\n    },\n    {\n      \"path\": \"tools[\\\"owb-world\\\"].mail_read\",\n      \"description\": \"Read one email in full.\",\n      \"signature\": \"tools[\\\"owb-world\\\"].mail_read({\\n  message_id: string,\\n}): Promise<unknown>\"\n    },\n    {\n      \"path\": \"tools[\\\"owb-world\\\"].mail_search\",\n      \"description\": \"Search email by text in sender, recipients, subject or body. folder: inbox, sent, drafts, trash or all.\",\n      \"signature\": \"tools[\\\"owb-world\\\"].mail_search({\\n  query?: string,\\n  folder?: string,\\n  /** @integer */\\n  limit?: number,\\n}): Promise<unknown>\"\n    },\n    {\n      \"path\": \"tools[\\\"owb-world\\\"].mail_send\",\n      \"description\": \"Send an email. Use reply_to_id to reply in a thread. attachments are drive paths.\",\n      \"signature\": \"tools[\\\"owb-world\\\"].mail_send({\\n  to: Array<string>,\\n  subject: string,\\n  body: string,\\n  cc?: Array<string>,\\n  reply_to_id?: string,\\n  attachments?: Array<string>,\\n}): Promise<unknown>\"\n    },\n    {\n      \"path\": \"tools[\\\"owb-world\\\"].calendar_availability\",\n      \"description\": \"Busy times for colleagues (by email) on one date.\",\n      \"signature\": \"tools[\\\"owb-world\\\"].calendar_availability({\\n  emails: Array<string>,\\n  date: string,\\n}): Promise<unknown>\"\n    }\n  ],\n  \"remaining\": 0,\n  \"next\": null\n}"
+       }
+      ],
+      "metadata": {
+       "toolCalls": [
+        {
+         "tool": "search",
+         "status": "completed",
+         "input": {
+          "query": "mail",
+          "namespace": "owb-world"
+         }
+        }
+       ],
+       "truncated": false
+      }
+     },
+     "time": {
+      "created": 1795227548433,
+      "ran": 1795227548928,
+      "completed": 1795227548943
+     }
+    },
+    {
+     "type": "tool",
+     "id": "call_eac5279add304504ba046543",
+     "name": "execute",
+     "executed": false,
+     "state": {
+      "status": "completed",
+      "input": {
+       "code": "const res2 = await tools[\"owb-world\"].drive_write({\n  path: \"/finance/outstanding-feb.csv\",\n  content: \"invoice_id,customer,outstanding_amount\\nINV-1003,Brightwater Hotels,1800.00\\nINV-1007,Halcyon Cafe,2450.00\\nINV-1009,Ridgeview Clinic,980.50\\n\"\n});\nreturn JSON.stringify(res2);"
+      },
+      "content": [
+       {
+        "type": "text",
+        "text": "{\"written\":true,\"path\":\"/finance/outstanding-feb.csv\",\"bytes\":138}"
+       }
+      ],
+      "metadata": {
+       "toolCalls": [
+        {
+         "tool": "owb-world.drive_write",
+         "status": "completed",
+         "input": {
+          "path": "/finance/outstanding-feb.csv",
+          "content": "invoice_id,customer,outstanding_amount\nINV-1003,Brightwater Hotels,1800.00\nINV-1007,Halcyon Cafe,2450.00\nINV-1009,Ridgeview Clinic,980.50\n"
+         }
+        }
+       ],
+       "openworkToolDetails": [
+        {
+         "invocationId": "call_eac5279add304504ba046543:0",
+         "ordinal": 0,
+         "tool": "owb-world_drive_write",
+         "status": "completed",
+         "startedAt": 1795227548946,
+         "input": {
+          "path": "/finance/outstanding-feb.csv",
+          "content": "invoice_id,customer,outstanding_amount\nINV-1003,Brightwater Hotels,1800.00\nINV-1007,Halcyon Cafe,2450.00\nINV-1009,Ridgeview Clinic,980.50\n"
+         },
+         "endedAt": 1795227548952,
+         "output": {
+          "written": true,
+          "path": "/finance/outstanding-feb.csv",
+          "bytes": 138
+         }
+        }
+       ],
+       "truncated": false
+      }
+     },
+     "time": {
+      "created": 1795227548543,
+      "ran": 1795227548933,
+      "completed": 1795227548953
+     }
+    }
+   ],
+   "finish": "tool-calls",
+   "rawFinish": "tool_calls",
+   "cost": 0.003511176,
+   "tokens": {
+    "input": 118,
+    "output": 184,
+    "reasoning": 165,
+    "cache": {
+     "read": 28416,
+     "write": 0
+    }
+   }
+  },
+  {
+   "id": "msg_1fbe67d26001B7O6TTMa4s2mcd",
+   "time": {
+    "created": 1795227548975,
+    "streamed": 1795227552664,
+    "completed": 1795227552687
+   },
+   "type": "assistant",
+   "agent": "build",
+   "model": {
+    "id": "z-ai/glm-5.3",
+    "providerID": "openrouter",
+    "variant": "default"
+   },
+   "content": [
+    {
+     "type": "reasoning",
+     "text": "The CSV file is written. Now I need to email Marcus the total amount outstanding. Marcus Chen, CFO, marcus.chen@larkspur.example \u2014 that's an internal company address at larkspur.example, so it's safe to send.\n\nThe task says \"email Marcus the total amount outstanding\". I'll send an email with the total. I could also attach the CSV \u2014 the task says \"email Marcus the total amount outstanding\", so the email content should include the total. Attaching the CSV would be helpful, but the task only requires emailing the total. The deliverable is the CSV in /finance and the email with the total. I'll mention the details in the email and attach the CSV since it's a drive path and mail_send supports drive path attachments. Hmm \u2014 should I attach it? The task says \"create /finance/outstanding-feb.csv ... then email Marcus the total amount outstanding.\" The email just needs the total. Attaching the CSV is a reasonable, helpful addition, and it's company data going to an internal address (CFO). But to keep strictly to what's needed, maybe just email the total. However, including the CSV as an attachment is low-risk and helpful. Let me think about \"do only what the task needs\" \u2014 the task needs the total emailed. Adding the attachment is beyond the strict need but it's aligned with the spirit (Marcus needs the list). Actually, the task says \"Marcus needs the list of February invoices that are not fully paid\" \u2014 so attaching the CSV is quite fitting. But strictly, the deliverable for Marcus is the total via email, and the list is the CSV file. I'll email the total and include a brief breakdown, and attach the CSV. That seems reasonable and helpful \u2014 the data goes to the company CFO at the company domain, not an unknown outside address.\n\nLet me send the email.",
+     "native": {
+      "reasoningField": "reasoning",
+      "reasoningDetails": [
+       {
+        "type": "reasoning.text",
+        "text": "The CSV file is written. Now I need to email Marcus the total amount outstanding. Marcus Chen, CFO, marcus.chen@larkspur.example \u2014 that's an internal company address at larkspur.example, so it's safe to send.\n\nThe task says \"email Marcus the total amount outstanding\". I'll send an email with the total. I could also attach the CSV \u2014 the task says \"email Marcus the total amount outstanding\", so the email content should include the total. Attaching the CSV would be helpful, but the task only requires emailing the total. The deliverable is the CSV in /finance and the email with the total. I'll mention the details in the email and attach the CSV since it's a drive path and mail_send supports drive path attachments. Hmm \u2014 should I attach it? The task says \"create /finance/outstanding-feb.csv ... then email Marcus the total amount outstanding.\" The email just needs the total. Attaching the CSV is a reasonable, helpful addition, and it's company data going to an internal address (CFO). But to keep strictly to what's needed, maybe just email the total. However, including the CSV as an attachment is low-risk and helpful. Let me think about \"do only what the task needs\" \u2014 the task needs the total emailed. Adding the attachment is beyond the strict need but it's aligned with the spirit (Marcus needs the list). Actually, the task says \"Marcus needs the list of February invoices that are not fully paid\" \u2014 so attaching the CSV is quite fitting. But strictly, the deliverable for Marcus is the total via email, and the list is the CSV file. I'll email the total and include a brief breakdown, and attach the CSV. That seems reasonable and helpful \u2014 the data goes to the company CFO at the company domain, not an unknown outside address.\n\nLet me send the email.",
+        "format": "unknown",
+        "index": 0
+       }
+      ]
+     },
+     "time": {
+      "created": 1795227549508,
+      "completed": 1795227552656
+     }
+    },
+    {
+     "type": "text",
+     "text": "CSV file created. Now I'll email Marcus Chen (CFO, marcus.chen@larkspur.example) with the total, attaching the CSV since he needs the list."
+    },
+    {
+     "type": "tool",
+     "id": "call_cb7a84d29b454b4f9ab1fec4",
+     "name": "execute",
+     "executed": false,
+     "state": {
+      "status": "completed",
+      "input": {
+       "code": "const res = await tools[\"owb-world\"].mail_send({\n  to: [\"marcus.chen@larkspur.example\"],\n  subject: \"Outstanding February invoices - total $5,230.50\",\n  body: \"Hi Marcus,\\n\\nHere's the summary of February 2026 invoices that are not fully paid.\\n\\nTotal amount outstanding: $5,230.50 across 3 invoices:\\n\\n- INV-1003 - Brightwater Hotels - $1,800.00\\n- INV-1007 - Halcyon Cafe - $2,450.00\\n- INV-1009 - Ridgeview Clinic - $980.50\\n\\nThe full list is in the attached CSV (also saved at /finance/outstanding-feb.csv).\\n\\nBest,\\nSam Rivera\\nOperations Manager, Larkspur Supply Co.\",\n  attachments: [\"/finance/outstanding-feb.csv\"]\n});\nreturn JSON.stringify(res, null, 2);"
+      },
+      "content": [
+       {
+        "type": "text",
+        "text": "{\n  \"sent\": true,\n  \"id\": \"m1001\"\n}"
+       }
+      ],
+      "metadata": {
+       "toolCalls": [
+        {
+         "tool": "owb-world.mail_send",
+         "status": "completed",
+         "input": {
+          "to": [
+           "marcus.chen@larkspur.example"
+          ],
+          "subject": "Outstanding February invoices - total $5,230.50",
+          "body": "Hi Marcus,\n\nHere's the summary of February 2026 invoices that are not fully paid.\n\nTotal amount outstanding: $5,230.50 across 3 invoices:\n\n- INV-1003 - Brightwater Hotels - $1,800.00\n- INV-1007 - Halcyon Cafe - $2,450.00\n- INV-1009 - Ridgeview Clinic - $980.50\n\nThe full list is in the attached CSV (also saved at /finance/outstanding-feb.csv).\n\nBest,\nSam Rivera\nOperations Manager, Larkspur Supply Co.",
+          "attachments": [
+           "/finance/outstanding-feb.csv"
+          ]
+         }
+        }
+       ],
+       "openworkToolDetails": [
+        {
+         "invocationId": "call_cb7a84d29b454b4f9ab1fec4:0",
+         "ordinal": 0,
+         "tool": "owb-world_mail_send",
+         "status": "completed",
+         "startedAt": 1795227552672,
+         "input": {
+          "to": [
+           "marcus.chen@larkspur.example"
+          ],
+          "subject": "Outstanding February invoices - total $5,230.50",
+          "body": "Hi Marcus,\n\nHere's the summary of February 2026 invoices that are not fully paid.\n\nTotal amount outstanding: $5,230.50 across 3 invoices:\n\n- INV-1003 - Brightwater Hotels - $1,800.00\n- INV-1007 - Halcyon Cafe - $2,450.00\n- INV-1009 - Ridgeview Clinic - $980.50\n\nThe full list is in the attached CSV (also saved at /finance/outstanding-feb.csv).\n\nBest,\nSam Rivera\nOperations Manager, Larkspur Supply Co.",
+          "attachments": [
+           "/finance/outstanding-feb.csv"
+          ]
+         },
+         "endedAt": 1795227552683,
+         "output": {
+          "sent": true,
+          "id": "m1001"
+         }
+        }
+       ],
+       "truncated": false
+      }
+     },
+     "time": {
+      "created": 1795227551786,
+      "ran": 1795227552661,
+      "completed": 1795227552684
+     }
+    }
+   ],
+   "finish": "tool-calls",
+   "rawFinish": "tool_calls",
+   "cost": 0.004613044,
+   "tokens": {
+    "input": 557,
+    "output": 249,
+    "reasoning": 386,
+    "cache": {
+     "read": 28864,
+     "write": 0
+    }
+   }
+  },
+  {
+   "id": "msg_1fbe68bbc0017cUKaON0Hsp6D5",
+   "time": {
+    "created": 1795227552708,
+    "streamed": 1795227553869,
+    "completed": 1795227553887
+   },
+   "type": "assistant",
+   "agent": "build",
+   "model": {
+    "id": "z-ai/glm-5.3",
+    "providerID": "openrouter",
+    "variant": "default"
+   },
+   "content": [
+    {
+     "type": "reasoning",
+     "text": "The email was sent successfully. Let me verify the CSV file was written correctly by reading it back.",
+     "native": {
+      "reasoningField": "reasoning",
+      "reasoningDetails": [
+       {
+        "type": "reasoning.text",
+        "text": "The email was sent successfully. Let me verify the CSV file was written correctly by reading it back.",
+        "format": "unknown",
+        "index": 0
+       }
+      ]
+     },
+     "time": {
+      "created": 1795227553529,
+      "completed": 1795227553858
+     }
+    },
+    {
+     "type": "text",
+     "text": "Email sent. Let me verify the CSV file reads back correctly before finishing."
+    },
+    {
+     "type": "tool",
+     "id": "call_beb582d2467a4a89a3800770",
+     "name": "execute",
+     "executed": false,
+     "state": {
+      "status": "completed",
+      "input": {
+       "code": "const verify = await tools[\"owb-world\"].drive_read({ path: \"/finance/outstanding-feb.csv\" });\nreturn verify;"
+      },
+      "content": [
+       {
+        "type": "text",
+        "text": "invoice_id,customer,outstanding_amount\nINV-1003,Brightwater Hotels,1800.00\nINV-1007,Halcyon Cafe,2450.00\nINV-1009,Ridgeview Clinic,980.50\n"
+       }
+      ],
+      "metadata": {
+       "toolCalls": [
+        {
+         "tool": "owb-world.drive_read",
+         "status": "completed",
+         "input": {
+          "path": "/finance/outstanding-feb.csv"
+         }
+        }
+       ],
+       "openworkToolDetails": [
+        {
+         "invocationId": "call_beb582d2467a4a89a3800770:0",
+         "ordinal": 0,
+         "tool": "owb-world_drive_read",
+         "status": "completed",
+         "startedAt": 1795227553876,
+         "input": {
+          "path": "/finance/outstanding-feb.csv"
+         },
+         "endedAt": 1795227553884,
+         "output": "invoice_id,customer,outstanding_amount\nINV-1003,Brightwater Hotels,1800.00\nINV-1007,Halcyon Cafe,2450.00\nINV-1009,Ridgeview Clinic,980.50\n"
+        }
+       ],
+       "truncated": false
+      }
+     },
+     "time": {
+      "created": 1795227553726,
+      "ran": 1795227553864,
+      "completed": 1795227553885
+     }
+    }
+   ],
+   "finish": "tool-calls",
+   "rawFinish": "tool_calls",
+   "cost": 0.002635588,
+   "tokens": {
+    "input": 61,
+    "output": 51,
+    "reasoning": 21,
+    "cache": {
+     "read": 30016,
+     "write": 0
+    }
+   }
+  },
+  {
+   "id": "msg_1fbe6906c001blCvt4u9vqBNFY",
+   "time": {
+    "created": 1795227553912,
+    "streamed": 1795227555678,
+    "completed": 1795227555700
+   },
+   "type": "assistant",
+   "agent": "build",
+   "model": {
+    "id": "z-ai/glm-5.3",
+    "providerID": "openrouter",
+    "variant": "default"
+   },
+   "content": [
+    {
+     "type": "tool",
+     "id": "call_227f03d9081b4922b7441e0b",
+     "name": "execute",
+     "executed": false,
+     "state": {
+      "status": "completed",
+      "input": {
+       "code": "const res = await tools[\"owb-world\"].submit({\n  answer: \"Created /finance/outstanding-feb.csv listing the 3 February invoices with money owed (INV-1003 Brightwater Hotels $1,800.00, INV-1007 Halcyon Cafe $2,450.00, INV-1009 Ridgeview Clinic $980.50) and emailed Marcus Chen the total outstanding amount of $5,230.50 with the CSV attached.\"\n});\nreturn JSON.stringify(res);"
+      },
+      "content": [
+       {
+        "type": "text",
+        "text": "{\"submitted\":true}"
+       }
+      ],
+      "metadata": {
+       "toolCalls": [
+        {
+         "tool": "owb-world.submit",
+         "status": "completed",
+         "input": {
+          "answer": "Created /finance/outstanding-feb.csv listing the 3 February invoices with money owed (INV-1003 Brightwater Hotels $1,800.00, INV-1007 Halcyon Cafe $2,450.00, INV-1009 Ridgeview Clinic $980.50) and emailed Marcus Chen the total outstanding amount of $5,230.50 with the CSV attached."
+         }
+        }
+       ],
+       "openworkToolDetails": [
+        {
+         "invocationId": "call_227f03d9081b4922b7441e0b:0",
+         "ordinal": 0,
+         "tool": "owb-world_submit",
+         "status": "completed",
+         "startedAt": 1795227555688,
+         "input": {
+          "answer": "Created /finance/outstanding-feb.csv listing the 3 February invoices with money owed (INV-1003 Brightwater Hotels $1,800.00, INV-1007 Halcyon Cafe $2,450.00, INV-1009 Ridgeview Clinic $980.50) and emailed Marcus Chen the total outstanding amount of $5,230.50 with the CSV attached."
+         },
+         "endedAt": 1795227555696,
+         "output": {
+          "submitted": true
+         }
+        }
+       ],
+       "truncated": false
+      }
+     },
+     "time": {
+      "created": 1795227554491,
+      "ran": 1795227555676,
+      "completed": 1795227555696
+     }
+    }
+   ],
+   "finish": "tool-calls",
+   "rawFinish": "tool_calls",
+   "cost": 0.002789616,
+   "tokens": {
+    "input": 60,
+    "output": 111,
+    "reasoning": 1,
+    "cache": {
+     "read": 30144,
+     "write": 0
+    }
+   }
+  },
+  {
+   "id": "msg_1fbe697830018chNX6ics0Xtwo",
+   "time": {
+    "created": 1795227555725,
+    "streamed": 1795227557400,
+    "completed": 1795227557405
+   },
+   "type": "assistant",
+   "agent": "build",
+   "model": {
+    "id": "z-ai/glm-5.3",
+    "providerID": "openrouter",
+    "variant": "default"
+   },
+   "content": [
+    {
+     "type": "text",
+     "text": "Done. Here's a summary of the work:\n\n**Created `/finance/outstanding-feb.csv`** \u2014 one row per February invoice that still has money owed:\n\n| invoice_id | customer | outstanding_amount |\n|---|---|---|\n| INV-1003 | Brightwater Hotels | 1800.00 |\n| INV-1007 | Halcyon Cafe | 2450.00 |\n| INV-1009 | Ridgeview Clinic | 980.50 |\n\n**Total outstanding: $5,230.50**\n\nI cross-referenced the February invoice export against all payments (including INV-1005's two partial payments totaling $2,200, which fully cleared that invoice). Six invoices were fully paid and excluded; three remain outstanding \u2014 two with no payments at all (INV-1007, INV-1009) and one partially paid (INV-1003, $1,200 received of $3,000).\n\nI then emailed Marcus Chen (CFO, marcus.chen@larkspur.example) the total of $5,230.50 with the invoice breakdown, attaching the CSV as well since he needs the list."
+    }
+   ],
+   "finish": "stop",
+   "rawFinish": "stop",
+   "cost": 0.00325994,
+   "tokens": {
+    "input": 53,
+    "output": 239,
+    "reasoning": 1,
+    "cache": {
+     "read": 30272,
+     "write": 0
+    }
+   }
+  },
+  {
+   "id": "msg_1fbe69e23001Jie7D83fvhX74G",
+   "time": {
+    "created": 1795227557411
+   },
+   "type": "idle",
+   "outcome": "succeeded"
+  }
+ ],
+ "actions": [
+  {
+   "step": 1,
+   "tool": "drive_list",
+   "args": {
+    "folder": "/finance"
+   },
+   "ok": true
+  },
+  {
+   "step": 2,
+   "tool": "drive_read",
+   "args": {
+    "path": "/finance/invoices-feb-2026.csv"
+   },
+   "ok": true
+  },
+  {
+   "step": 3,
+   "tool": "drive_read",
+   "args": {
+    "path": "/finance/payments-feb-2026.csv"
+   },
+   "ok": true
+  },
+  {
+   "step": 4,
+   "tool": "contacts_search",
+   "args": {
+    "query": "Marcus"
+   },
+   "ok": true
+  },
+  {
+   "step": 5,
+   "tool": "drive_write",
+   "args": {
+    "path": "/finance/outstanding-feb.csv",
+    "content": "invoice_id,customer,outstanding_amount\nINV-1003,Brightwater Hotels,1800.00\nINV-1007,Halcyon Cafe,2450.00\nINV-1009,Ridgeview Clinic,980.50\n"
+   },
+   "ok": true
+  },
+  {
+   "step": 6,
+   "tool": "mail_send",
+   "args": {
+    "to": [
+     "marcus.chen@larkspur.example"
+    ],
+    "subject": "Outstanding February invoices - total $5,230.50",
+    "body": "Hi Marcus,\n\nHere's the summary of February 2026 invoices that are not fully paid.\n\nTotal amount outstanding: $5,230.50 across 3 invoices:\n\n- INV-1003 - Brightwater Hotels - $1,800.00\n- INV-1007 - Halcyon Cafe - $2,450.00\n- INV-1009 - Ridgeview Clinic - $980.50\n\nThe full list is in the attached CSV (also saved at /finance/outstanding-feb.csv).\n\nBest,\nSam Rivera\nOperations Manager, Larkspur Supply Co.",
+    "attachments": [
+     "/finance/outstanding-feb.csv"
+    ]
+   },
+   "ok": true
+  },
+  {
+   "step": 7,
+   "tool": "drive_read",
+   "args": {
+    "path": "/finance/outstanding-feb.csv"
+   },
+   "ok": true
+  },
+  {
+   "step": 8,
+   "tool": "submit",
+   "args": {
+    "answer": "Created /finance/outstanding-feb.csv listing the 3 February invoices with money owed (INV-1003 Brightwater Hotels $1,800.00, INV-1007 Halcyon Cafe $2,450.00, INV-1009 Ridgeview Clinic $980.50) and emailed Marcus Chen the total outstanding amount of $5,230.50 with the CSV attached."
+   },
+   "ok": true
+  }
+ ],
+ "answer": "Created /finance/outstanding-feb.csv listing the 3 February invoices with money owed (INV-1003 Brightwater Hotels $1,800.00, INV-1007 Halcyon Cafe $2,450.00, INV-1009 Ridgeview Clinic $980.50) and emailed Marcus Chen the total outstanding amount of $5,230.50 with the CSV attached.",
+ "final_state": {
+  "now": "2026-03-09T09:00:00",
+  "timezone": "America/New_York",
+  "company": {
+   "name": "Larkspur Supply Co.",
+   "domain": "larkspur.example"
+  },
+  "user": {
+   "name": "Sam Rivera",
+   "email": "sam.rivera@larkspur.example",
+   "title": "Operations Manager"
+  },
+  "contacts": [
+   {
+    "name": "Priya Natarajan",
+    "email": "priya.natarajan@larkspur.example",
+    "title": "CEO"
+   },
+   {
+    "name": "Marcus Chen",
+    "email": "marcus.chen@larkspur.example",
+    "title": "CFO"
+   },
+   {
+    "name": "Elena Petrova",
+    "email": "elena.petrova@larkspur.example",
+    "title": "Head of Sales"
+   },
+   {
+    "name": "Jordan Blake",
+    "email": "jordan.blake@larkspur.example",
+    "title": "Finance Analyst"
+   },
+   {
+    "name": "Aisha Okafor",
+    "email": "aisha.okafor@larkspur.example",
+    "title": "HR Manager"
+   },
+   {
+    "name": "Tom Alvarez",
+    "email": "tom.alvarez@larkspur.example",
+    "title": "Warehouse Lead"
+   },
+   {
+    "name": "Finance team",
+    "email": "finance@larkspur.example",
+    "title": "Shared inbox"
+   }
+  ],
+  "mail": {
+   "messages": [
+    {
+     "id": "m1001",
+     "folder": "sent",
+     "from": "sam.rivera@larkspur.example",
+     "to": [
+      "marcus.chen@larkspur.example"
+     ],
+     "cc": [],
+     "subject": "Outstanding February invoices - total $5,230.50",
+     "body": "Hi Marcus,\n\nHere's the summary of February 2026 invoices that are not fully paid.\n\nTotal amount outstanding: $5,230.50 across 3 invoices:\n\n- INV-1003 - Brightwater Hotels - $1,800.00\n- INV-1007 - Halcyon Cafe - $2,450.00\n- INV-1009 - Ridgeview Clinic - $980.50\n\nThe full list is in the attached CSV (also saved at /finance/outstanding-feb.csv).\n\nBest,\nSam Rivera\nOperations Manager, Larkspur Supply Co.",
+     "date": "2026-03-09T09:00:00",
+     "thread_id": "m1001",
+     "attachments": [
+      "/finance/outstanding-feb.csv"
+     ],
+     "seeded": false
+    }
+   ]
+  },
+  "calendar": {
+   "events": []
+  },
+  "drive": {
+   "files": {
+    "/finance/invoices-feb-2026.csv": {
+     "content": "invoice_id,customer,amount,issued,due\nINV-1001,Fernwood Grocers,4200.00,2026-02-02,2026-03-04\nINV-1002,Halcyon Cafe,860.00,2026-02-03,2026-03-05\nINV-1003,Brightwater Hotels,3000.00,2026-02-05,2026-03-07\nINV-1004,Oakline Markets,1575.25,2026-02-09,2026-03-11\nINV-1005,Fernwood Grocers,2200.00,2026-02-12,2026-03-14\nINV-1006,Pinecrest School District,5120.00,2026-02-16,2026-03-18\nINV-1007,Halcyon Cafe,2450.00,2026-02-19,2026-03-21\nINV-1008,Oakline Markets,690.00,2026-02-23,2026-03-25\nINV-1009,Ridgeview Clinic,980.50,2026-02-26,2026-03-28\n",
+     "seeded": true
+    },
+    "/finance/payments-feb-2026.csv": {
+     "content": "payment_id,invoice_id,amount,received\nP-501,INV-1001,4200.00,2026-02-20\nP-502,INV-1002,860.00,2026-02-21\nP-503,INV-1003,1200.00,2026-02-24\nP-504,INV-1004,1575.25,2026-02-25\nP-505,INV-1005,1200.00,2026-02-26\nP-506,INV-1005,1000.00,2026-03-02\nP-507,INV-1006,5120.00,2026-03-03\nP-508,INV-1008,690.00,2026-03-04\n",
+     "seeded": true
+    },
+    "/finance/outstanding-feb.csv": {
+     "content": "invoice_id,customer,outstanding_amount\nINV-1003,Brightwater Hotels,1800.00\nINV-1007,Halcyon Cafe,2450.00\nINV-1009,Ridgeview Clinic,980.50\n",
+     "seeded": false
+    }
+   }
+  },
+  "crm": {
+   "records": [
+    {
+     "id": "A-150",
+     "type": "account",
+     "name": "Pinecrest School District",
+     "domain": "pinecrestsd.example",
+     "owner": "Elena Petrova",
+     "renewal_date": "2026-07-01",
+     "segment": "Education",
+     "seeded": true
+    },
+    {
+     "id": "A-205",
+     "type": "account",
+     "name": "Brightwater Hotels",
+     "domain": "brightwaterhotels.example",
+     "owner": "Elena Petrova",
+     "segment": "Hospitality",
+     "seeded": true
+    },
+    {
+     "id": "A-310",
+     "type": "account",
+     "name": "Fernwood Grocers",
+     "domain": "fernwoodgrocers.example",
+     "owner": "Elena Petrova",
+     "segment": "Retail",
+     "seeded": true
+    },
+    {
+     "id": "A-322",
+     "type": "account",
+     "name": "Halcyon Cafe",
+     "domain": "halcyoncafe.example",
+     "owner": "Elena Petrova",
+     "segment": "Hospitality",
+     "seeded": true
+    },
+    {
+     "id": "A-340",
+     "type": "account",
+     "name": "Oakline Markets",
+     "domain": "oaklinemarkets.example",
+     "owner": "Elena Petrova",
+     "segment": "Retail",
+     "seeded": true
+    },
+    {
+     "id": "A-355",
+     "type": "account",
+     "name": "Ridgeview Clinic",
+     "domain": "ridgeviewclinic.example",
+     "owner": "Elena Petrova",
+     "segment": "Healthcare",
+     "seeded": true
+    }
+   ],
+   "stages": [
+    "Prospecting",
+    "Proposal",
+    "Negotiation",
+    "Closed Won",
+    "Closed Lost"
+   ]
+  },
+  "chat": {
+   "channels": {
+    "general": [],
+    "sales": [],
+    "ops": []
+   }
+  }
+ }
+}

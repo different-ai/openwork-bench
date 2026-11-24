@@ -123,19 +123,32 @@ export const changeSlug = (c: Pick<Change, 'title'>) => c.title.toLowerCase().re
 /** The docs page that explains each kind of change. */
 export const changeDocs: Record<string, string> = { Harness: 'openwork-desktop', Models: 'open-weights', Index: 'methodology', Results: 'methodology' };
 
-export interface Check { key: string; label: string; bar: string; value: string; pass: boolean }
+export interface Check { key: string; metric: string; label: string; bar: string; value: string; pass: boolean }
 /** Each readiness requirement of a level, checked against a subject (mirrors `readiness()` in index.py). */
 export function checksFor(s: Subject, l: Level): Check[] {
   const cats = Object.values(s.categories || {}).filter((v): v is number => v != null);
   const weakest = cats.length ? Math.min(...cats) : null;
-  const out: Check[] = [{ key: 'complete', label: 'Full run', bar: 'every task', value: s.complete ? 'yes' : `${pct(s.coverage)} of tasks`, pass: !!s.complete }];
-  if (l.index != null) out.push({ key: 'index', label: 'Index', bar: `≥ ${l.index}`, value: fmt(s.index), pass: s.index != null && s.index >= l.index });
-  if (l.pass_hat_k != null) out.push({ key: 'pass_hat_k', label: `Solved every repeat`, bar: `≥ ${pct(l.pass_hat_k)} of tasks`, value: pct(s.pass_hat_k), pass: s.pass_hat_k >= l.pass_hat_k });
-  if (l.safety_rate_max != null) out.push({ key: 'safety', label: 'Unsafe attempts', bar: `≤ ${pct(l.safety_rate_max)}`, value: pct(s.safety_rate), pass: s.safety_rate <= l.safety_rate_max });
-  if (l.category_min != null) out.push({ key: 'category', label: 'Weakest category', bar: `≥ ${l.category_min}`, value: fmt(weakest, 0), pass: weakest != null && weakest >= l.category_min });
+  const out: Check[] = [{ key: 'complete', metric: 'coverage', label: 'Every task run', bar: 'all tasks', value: s.complete ? 'yes' : `${pct(s.coverage)} of tasks`, pass: !!s.complete }];
+  if (l.index != null) out.push({ key: 'index', metric: 'work-index', label: 'Work Index', bar: `≥ ${l.index}`, value: fmt(s.index), pass: s.index != null && s.index >= l.index });
+  if (l.pass_hat_k != null) out.push({ key: 'pass_hat_k', metric: 'every-time', label: 'Right every time', bar: `≥ ${pct(l.pass_hat_k)} of tasks`, value: pct(s.pass_hat_k), pass: s.pass_hat_k >= l.pass_hat_k });
+  if (l.safety_rate_max != null) out.push({ key: 'safety', metric: 'unsafe', label: 'Unsafe actions', bar: `≤ ${pct(l.safety_rate_max)}`, value: pct(s.safety_rate), pass: s.safety_rate <= l.safety_rate_max });
+  if (l.category_min != null) out.push({ key: 'category', metric: 'category-target', label: 'Weakest category', bar: `≥ ${l.category_min}`, value: fmt(weakest, 0), pass: weakest != null && weakest >= l.category_min });
   return out;
 }
 
 /** Plain names for the two harnesses. */
 export const harnessLabel = (s: Pick<Subject, 'harness' | 'type'>) =>
   s.harness === 'openwork-desktop' ? 'Agent app' : s.harness === 'owb-agent' ? 'Plain loop' : s.harness ?? s.type;
+
+const FAMILIES = ['moonshot', 'zhipu', 'deepseek', 'qwen', 'mistral', 'meta', 'minimax', 'nvidia'];
+/** The same family colours as the leaderboard charts. */
+export function familyColor(s: Pick<Subject, 'family' | 'anchor' | 'simulated'>): string {
+  if (s.simulated) return 'var(--f3)';
+  if (s.anchor) return 'var(--ink)';
+  const i = FAMILIES.indexOf(s.family ?? '');
+  return i >= 0 ? `var(--f${i + 1})` : 'var(--neutral)';
+}
+/** The subjects a page should rank: real models, or the test subjects when that is all there is. */
+export const rankable = (lb: Leaderboard) => (isSample(lb) ? lb.subjects : lb.subjects.filter((s) => !s.simulated && s.type !== 'reference'));
+/** A subject's name without its harness suffix, for rows that show the harness beside it. */
+export const baseLabel = (s: Pick<Subject, 'label'>) => s.label.replace(/\s*·\s*plain loop$/i, '');

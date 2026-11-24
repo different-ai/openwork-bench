@@ -1,7 +1,9 @@
 ---
 import Site from '../../layouts/Site.astro';
+import Info from '../../components/Info.astro';
 import type { Subject } from '../../lib/site';
-import { docs, resultsUrl, fmt, heat, heatInk, leaderboard, minutes, money, pct, route, slug, subjectName, taskRoute } from '../../lib/site';
+import { docs, harnessLabel, resultsUrl, fmt, heat, heatInk, leaderboard, minutes, money, pct, route, slug, subjectName, taskRoute } from '../../lib/site';
+import { CATEGORIES } from '../../lib/glossary.js';
 
 export function getStaticPaths() {
   return leaderboard().subjects.map((subject) => ({ params: { id: slug(subject.id) }, props: { subject } }));
@@ -26,15 +28,15 @@ const facts = [
 const description = `${subjectName(s)} on OpenWork Bench: ${facts.join(' · ')}. Scores on ${lb.tasks.length} knowledge-work tasks in a real agent app.`;
 
 const stats = [
-  { k: 'Work index', v: fmt(s.index), n: s.ci ? `95% CI ${fmt(s.ci[0])}–${fmt(s.ci[1])} · rank ${rank} of ${lb.subjects.length}` : `rank ${rank} of ${lb.subjects.length}` },
-  { k: 'Fully correct (pass@1)', v: pct(s.pass_at_1), n: 'share of attempts' },
-  { k: `Solved every repeat (pass^${s.k})`, v: pct(s.pass_hat_k), n: 'share of tasks' },
-  { k: 'Unsafe attempts', v: pct(s.safety_rate), n: 'deleted, leaked or overstepped' },
+  { id: 'work-index', k: 'Work Index', v: fmt(s.index), n: s.ci ? `likely range ${fmt(s.ci[0])}–${fmt(s.ci[1])} · rank ${rank} of ${lb.subjects.length}` : `rank ${rank} of ${lb.subjects.length}` },
+  { id: 'first-try', k: 'First-try success', v: pct(s.pass_at_1), n: 'of attempts fully right' },
+  { id: 'every-time', k: 'Right every time', v: pct(s.pass_hat_k), n: `of tasks solved on all ${s.k} repeats` },
+  { id: 'unsafe', k: 'Unsafe actions', v: pct(s.safety_rate), n: 'of attempts deleted, leaked or overstepped' },
   ...(reference ? [] : [
-    { k: 'Cost per task', v: money(s.cost_per_task), n: s.cost_source ?? 'list price' },
-    { k: 'Time per task', v: `${minutes(s.time_per_task)} min`, n: 'wall clock per attempt' },
-    { k: 'Value per $', v: s.value_per_dollar ? `${s.value_per_dollar.toLocaleString('en-US')}×` : '–', n: 'expert cost of the work ÷ agent cost' },
-    { k: 'Speed-up', v: s.speedup_vs_expert ? `${s.speedup_vs_expert}×` : '–', n: 'expert time ÷ agent time' },
+    { id: 'cost', k: 'Cost per task', v: money(s.cost_per_task), n: s.cost_source === 'billed' ? 'billed by the provider' : s.cost_source ?? 'list price' },
+    { id: 'time', k: 'Time per task', v: `${minutes(s.time_per_task)} min`, n: 'from first request to final answer' },
+    { id: 'value', k: 'Work value per $1', v: s.value_per_dollar ? `$${Math.round(s.value_per_dollar).toLocaleString('en-US')}` : '–', n: 'of expert work for each $1 of model spend' },
+    { id: 'speedup', k: 'Faster than an expert', v: s.speedup_vs_expert ? `${s.speedup_vs_expert}×` : '–', n: 'expert time ÷ model time' },
   ]),
 ];
 ---
@@ -43,8 +45,8 @@ const stats = [
     <p class="crumbs"><a href={route()}>Leaderboard</a> / <a href={route('models/')}>Models</a> / {s.label}</p>
     <h1>{subjectName(s)}</h1>
     <div class="chips">
-      {s.readiness && <span class={`ready ${s.readiness.id}`}>{s.readiness.label}</span>}
-      {s.simulated ? <span>Simulated test agent</span> : <span>{s.harness ?? s.type}</span>}
+      {s.readiness && <a class={`ready ${s.readiness.id}`} href={route(`readiness/#${s.readiness.id}`)}>{s.readiness.label}</a>}
+      {s.simulated ? <span>Simulated test agent</span> : <span>{harnessLabel(s)}<Info id={s.harness === 'owb-agent' ? 'plain-loop' : 'agent-app'} /></span>}
       {reference && <span>Reference</span>}
       {s.open_weights?.hf_repo && <a href={`https://huggingface.co/${s.open_weights.hf_repo}/tree/${s.open_weights.revision ?? 'main'}`}>{s.open_weights.license ?? 'open weights'} ↗</a>}
       {s.anchor && <span>Closed, for reference</span>}
@@ -55,7 +57,7 @@ const stats = [
   {s.simulated && <p class="notice"><b>Test subject.</b> This row comes from a seeded test agent that exercises the pipeline, not from a real model.</p>}
 
   <div class="stats">
-    {stats.map((x) => <div class="stat"><div class="k">{x.k}</div><div class="v">{x.v}</div><div class="n">{x.n}</div></div>)}
+    {stats.map((x) => <div class="stat"><div class="k">{x.k}<Info id={x.id} /></div><div class="v">{x.v}</div><div class="n">{x.n}</div></div>)}
   </div>
 
   <section class="block">
@@ -67,7 +69,7 @@ const stats = [
           const v = s.categories[id];
           return (
             <div class="catbar">
-              <span>{c.label}</span>
+              <a href={route(`categories/${id}/`)} title={CATEGORIES[id as keyof typeof CATEGORIES]?.question}>{c.label}</a>
               <div class="track" role="img" aria-label={`${c.label}: ${fmt(v, 0)}`}>
                 <div class="fill" style={`width: ${Math.max(0, v ?? 0)}%`}></div>
                 {target != null && <div class="goal" style={`left: calc(${target}% - 1px)`}></div>}
@@ -85,14 +87,14 @@ const stats = [
     <p class="sub">Mean score across repeats, best first.</p>
     <div class="card scroll">
       <table>
-        <thead><tr><th class="l">Task</th><th class="l">Category</th><th>Score</th><th>Solved</th><th>Attempts</th></tr></thead>
+        <thead><tr><th class="l">Task</th><th class="l">Category</th><th>Score<Info id="task-score" /></th><th>Solved<Info id="solved" /></th><th>Attempts</th></tr></thead>
         <tbody>
           {tasks.map(({ task: t, result }) => {
             const v = result ? result.score * 100 : null;
             return (
               <tr>
                 <td class="l"><a href={taskRoute(t)}>{t.title}</a></td>
-                <td class="l">{cats[t.category]?.label ?? t.category}</td>
+                <td class="l"><a href={route(`categories/${t.category}/`)}>{cats[t.category]?.label ?? t.category}</a></td>
                 <td class="heat" style={`background: ${heat(v)}; color: ${heatInk(v)}`}>{fmt(v, 0)}</td>
                 <td>{result ? pct(result.success_rate) : '–'}</td>
                 <td>{result?.n ?? 0}</td>

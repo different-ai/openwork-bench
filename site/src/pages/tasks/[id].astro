@@ -1,5 +1,6 @@
 ---
 import Site from '../../layouts/Site.astro';
+import Info from '../../components/Info.astro';
 import type { Task } from '../../lib/site';
 import { REPO, docs, fmt, heat, heatInk, leaderboard, modelRoute, pct, route, slug, subjectName } from '../../lib/site';
 
@@ -20,14 +21,14 @@ const description = `${t.title}: ${article} ${t.difficulty} ${category.toLowerCa
 ---
 <Site title={t.title} description={description} active="tasks">
   <header class="page-head">
-    <p class="crumbs"><a href={route()}>Leaderboard</a> / <a href={route('tasks/')}>Tasks</a> / {category}</p>
+    <p class="crumbs"><a href={route()}>Leaderboard</a> / <a href={route('tasks/')}>Tasks</a> / <a href={route(`categories/${t.category}/`)}>{category}</a></p>
     <h1>{t.title}</h1>
     <div class="chips">
-      <span>{category}</span>
+      <a href={route(`categories/${t.category}/`)}>{category}</a>
       <span>{t.difficulty}</span>
       <span>{t.horizon === 'single' ? 'single session' : t.horizon}</span>
       <span>{t.occupation}</span>
-      <span>Expert: {Math.round(t.expert_minutes)} min · ${fmt(t.expert_cost_usd, 2)}</span>
+      <span>Expert: {Math.round(t.expert_minutes)} min · ${fmt(t.expert_cost_usd, 2)}<Info id="expert" /></span>
       <span>Version {t.version}</span>
       <a href={`${REPO}/tree/main/tasks/${t.category}/${t.id}`}>Task files ↗</a>
     </div>
@@ -36,7 +37,7 @@ const description = `${t.title}: ${article} ${t.difficulty} ${category.toLowerCa
 
   <div class="card scroll">
     <table>
-      <thead><tr><th class="l">Subject</th><th class="l">Readiness</th><th>Score</th><th>Solved</th><th>Attempts</th></tr></thead>
+      <thead><tr><th class="l">Model</th><th class="l">Readiness<Info id="readiness" /></th><th>Score<Info id="task-score" /></th><th>Solved<Info id="solved" /></th><th>Attempts</th></tr></thead>
       <tbody>
         {rows.map(({ subject: s, result }) => {
           const v = result ? result.score * 100 : null;

@@ -1,0 +1,84 @@
+---
+// One page per kind of work: what it covers, every model's score on it, and its tasks.
+import Site from '../../layouts/Site.astro';
+import Info from '../../components/Info.astro';
+import { CATEGORIES } from '../../lib/glossary.js';
+import { baseLabel, familyColor, fmt, harnessLabel, isSample, leaderboard, modelRoute, rankable, route, taskRoute } from '../../lib/site';
+
+export function getStaticPaths() {
+  return Object.keys(leaderboard().index.categories).map((id) => ({ params: { id }, props: { id } }));
+}
+const { id } = Astro.props;
+const lb = leaderboard();
+const c = lb.index.categories[id];
+const info = CATEGORIES[id as keyof typeof CATEGORIES];
+const total = Object.values(lb.index.categories).reduce((n, x) => n + (x.weight || 0), 0) || 1;
+const share = Math.round(((c.weight || 0) / total) * 100);
+const target = lb.index.targets.category;
+const subs = rankable(lb);
+const rows = subs.filter((s) => s.categories[id] != null).sort((a, b) => (b.categories[id] ?? 0) - (a.categories[id] ?? 0));
+const tasks = lb.tasks.filter((t) => t.category === id).map((t) => {
+  const results = subs.map((s) => s.tasks[t.id]).filter(Boolean);
+  const avg = results.length ? (results.reduce((n, r) => n + r.score, 0) / results.length) * 100 : null;
+  const every = results.filter((r) => r.success_rate >= 1).length;
+  return { t, avg, every, n: results.length };
+});
+const description = `${c.label} on OpenWork Bench: ${info?.question ?? ''} ${info?.work ?? ''} Every model's score and the ${tasks.length} tasks behind it.`;
+---
+<Site title={c.label} description={description} active="metrics">
+  <header class="page-head">
+    <p class="crumbs"><a href={route()}>Leaderboard</a> / <a href={route('metrics/#categories')}>Kinds of work</a> / {c.label}</p>
+    <h1>{c.label}</h1>
+    {info && <p class="question">{info.question}</p>}
+    {info && <p class="lede">{info.work}</p>}
+    <div class="chips" style="margin-top:18px">
+      <span>{share}% of the Work Index</span>
+      {target != null && <span>Target {target}<Info id="category-target" /></span>}
+      <span>{tasks.length} {tasks.length === 1 ? 'task' : 'tasks'}</span>
+    </div>
+  </header>
+
+  {isSample(lb) && <p class="notice"><b>Sample data.</b> These rows come from test subjects, not real models.</p>}
+
+  <section>
+    <h2 class="list-cat">Every model on {c.label.toLowerCase()}</h2>
+    <p class="sub" style="color:var(--ink-2);margin:0 0 20px">Mean task score in this category, 0–100.{target != null && ` The mark is the ${target} target.`}</p>
+    <div class="card">
+      <div class="rank">
+        {rows.map((s, i) => (
+          <a class="rank-row" href={modelRoute(s)}>
+            <span class="n">{i + 1}</span>
+            <span>{baseLabel(s)}<span class="h">{harnessLabel(s)}</span></span>
+            <span class="track" role="img" aria-label={`${s.label}: ${fmt(s.categories[id], 0)}`}>
+              <span class="fill" style={`width: ${Math.max(0.6, s.categories[id] ?? 0)}%; background: ${familyColor(s)}`}></span>
+              {target != null && <span class="goal" style={`left: calc(${target}% - 1px)`}></span>}
+            </span>
+            <b>{fmt(s.categories[id], 0)}{target != null && (s.categories[id] ?? 0) >= target ? ' ✓' : ''}</b>
+          </a>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <section class="block">
+    <h2>Tasks</h2>
+    <p class="sub">The work behind the score. Each task runs three times per model.</p>
+    <div class="task-list">
+      {tasks.map(({ t, avg, every, n }) => (
+        <a class="metric-card" href={taskRoute(t)}>
+          <span class="k">{t.occupation}</span>
+          <h3>{t.title}</h3>
+          <p class="d">{t.difficulty} · about {Math.round(t.expert_minutes)} min for an expert</p>
+          <span class="lead">Average score <b>{fmt(avg, 0)}</b> · right every time for <b>{every} of {n}</b> models</span>
+        </a>
+      ))}
+    </div>
+  </section>
+
+  <section class="block">
+    <h2>Other kinds of work</h2>
+    <div class="related">
+      {Object.entries(lb.index.categories).filter(([k]) => k !== id).map(([k, x]) => <a href={route(`categories/${k}/`)}>{x.label}</a>)}
+    </div>
+  </section>
+</Site>

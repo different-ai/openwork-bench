@@ -7,7 +7,7 @@ import { REPO, SITE_NAME, resultsUrl, base, docs, route } from '../lib/site';
 interface Props {
   title: string;
   description: string;
-  active?: 'leaderboard' | 'readiness' | 'models' | 'tasks' | 'changelog';
+  active?: 'leaderboard' | 'readiness' | 'metrics' | 'models' | 'tasks' | 'changelog';
   /** The leaderboard page has its own footer. */
   footer?: boolean;
 }
@@ -19,6 +19,7 @@ const imageAlt = 'OpenWork Bench: which open models can you trust with real work
 const nav = [
   { key: 'leaderboard', label: 'Leaderboard', href: route() },
   { key: 'readiness', label: 'Readiness', href: route('readiness/') },
+  { key: 'metrics', label: 'Metrics', href: route('metrics/') },
   { key: 'models', label: 'Models', href: route('models/') },
   { key: 'tasks', label: 'Tasks', href: route('tasks/') },
   { key: 'changelog', label: 'Changelog', href: route('changelog/') },
@@ -75,10 +76,14 @@ const nav = [
   {footer && (
     <footer class="site-foot">
       <span>Tasks, harness and scoring are open on <a href={REPO}>GitHub</a>; every published run is <a href={resultsUrl()}>open too</a>, with its trajectories.</span>
-      <span><a href={route('readiness/')}>Readiness</a> · <a href={route('changelog/')}>Changelog</a> · <a href={docs('methodology')}>Methodology</a> · <a href={docs('fair-play')}>Fair play</a></span>
+      <span><a href={route('readiness/')}>Readiness</a> · <a href={route('metrics/')}>Metrics</a> · <a href={route('changelog/')}>Changelog</a> · <a href={docs('methodology')}>Methodology</a> · <a href={docs('fair-play')}>Fair play</a></span>
     </footer>
   )}
 </div>
+<div id="tip" role="tooltip"></div>
+<script>
+  import '../scripts/tooltips.js';
+</script>
 <script is:inline>
 document.getElementById("theme").addEventListener("click", () => {
   const dark = getComputedStyle(document.documentElement).colorScheme.includes("dark");

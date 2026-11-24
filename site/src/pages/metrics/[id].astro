@@ -1,0 +1,80 @@
+---
+// One page per metric: the question it answers, how it is measured, why it matters, and every model on it.
+import Site from '../../layouts/Site.astro';
+import { METRICS, metric, term, type Metric } from '../../lib/glossary.js';
+import { baseLabel, docs, familyColor, harnessLabel, isSample, leaderboard, modelRoute, rankable, route } from '../../lib/site';
+
+export function getStaticPaths() {
+  return METRICS.map((m) => ({ params: { id: m.id }, props: { id: m.id } }));
+}
+const m = metric(Astro.props.id) as Metric;
+const lb = leaderboard();
+const top = (lb.index.targets.levels ?? [])[0];
+const goal: number | undefined = m.id === 'work-index' ? top?.index : m.id === 'every-time' ? top?.pass_hat_k : m.id === 'unsafe' ? top?.safety_rate_max : undefined;
+const rows = rankable(lb)
+  .map((s) => ({ s, v: m.get ? m.get(s) : null }))
+  .filter((r): r is { s: (typeof r)['s']; v: number } => r.v != null && !Number.isNaN(r.v))
+  .sort((a, b) => (m.better === 'lower' ? a.v - b.v : b.v - a.v));
+const scale = m.id === 'work-index' ? 100 : ['first-try', 'every-time', 'unsafe'].includes(m.id) ? 1 : Math.max(...rows.map((r) => r.v), 0) * 1.05 || 1;
+const related = m.related.map((id) => ({ id, t: term(id) })).filter((r) => r.t);
+const goalNote = goal == null || !top ? '' : `The mark on each bar is the ${top.label} bar (${m.show ? m.show(goal) : goal}).`;
+const description = `${m.name} on OpenWork Bench: ${m.question} ${m.short}`;
+---
+<Site title={m.name} description={description} active="metrics">
+  <header class="page-head">
+    <p class="crumbs"><a href={route()}>Leaderboard</a> / <a href={route('metrics/')}>Metrics</a> / {m.name}</p>
+    <h1>{m.name}</h1>
+    <p class="question">{m.question}</p>
+    <p class="lede">{m.short}</p>
+    <div class="chips" style="margin-top:18px">
+      <span>{m.group}</span>
+      {m.better && <span>{m.better === 'higher' ? 'Higher is better' : 'Lower is better'}</span>}
+      {m.also && <span class="also-tag">{m.also}</span>}
+    </div>
+  </header>
+
+  {!isSample(lb) && lb.tasks.length < 30 && <p class="notice"><b>Pilot results.</b> {lb.tasks.length} sample tasks, three repeats each; the numbers will move when the larger task set is published.</p>}
+
+  <div class="explain">
+    <div class="card">
+      <h2>How it is measured</h2>
+      <ol>{m.how.map((h) => <li>{h}</li>)}</ol>
+    </div>
+    <div class="side">
+      <div class="card"><h2>Why it matters</h2><p>{m.why}</p></div>
+      <div class="card"><h2>How to read it</h2><p>{m.read}</p></div>
+      {m.caveats && <div class="card caveat"><h2>Keep in mind</h2><ul>{m.caveats.map((c) => <li>{c}</li>)}</ul></div>}
+    </div>
+  </div>
+
+  <section class="block">
+    <h2>Every model on {m.name.toLowerCase().startsWith('work') ? 'the Work Index' : m.name.toLowerCase()}</h2>
+    <p class="sub">{m.better === 'lower' ? 'Lowest first.' : 'Highest first.'} {goalNote}</p>
+    <div class="card">
+      {rows.length ? (
+        <div class="rank">
+          {rows.map((r, i) => (
+            <a class="rank-row" href={modelRoute(r.s)}>
+              <span class="n">{i + 1}</span>
+              <span>{baseLabel(r.s)}<span class="h">{harnessLabel(r.s)}</span></span>
+              <span class="track" role="img" aria-label={`${r.s.label}: ${m.show ? m.show(r.v) : r.v}`}>
+                <span class="fill" style={`width: ${Math.min(100, Math.max(0.6, (r.v / scale) * 100))}%; background: ${familyColor(r.s)}`}></span>
+                {goal != null && <span class="goal" style={`left: calc(${(goal / scale) * 100}% - 1px)`}></span>}
+              </span>
+              <b>{m.show ? m.show(r.v) : r.v}</b>
+            </a>
+          ))}
+        </div>
+      ) : <p class="empty">No results for this metric yet.</p>}
+    </div>
+  </section>
+
+  <section class="block">
+    <h2>Related</h2>
+    <div class="related">
+      {related.map((r) => <a href={route(r.t!.page ?? 'metrics/')}>{r.t!.name}</a>)}
+      <a href={route('metrics/')}>All metrics</a>
+    </div>
+    <p class="fine">The full rules live in the <a href={docs('methodology')}>methodology</a>.</p>
+  </section>
+</Site>

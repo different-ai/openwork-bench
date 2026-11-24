@@ -1,0 +1,84 @@
+---
+// What we measure: every metric as the question it answers, grouped, with who leads on it.
+import Site from '../../layouts/Site.astro';
+import { CATEGORIES, METRICS, TERMS } from '../../lib/glossary.js';
+import { fmt, leaderboard, rankable, route } from '../../lib/site';
+
+const lb = leaderboard();
+const subs = rankable(lb);
+const groups = ['Quality', 'Safety', 'Cost and speed', 'Effort'];
+function leader(m: (typeof METRICS)[number]) {
+  const rows = subs.map((s) => ({ s, v: m.get ? m.get(s) : null })).filter((r) => r.v != null) as { s: (typeof subs)[number]; v: number }[];
+  if (!rows.length) return null;
+  rows.sort((a, b) => (m.better === 'lower' ? a.v - b.v : b.v - a.v));
+  const best = rows[0].v, tied = rows.filter((r) => r.v === best).length;
+  const value = m.show ? m.show(best) : String(best);
+  return tied > 1 ? `${tied} models tied at <b>${value}</b>` : `Leads: <b>${rows[0].s.label}</b> · ${value}`;
+}
+function catLeader(id: string) {
+  const rows = subs.filter((s) => s.categories[id] != null).sort((a, b) => (b.categories[id] ?? 0) - (a.categories[id] ?? 0));
+  if (!rows.length) return null;
+  const best = rows[0].categories[id], tied = rows.filter((s) => s.categories[id] === best).length;
+  return tied > 1 ? `${tied} models tied at <b>${fmt(best, 0)}</b>` : `Leads: <b>${rows[0].label}</b> · ${fmt(best, 0)}`;
+}
+const description = 'Every number on OpenWork Bench, as the question it answers: quality, consistency, safety, cost, speed and effort, with how each is measured.';
+---
+<Site title="Metrics" description={description} active="metrics">
+  <header class="page-head">
+    <p class="crumbs"><a href={route()}>Leaderboard</a> / Metrics</p>
+    <h1>What we measure</h1>
+    <p class="lede">Every number here answers a question you would ask before handing work to a model. Open one for how it is measured, why it matters and every model on it.</p>
+  </header>
+
+  <section>
+    <div class="metric-grid">
+      <a class="metric-card" href={route('readiness/')}>
+        <span class="k">Verdict</span>
+        <h3>{TERMS.readiness.name}</h3>
+        <p class="q">{TERMS.readiness.question}</p>
+        <p class="d">{TERMS.readiness.short}</p>
+        <span class="lead">Delegable · Ready with review · Not ready</span>
+      </a>
+    </div>
+  </section>
+
+  {groups.map((g) => (
+    <section class="block">
+      <h2>{g}</h2>
+      <div class="metric-grid">
+        {METRICS.filter((m) => m.group === g).map((m) => {
+          const lead = leader(m);
+          return (
+            <a class="metric-card" href={route(`metrics/${m.id}/`)}>
+              <span class="k">{m.also ? `${g} · ${m.also}` : g}</span>
+              <h3>{m.name}</h3>
+              <p class="q">{m.question}</p>
+              <p class="d">{m.short}</p>
+              {lead && <span class="lead" set:html={lead} />}
+            </a>
+          );
+        })}
+      </div>
+    </section>
+  ))}
+
+  <section class="block" id="categories">
+    <h2>Kinds of work</h2>
+    <p class="sub">The Work Index averages six categories, weighted equally. Each has its own target of {lb.index.targets.category ?? '–'}.</p>
+    <div class="metric-grid">
+      {Object.entries(lb.index.categories).map(([id, c]) => {
+        const info = CATEGORIES[id as keyof typeof CATEGORIES];
+        const lead = catLeader(id);
+        return (
+          <a class="metric-card" href={route(`categories/${id}/`)}>
+            <span class="k">{lb.tasks.filter((t) => t.category === id).length} tasks</span>
+            <h3>{c.label}</h3>
+            {info && <p class="q">{info.question}</p>}
+            {info && <p class="d">{info.work}</p>}
+            {lead && <span class="lead" set:html={lead} />}
+          </a>
+        );
+      })}
+    </div>
+  </section>
+</Site>

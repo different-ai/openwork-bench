@@ -19,6 +19,8 @@ export interface Subject {
   index: number | null;
   ci: [number, number] | null;
   coverage: number;
+  complete?: boolean;
+  family?: string | null;
   categories: Record<string, number | null>;
   pass_at_1: number;
   pass_hat_k: number;
@@ -27,6 +29,8 @@ export interface Subject {
   cost_per_task: number | null;
   time_per_task: number | null;
   tokens_per_task: number | null;
+  usage_per_task?: { input_tokens: number; output_tokens: number; cache_read_tokens: number; cache_write_tokens: number };
+  steps_per_task?: number | null;
   value_per_dollar: number | null;
   speedup_vs_expert: number | null;
   runs: string[];
@@ -44,7 +48,16 @@ export interface Task {
   expert_minutes: number;
   expert_cost_usd: number;
 }
-export interface Level { id: string; label: string; meaning: string; index?: number }
+export interface Level {
+  id: string;
+  label: string;
+  meaning: string;
+  index?: number;
+  pass_hat_k?: number;
+  safety_rate_max?: number;
+  category_min?: number;
+}
+export interface Change { date: string; kind: string; title: string; text: string }
 export interface Leaderboard {
   index: {
     name: string;
@@ -59,6 +72,7 @@ export interface Leaderboard {
   owb_version: string;
   sources?: { paths?: string[]; results_repo?: string; results_revision?: string };
   note?: string;
+  changelog?: Change[];
 }
 
 let cached: Leaderboard | undefined;
@@ -103,3 +117,25 @@ export const subjectName = (s: Subject) => s.label + (s.anchor ? ' (closed, for 
 export const heat = (v: number | null | undefined) => (v == null ? 'var(--s0)' : `var(--s${Math.max(0, Math.min(7, Math.round((v / 100) * 7)))})`);
 export const heatInk = (v: number | null | undefined) => (v != null && v >= 64 ? 'var(--s-ink-hi)' : 'var(--ink)');
 export const isSample = (lb: Leaderboard) => !lb.subjects.some((s) => s.type === 'model' || s.type === 'product');
+
+/** Anchor for a changelog entry; the leaderboard page's script uses the same rule. */
+export const changeSlug = (c: Pick<Change, 'title'>) => c.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+/** The docs page that explains each kind of change. */
+export const changeDocs: Record<string, string> = { Harness: 'openwork-desktop', Models: 'open-weights', Index: 'methodology', Results: 'methodology' };
+
+export interface Check { key: string; label: string; bar: string; value: string; pass: boolean }
+/** Each readiness requirement of a level, checked against a subject (mirrors `readiness()` in index.py). */
+export function checksFor(s: Subject, l: Level): Check[] {
+  const cats = Object.values(s.categories || {}).filter((v): v is number => v != null);
+  const weakest = cats.length ? Math.min(...cats) : null;
+  const out: Check[] = [{ key: 'complete', label: 'Full run', bar: 'every task', value: s.complete ? 'yes' : `${pct(s.coverage)} of tasks`, pass: !!s.complete }];
+  if (l.index != null) out.push({ key: 'index', label: 'Index', bar: `≥ ${l.index}`, value: fmt(s.index), pass: s.index != null && s.index >= l.index });
+  if (l.pass_hat_k != null) out.push({ key: 'pass_hat_k', label: `Solved every repeat`, bar: `≥ ${pct(l.pass_hat_k)} of tasks`, value: pct(s.pass_hat_k), pass: s.pass_hat_k >= l.pass_hat_k });
+  if (l.safety_rate_max != null) out.push({ key: 'safety', label: 'Unsafe attempts', bar: `≤ ${pct(l.safety_rate_max)}`, value: pct(s.safety_rate), pass: s.safety_rate <= l.safety_rate_max });
+  if (l.category_min != null) out.push({ key: 'category', label: 'Weakest category', bar: `≥ ${l.category_min}`, value: fmt(weakest, 0), pass: weakest != null && weakest >= l.category_min });
+  return out;
+}
+
+/** Plain names for the two harnesses. */
+export const harnessLabel = (s: Pick<Subject, 'harness' | 'type'>) =>
+  s.harness === 'openwork-desktop' ? 'Agent app' : s.harness === 'owb-agent' ? 'Plain loop' : s.harness ?? s.type;

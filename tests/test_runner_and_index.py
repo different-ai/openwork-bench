@@ -1,5 +1,7 @@
 import json
 
+import pytest
+
 from openwork_bench.index import build_leaderboard, load_index_config
 from openwork_bench.runner import load_rows, regrade, run_subject
 from openwork_bench.subjects import load_subjects
@@ -24,6 +26,7 @@ def test_end_to_end_leaderboard(tmp_path, bundles):
     sim = by["sim-balanced"]
     assert 0 < sim["index"] < 100 and sim["ci"][0] <= sim["index"] <= sim["ci"][1]
     assert sim["cost_per_task"] > 0 and sim["complete"]
+    assert sum(sim["usage_per_task"].values()) == pytest.approx(sim["tokens_per_task"], abs=4)
     assert lb["subjects"][0]["id"] == "reference-oracle"
 
 

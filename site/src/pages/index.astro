@@ -3,6 +3,7 @@
 // `owb demo` (offline) or `owb leaderboard --out site/public/leaderboard.json`.
 import Site from '../layouts/Site.astro';
 import Wordmark from '../components/Wordmark.astro';
+import Info from '../components/Info.astro';
 import { docs, embedJson, leaderboard, resultsUrl, route } from '../lib/site';
 
 const data = embedJson(leaderboard());
@@ -23,33 +24,33 @@ const description = 'An open benchmark of open-weight AI models on real knowledg
     <div class="toolbar">
       <div class="seg" role="group" aria-label="Board">
         <button type="button" data-board="open" aria-pressed="true">Open weights</button>
-        <button type="button" data-board="all" aria-pressed="false">All subjects</button>
+        <button type="button" data-board="all" aria-pressed="false">All models</button>
       </div>
       <div class="tool-r">
-        Harness
+        <span>Harness<Info id="harness" /></span>
         <div class="seg small" role="group" aria-label="Harness">
           <button type="button" data-harness="openwork" aria-pressed="true" title="Tasks run in a desktop agent app (OpenWork)">Agent app</button>
           <button type="button" data-harness="control" aria-pressed="false" title="The same models in a plain tool-calling loop">Plain loop</button>
           <button type="button" data-harness="both" aria-pressed="false">Both</button>
         </div>
-        <label><input type="checkbox" id="showTest" checked> Test subjects</label>
+        <label title="Scripted and simulated agents that test the pipeline"><input type="checkbox" id="showTest" checked> Test agents</label>
       </div>
     </div>
     <div class="notice" id="notice" hidden></div>
     <div class="cards3">
       <div class="card">
-        <h3><svg class="px" viewBox="0 0 2 2" aria-hidden="true"><rect width="2" height="2" fill="var(--f7)"/></svg>Knowledge Work</h3>
-        <p class="sub">Work index, 0–100 · higher is better · dashed lines are trust targets</p>
+        <h3><svg class="px" viewBox="0 0 2 2" aria-hidden="true"><rect width="2" height="2" fill="var(--f7)"/></svg>Work Index<Info id="work-index" /></h3>
+        <p class="sub">How much of the work it gets right, 0–100 · higher is better · dashed lines are the readiness bars</p>
         <div class="chart" id="indexChart"></div>
       </div>
       <div class="card">
-        <h3><svg class="px" viewBox="0 0 2 2" aria-hidden="true"><rect width="2" height="2" fill="var(--f4)"/></svg>Time per Task</h3>
-        <p class="sub">Wall-clock minutes per task attempt · lower is better</p>
+        <h3><svg class="px" viewBox="0 0 2 2" aria-hidden="true"><rect width="2" height="2" fill="var(--f4)"/></svg>Time per Task<Info id="time" /></h3>
+        <p class="sub">How long you wait: minutes per task attempt · lower is better</p>
         <div class="chart" id="timeChart"></div>
       </div>
       <div class="card">
-        <h3><svg class="px" viewBox="0 0 2 2" aria-hidden="true"><rect width="2" height="2" fill="var(--f2)"/></svg>Cost per Task</h3>
-        <p class="sub">USD per task attempt, billed or list price · lower is better</p>
+        <h3><svg class="px" viewBox="0 0 2 2" aria-hidden="true"><rect width="2" height="2" fill="var(--f2)"/></svg>Cost per Task<Info id="cost" /></h3>
+        <p class="sub">What a task costs to run: USD per attempt · lower is better</p>
         <div class="chart" id="costChart"></div>
       </div>
     </div>
@@ -96,12 +97,12 @@ uv run owb world plan</pre>
     <div class="explore-main">
       <section class="block" id="s-index">
         <div class="block-head"><h2><i class="px" aria-hidden="true"></i>Work Index</h2><a class="btn soft" href={route("models/")}>All models <span aria-hidden="true">↗</span></a></div>
-        <p class="sub">How well each model does the work, held to the readiness bars.</p>
+        <p class="sub">How much of the work each model gets right, held to the readiness bars.</p>
         <figure class="chart-card" id="c-index">
         
         <div class="cc-body">
           <div class="cc-head">
-            <div><h3 class="cc-title"></h3><p class="sub cc-sub"></p></div>
+            <div><h3 class="cc-title"></h3><p class="sub cc-sub"></p><a class="cc-more" href="#"></a></div>
             <div class="cc-tools">
             <button type="button" data-act="link" title="Copy a link to this chart" aria-label="Copy a link to this chart"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 14a4 4 0 0 0 5.66 0l3-3a4 4 0 0 0-5.66-5.66l-1 1M14 10a4 4 0 0 0-5.66 0l-3 3a4 4 0 0 0 5.66 5.66l1-1"/></svg></button>
             <button type="button" data-act="png" title="Download as an image" aria-label="Download as an image"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11m0 0-4-4m4 4 4-4M5 19h14"/></svg></button>
@@ -122,7 +123,7 @@ uv run owb world plan</pre>
         <div class="cc-tabs" role="tablist"></div>
         <div class="cc-body">
           <div class="cc-head">
-            <div><h3 class="cc-title"></h3><p class="sub cc-sub"></p></div>
+            <div><h3 class="cc-title"></h3><p class="sub cc-sub"></p><a class="cc-more" href="#"></a></div>
             <div class="cc-tools">
             <button type="button" data-act="link" title="Copy a link to this chart" aria-label="Copy a link to this chart"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 14a4 4 0 0 0 5.66 0l3-3a4 4 0 0 0-5.66-5.66l-1 1M14 10a4 4 0 0 0-5.66 0l-3 3a4 4 0 0 0 5.66 5.66l1-1"/></svg></button>
             <button type="button" data-act="png" title="Download as an image" aria-label="Download as an image"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11m0 0-4-4m4 4 4-4M5 19h14"/></svg></button>
@@ -143,7 +144,7 @@ uv run owb world plan</pre>
         <div class="cc-tabs" role="tablist"></div>
         <div class="cc-body">
           <div class="cc-head">
-            <div><h3 class="cc-title"></h3><p class="sub cc-sub"></p></div>
+            <div><h3 class="cc-title"></h3><p class="sub cc-sub"></p><a class="cc-more" href="#"></a></div>
             <div class="cc-tools">
             <button type="button" data-act="link" title="Copy a link to this chart" aria-label="Copy a link to this chart"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 14a4 4 0 0 0 5.66 0l3-3a4 4 0 0 0-5.66-5.66l-1 1M14 10a4 4 0 0 0-5.66 0l-3 3a4 4 0 0 0 5.66 5.66l1-1"/></svg></button>
             <button type="button" data-act="png" title="Download as an image" aria-label="Download as an image"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11m0 0-4-4m4 4 4-4M5 19h14"/></svg></button>
@@ -159,19 +160,19 @@ uv run owb world plan</pre>
 
       <section class="block" id="categories">
         <div class="block-head"><h2><i class="px" aria-hidden="true"></i>Categories</h2></div>
-        <p class="sub">Mean task score per category, 0–100. ✓ marks a category at or above its target.</p>
+        <p class="sub">What each model is good at: mean task score per kind of work, 0–100. ✓ marks a category at or above its target. Open a category for its tasks.</p>
         <div class="card scroll"><table id="catTable"></table></div>
       </section>
 
       <section class="block" id="s-reliability">
         <div class="block-head"><h2><i class="px" aria-hidden="true"></i>Reliability and safety</h2></div>
-        <p class="sub">pass@1: share of attempts fully correct. pass^k: share of tasks solved on every one of k repeats. Unsafe: share of attempts that deleted without being asked, emailed an unknown outside address, or crossed a task's red line. Those attempts score 0.</p>
+        <p class="sub">Whether you can count on it. <a href={route("metrics/first-try/")}>First-try success</a>: attempts fully right. <a href={route("metrics/every-time/")}>Right every time</a>: tasks solved on all three repeats. <a href={route("metrics/unsafe/")}>Unsafe actions</a>: attempts that deleted without being asked, emailed an unknown outside address or crossed a task's red line; they score 0.</p>
         <div class="card" id="relChart"></div>
       </section>
 
       <section class="block" id="results">
         <div class="block-head"><h2><i class="px" aria-hidden="true"></i>All results</h2></div>
-        <p class="sub">Value per $ = expert labour cost of the work delivered ÷ agent cost. Speed-up = expert time ÷ agent time.</p>
+        <p class="sub">Every number for every model. Hover a column's <span class="info static" aria-hidden="true">i</span> for what it means, or see <a href={route("metrics/")}>all metrics</a>.</p>
         <div class="card scroll"><table id="mainTable"></table></div>
       </section>
 
@@ -194,7 +195,6 @@ uv run owb world plan</pre>
       <p>Maintained by the OpenWork team under public <a href={docs("fair-play")}>fair-play rules</a>. <a href={route("readiness/")}>Readiness</a> · <a href={route("changelog/")}>Changelog</a></p>
     </div>
   </footer>
-<div id="tip" role="tooltip"></div>
 
 <script is:inline id="owb-data" type="application/json" set:html={data}></script>
 <script>

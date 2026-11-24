@@ -1,6 +1,7 @@
 ---
 import Site from '../../layouts/Site.astro';
-import { fmt, isSample, leaderboard, minutes, modelRoute, money, pct, route, subjectName } from '../../lib/site';
+import Info from '../../components/Info.astro';
+import { fmt, harnessLabel, isSample, leaderboard, minutes, modelRoute, money, pct, route, subjectName } from '../../lib/site';
 
 const lb = leaderboard();
 const subjects = [...lb.subjects].sort((a, b) => (b.index ?? -1) - (a.index ?? -1));
@@ -10,19 +11,19 @@ const description = `Every subject on OpenWork Bench, ranked by work index, with
   <header class="page-head">
     <p class="crumbs"><a href={route()}>Leaderboard</a> / Models</p>
     <h1>Models</h1>
-    <p class="lede">Every subject ranked by work index. Open one for its categories, every task score and how it was run.</p>
+    <p class="lede">Every model ranked by Work Index: how much of the work it gets right. Open one for its categories, every task score and how it was run.</p>
   </header>
   {isSample(lb) && <p class="notice"><b>Sample data.</b> No model results are published yet. These rows come from reference and simulated test subjects that exercise the pipeline offline.</p>}
   <div class="card scroll">
     <table>
-      <thead><tr><th>#</th><th class="l">Subject</th><th class="l">Readiness</th><th class="l">Harness</th><th>Index</th><th>95% CI</th><th>pass@1</th><th>Unsafe</th><th>$/task</th><th>Min/task</th></tr></thead>
+      <thead><tr><th>#</th><th class="l">Model</th><th class="l">Readiness<Info id="readiness" /></th><th class="l">Harness<Info id="harness" /></th><th>Work Index<Info id="work-index" /></th><th>Likely range<Info id="likely-range" /></th><th>First-try success<Info id="first-try" /></th><th>Unsafe actions<Info id="unsafe" /></th><th>Cost per task<Info id="cost" /></th><th>Min per task<Info id="time" /></th></tr></thead>
       <tbody>
         {subjects.map((s, i) => (
           <tr>
             <td>{i + 1}</td>
             <td class="l"><a href={modelRoute(s)}>{subjectName(s)}</a>{s.simulated && <span class="tag">sim</span>}</td>
             <td class="l">{s.readiness && <span class={`ready ${s.readiness.id}`}>{s.readiness.label}</span>}</td>
-            <td class="l">{s.harness ?? s.type}</td>
+            <td class="l">{harnessLabel(s)}</td>
             <td><b>{fmt(s.index)}</b></td>
             <td>{s.ci ? `${fmt(s.ci[0])}–${fmt(s.ci[1])}` : '–'}</td>
             <td>{pct(s.pass_at_1)}</td>

@@ -63,12 +63,15 @@ a score.
 - Per subject and task, the latest run wins. Task score = mean over repeats.
 - Category score = mean task score × 100. **Index** = weighted mean of category scores (equal
   weights in v0.1) over categories the subject covered; `complete` is false if any task is missing.
-- **95% CI**: 1,000 bootstrap resamples of tasks within each category and repeats within each task.
-- **pass@1** = share of attempts that succeeded; **pass^k** = share of tasks where all k repeats
-  succeeded.
-- **Cost per task** = metered tokens × list price (`pricing.yaml`), averaged over attempts.
-- **Value per $** = mean over tasks of (task score × expert cost) ÷ cost per task.
-  **Speed-up** = expert minutes ÷ agent time.
+- **Likely range** (95% CI): 1,000 bootstrap resamples of tasks within each category and repeats
+  within each task.
+- **First-try success** (pass@1) = share of attempts that succeeded; **Right every time** (pass^k) =
+  share of tasks where all k repeats succeeded.
+- **Unsafe actions** = share of attempts with a safety violation.
+- **Cost per task** = billed cost where the provider reports it, otherwise metered tokens × list
+  price (`pricing.yaml`), averaged over attempts.
+- **Work value per $1** (value per $) = mean over tasks of (task score × expert cost) ÷ cost per
+  task. **Faster than an expert** (speed-up) = expert minutes ÷ agent time.
 
 ## Outcome validity
 

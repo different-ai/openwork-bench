@@ -1,3 +1,5 @@
+import { CATEGORIES, metric, term, tipHtml } from "../lib/glossary.js";
+
 // The leaderboard page: headline charts, detail chart cards (tabs, table view, image download,
 // links), the readiness summary and the tables. Data comes from the JSON embedded in the page.
 const DATA = JSON.parse(document.getElementById("owb-data").textContent);
@@ -44,17 +46,11 @@ const fill = (s) => (famOf(s) === "simulated" ? "url(#hatch)" : loop(s) ? `url(#
 const short = (s) => s.label.replace(/^Simulated: /, "Sim: ").replace(/\s*\(.*?\)\s*/g, " ").replace(/\s*·\s*plain loop/, " · loop").replace(/\s+/g, " ").trim();
 const name = (s) => s.label + (s.anchor ? " (closed, for reference)" : "");
 const harnessName = (s) => (s.harness === "openwork-desktop" ? "Agent app" : s.harness === "owb-agent" ? "Plain loop" : s.harness || s.type);
-const badge = (s) => (s.readiness ? `<a class="ready ${esc(s.readiness.id)}" href="${BASE}/readiness/#${esc(s.readiness.id)}" title="${esc(s.readiness.reason || "What this verdict means")}">${esc(s.readiness.label)}</a>` : "");
-
-const tip = document.getElementById("tip");
-document.addEventListener("mousemove", (e) => {
-  const t = e.target.closest ? e.target.closest("[data-tip]") : null;
-  if (!t) { tip.style.opacity = 0; return; }
-  tip.innerHTML = t.getAttribute("data-tip");
-  tip.style.left = Math.min(window.innerWidth - tip.offsetWidth - 12, e.clientX + 14) + "px";
-  tip.style.top = Math.min(window.innerHeight - tip.offsetHeight - 12, e.clientY + 14) + "px";
-  tip.style.opacity = 1;
-});
+/** A small "i" that explains a metric or term on hover and opens its page on click. */
+const info = (id) => { const t = term(id); return t ? `<a class="info" href="${BASE}/${t.page || "metrics/"}" data-tip="${esc(tipHtml(id))}" aria-label="What is ${esc(t.name)}?">i</a>` : ""; };
+const badge = (s) => (s.readiness ? `<a class="ready ${esc(s.readiness.id)}" href="${BASE}/readiness/#${esc(s.readiness.id)}" data-tip="${esc(tipHtml(s.readiness.id) + (s.readiness.reason ? `<br>Reason: ${esc(s.readiness.reason)}` : ""))}">${esc(s.readiness.label)}</a>` : "");
+const th = (label, id, cls = "") => `<th${cls ? ` class=${cls}` : ""}>${esc(label)}${id ? info(id) : ""}</th>`;
+const catHref = (c) => `${BASE}/categories/${c}/`;
 
 function visible() {
   return DATA.subjects.filter((s) => {
@@ -243,7 +239,7 @@ const tokenLegend = () => TOKENS.map((t) => `<span><i style="background:${t.colo
 const tradeLegend = () => `<span><i style="background:var(--quad);box-shadow:inset 0 0 0 1px var(--line)"></i>Better than the median on both</span><span><i class="sw-dots"></i>Pareto line</span>`;
 
 function table(rows, cols) {
-  return `<table><thead><tr><th class=l>Model</th><th class=l>Harness</th>${cols.map((c) => `<th>${esc(c.h)}</th>`).join("")}</tr></thead><tbody>${rows.map((s) => `<tr><td class=l><span class="dot" style="background:${solid(s)}"></span><a href="${modelHref(s)}">${esc(name(s))}</a></td><td class=l>${esc(harnessName(s))}</td>${cols.map((c) => `<td>${c.v(s)}</td>`).join("")}</tr>`).join("")}</tbody></table>`;
+  return `<table><thead><tr><th class=l>Model</th>${th("Harness", "harness", "l")}${cols.map((c) => th(c.h, c.id)).join("")}</tr></thead><tbody>${rows.map((s) => `<tr><td class=l><span class="dot" style="background:${solid(s)}"></span><a href="${modelHref(s)}">${esc(name(s))}</a></td><td class=l>${esc(harnessName(s))}</td>${cols.map((c) => `<td>${c.v(s)}</td>`).join("")}</tr>`).join("")}</tbody></table>`;
 }
 
 // ---- Chart cards: tabs, table view, image download and links ----
@@ -264,8 +260,10 @@ function card(id, views) {
 }
 function draw(c) {
   const v = c.views[c.active], rows = v.rows();
-  c.root.querySelector(".cc-title").textContent = v.title;
+  c.root.querySelector(".cc-title").innerHTML = esc(v.title) + info(v.metric);
   c.root.querySelector(".cc-sub").textContent = v.sub;
+  const more = c.root.querySelector(".cc-more"), m = metric(v.metric);
+  if (more && m) { more.href = `${BASE}/metrics/${m.id}/`; more.textContent = `${m.question} How it is measured →`; }
   c.root.querySelectorAll(".cc-tabs button").forEach((b, i) => b.setAttribute("aria-selected", String(i === c.active)));
   c.root.querySelector('[data-act="table"]').setAttribute("aria-pressed", String(c.table));
   const chart = c.root.querySelector(".chart"), tbl = c.root.querySelector(".cc-table");
@@ -309,66 +307,67 @@ async function downloadPng(c) {
 }
 
 const ciText = (s) => (s.ci ? `${fmt(s.ci[0])}–${fmt(s.ci[1])}` : "–");
+const valueText = (s) => (s.value_per_dollar ? "$" + Math.round(s.value_per_dollar).toLocaleString("en-US") : "–");
 const scored = () => visible().filter((s) => s.index != null);
 const byIndex = (a, b) => b.index - a.index;
 const targets = () => LEVELS.map((l) => ({ v: l.index, label: `${l.label} ≥ ${l.index}` }));
 
 card("c-index", [{
-  key: "index", tab: "Work Index", title: "OpenWork Bench Work Index",
-  sub: "Category-weighted mean task score, 0–100, with 95% bootstrap confidence intervals. Dashed lines are the readiness bars.",
+  key: "index", tab: "Work Index", title: "OpenWork Bench Work Index", metric: "work-index",
+  sub: "The share of each task done right, averaged over six kinds of office work, 0–100. Whiskers show the likely range; dashed lines are the readiness bars.",
   empty: "No subjects to show.", rows: () => scored().sort(byIndex),
-  draw: (host, rows) => columns(host, rows, { value: (s) => s.index, whisker: (s) => s.ci, max: 100, axis: true, height: 420, maxBar: 64, aria: "Work Index with confidence intervals", empty: "No subjects to show.", targets: targets(), label: (v) => fmt(v, 0), tip: (v, s) => `Index ${fmt(v)} (95% CI ${ciText(s)}) · pass^${s.k} ${Math.round(s.pass_hat_k * 100)}%` }),
-  cols: [{ h: "Index", v: (s) => `<b>${fmt(s.index)}</b>` }, { h: "95% CI", v: ciText }, { h: "pass@1", v: (s) => fmt(s.pass_at_1 * 100, 0) + "%" }, { h: "pass^k", v: (s) => fmt(s.pass_hat_k * 100, 0) + "%" }, { h: "Readiness", v: (s) => badge(s) || "–" }],
+  draw: (host, rows) => columns(host, rows, { value: (s) => s.index, whisker: (s) => s.ci, max: 100, axis: true, height: 420, maxBar: 64, aria: "Work Index with confidence intervals", empty: "No subjects to show.", targets: targets(), label: (v) => fmt(v, 0), tip: (v, s) => `Work Index ${fmt(v)} · likely range ${ciText(s)}<br>Right every time on ${Math.round(s.pass_hat_k * 100)}% of tasks` }),
+  cols: [{ h: "Work Index", id: "work-index", v: (s) => `<b>${fmt(s.index)}</b>` }, { h: "Likely range", id: "likely-range", v: ciText }, { h: "First-try success", id: "first-try", v: (s) => fmt(s.pass_at_1 * 100, 0) + "%" }, { h: "Right every time", id: "every-time", v: (s) => fmt(s.pass_hat_k * 100, 0) + "%" }, { h: "Readiness", id: "readiness", v: (s) => badge(s) || "–" }],
 }]);
 
 card("c-efficiency", [
   {
-    key: "cost", tab: "Cost per task", title: "Cost per task", sub: "Average USD per task attempt, billed by the provider where available, otherwise list price · lower is better",
+    key: "cost", tab: "Cost per task", title: "Cost per task", metric: "cost", sub: "Average USD per task attempt, billed by the provider where available, otherwise list price · lower is better",
     empty: "No cost data for these subjects yet.", rows: () => real().filter((s) => s.cost_per_task != null).sort((a, b) => a.cost_per_task - b.cost_per_task),
     draw: (host, rows) => columns(host, rows, { value: (s) => s.cost_per_task, axis: true, tick: (t) => "$" + (t < 0.1 ? t.toFixed(t < 0.01 ? 3 : 2) : t.toFixed(2)), height: 400, aria: "Cost per task", label: (v) => money(v), tip: (v, s) => `${money(v)} per task (${esc(s.cost_source || "list price")})` }),
-    cols: [{ h: "$ per task", v: (s) => money(s.cost_per_task) }, { h: "Source", v: (s) => esc(s.cost_source || "list price") }, { h: "Value per $", v: (s) => (s.value_per_dollar ? s.value_per_dollar.toLocaleString() + "×" : "–") }],
+    cols: [{ h: "Cost per task", id: "cost", v: (s) => money(s.cost_per_task) }, { h: "Source", v: (s) => esc(s.cost_source || "list price") }, { h: "Work value per $1", id: "value", v: (s) => valueText(s) }],
   },
   {
-    key: "time", tab: "Time per task", title: "Time per task", sub: "Average wall-clock minutes per task attempt, from first request to final answer · lower is better",
+    key: "time", tab: "Time per task", title: "Time per task", metric: "time", sub: "Average wall-clock minutes per task attempt, from first request to final answer · lower is better",
     empty: "No timing data for these subjects yet.", rows: () => real().filter((s) => s.time_per_task).sort((a, b) => a.time_per_task - b.time_per_task),
     draw: (host, rows) => columns(host, rows, { value: (s) => s.time_per_task / 60, axis: true, tick: (t) => t.toFixed(t < 1 ? 1 : 0) + "m", height: 400, aria: "Time per task", label: (v) => (v < 1 ? v.toFixed(2) : v.toFixed(1)), tip: (v, s) => `${v.toFixed(2)} min per task${s.speedup_vs_expert ? ` · ${s.speedup_vs_expert}× faster than an expert` : ""}` }),
-    cols: [{ h: "Minutes per task", v: (s) => mins(s.time_per_task) }, { h: "Speed-up vs expert", v: (s) => (s.speedup_vs_expert ? s.speedup_vs_expert + "×" : "–") }],
+    cols: [{ h: "Minutes per task", id: "time", v: (s) => mins(s.time_per_task) }, { h: "Faster than an expert", id: "speedup", v: (s) => (s.speedup_vs_expert ? s.speedup_vs_expert + "×" : "–") }],
   },
   {
-    key: "output", tab: "Output tokens", title: "Output tokens per task", sub: "Average tokens the model wrote per task attempt, reasoning included · lower is better",
+    key: "output", tab: "Output tokens", title: "Output tokens per task", metric: "tokens", sub: "Average tokens the model wrote per task attempt, reasoning included · lower is better",
     empty: "No token data for these subjects yet.", rows: () => real().filter((s) => s.usage_per_task).sort((a, b) => a.usage_per_task.output_tokens - b.usage_per_task.output_tokens),
     draw: (host, rows) => columns(host, rows, { value: (s) => s.usage_per_task.output_tokens, axis: true, tick: kfmt, height: 400, aria: "Output tokens per task", label: (v) => kfmt(v), tip: (v) => `${Math.round(v).toLocaleString()} output tokens per task` }),
-    cols: [{ h: "Output tokens", v: (s) => s.usage_per_task.output_tokens.toLocaleString() }, { h: "Steps per task", v: (s) => fmt(s.steps_per_task) }],
+    cols: [{ h: "Output tokens", id: "tokens", v: (s) => s.usage_per_task.output_tokens.toLocaleString() }, { h: "Steps per task", id: "steps", v: (s) => fmt(s.steps_per_task) }],
   },
   {
-    key: "tokens", tab: "Tokens by type", title: "Tokens per task, by type", sub: "Average tokens per task attempt, split into output, fresh input and cached context",
+    key: "tokens", tab: "Tokens by type", title: "Tokens per task, by type", metric: "tokens", sub: "Average tokens per task attempt, split into output, fresh input and cached context",
     empty: "No token data for these subjects yet.", rows: () => real().filter((s) => s.usage_per_task).sort((a, b) => a.tokens_per_task - b.tokens_per_task),
     draw: (host, rows) => columns(host, rows, { value: (s) => TOKENS.reduce((n, t) => n + (s.usage_per_task[t.key] || 0), 0), stack: (s) => TOKENS.map((t) => ({ v: s.usage_per_task[t.key] || 0, color: t.color })), axis: true, tick: kfmt, height: 400, aria: "Tokens per task by type", label: (v) => kfmt(v), tip: (v, s) => TOKENS.map((t) => `${t.label}: ${(s.usage_per_task[t.key] || 0).toLocaleString()}`).join("<br>") }),
     legend: () => tokenLegend(),
     cols: TOKENS.map((t) => ({ h: t.label, v: (s) => (s.usage_per_task[t.key] || 0).toLocaleString() })).concat([{ h: "Total", v: (s) => `<b>${s.tokens_per_task.toLocaleString()}</b>` }]),
   },
   {
-    key: "steps", tab: "Steps per task", title: "Steps per task", sub: "Average model turns per task attempt, each one a tool call or a reply · lower is better",
+    key: "steps", tab: "Steps per task", title: "Steps per task", metric: "steps", sub: "Average model turns per task attempt, each one a tool call or a reply · lower is better",
     empty: "No step data for these subjects yet.", rows: () => real().filter((s) => s.steps_per_task).sort((a, b) => a.steps_per_task - b.steps_per_task),
     draw: (host, rows) => columns(host, rows, { value: (s) => s.steps_per_task, axis: true, height: 400, aria: "Steps per task", label: (v) => fmt(v), tip: (v) => `${fmt(v)} steps per task` }),
-    cols: [{ h: "Steps per task", v: (s) => fmt(s.steps_per_task) }],
+    cols: [{ h: "Steps per task", id: "steps", v: (s) => fmt(s.steps_per_task) }],
   },
 ]);
 
 card("c-tradeoffs", [
   {
-    key: "vs-cost", tab: "Index vs. cost", title: "Work Index vs. cost per task", sub: "Index against average USD per task attempt (log scale)",
+    key: "vs-cost", tab: "Index vs. cost", title: "Work Index vs. cost per task", metric: "value", sub: "Quality against price: Work Index against average USD per task attempt (log scale)",
     empty: "No cost data for these subjects yet.", rows: () => real().filter((s) => s.index != null && s.cost_per_task > 0),
-    draw: (host, rows) => scatter(host, rows, { x: (s) => s.cost_per_task, xTick: (v) => "$" + (v >= 1 ? v : v.toPrecision(1)), xTitle: "Cost per task (USD, log scale)", quadrant: "Better and cheaper", aria: "Index vs cost per task", empty: "No cost data for these subjects yet.", tip: (s) => `Index ${fmt(s.index)} · ${money(s.cost_per_task)} per task` }),
+    draw: (host, rows) => scatter(host, rows, { x: (s) => s.cost_per_task, xTick: (v) => "$" + (v >= 1 ? v : v.toPrecision(1)), xTitle: "Cost per task (USD, log scale)", quadrant: "Better and cheaper", aria: "Index vs cost per task", empty: "No cost data for these subjects yet.", tip: (s) => `Work Index ${fmt(s.index)} · ${money(s.cost_per_task)} per task${s.value_per_dollar ? `<br>${valueText(s)} of expert work per $1` : ""}` }),
     legend: (rows) => familyLegend(rows, tradeLegend()),
-    cols: [{ h: "Index", v: (s) => fmt(s.index) }, { h: "$ per task", v: (s) => money(s.cost_per_task) }],
+    cols: [{ h: "Work Index", id: "work-index", v: (s) => fmt(s.index) }, { h: "Cost per task", id: "cost", v: (s) => money(s.cost_per_task) }, { h: "Work value per $1", id: "value", v: (s) => valueText(s) }],
   },
   {
-    key: "vs-time", tab: "Index vs. time", title: "Work Index vs. time per task", sub: "Index against average wall-clock minutes per task attempt (log scale)",
+    key: "vs-time", tab: "Index vs. time", title: "Work Index vs. time per task", metric: "speedup", sub: "Quality against waiting time: Work Index against average minutes per task attempt (log scale)",
     empty: "No timing data for these subjects yet.", rows: () => real().filter((s) => s.index != null && s.time_per_task > 0),
-    draw: (host, rows) => scatter(host, rows, { x: (s) => s.time_per_task / 60, xTick: (v) => (v >= 1 ? v : v.toPrecision(1)) + "m", xTitle: "Time per task (minutes, log scale)", quadrant: "Better and faster", aria: "Index vs time per task", empty: "No timing data for these subjects yet.", tip: (s) => `Index ${fmt(s.index)} · ${mins(s.time_per_task)} min per task` }),
+    draw: (host, rows) => scatter(host, rows, { x: (s) => s.time_per_task / 60, xTick: (v) => (v >= 1 ? v : v.toPrecision(1)) + "m", xTitle: "Time per task (minutes, log scale)", quadrant: "Better and faster", aria: "Index vs time per task", empty: "No timing data for these subjects yet.", tip: (s) => `Work Index ${fmt(s.index)} · ${mins(s.time_per_task)} min per task${s.speedup_vs_expert ? `<br>${s.speedup_vs_expert}× faster than an expert` : ""}` }),
     legend: (rows) => familyLegend(rows, tradeLegend()),
-    cols: [{ h: "Index", v: (s) => fmt(s.index) }, { h: "Minutes per task", v: (s) => mins(s.time_per_task) }],
+    cols: [{ h: "Work Index", id: "work-index", v: (s) => fmt(s.index) }, { h: "Minutes per task", id: "time", v: (s) => mins(s.time_per_task) }, { h: "Faster than an expert", id: "speedup", v: (s) => (s.speedup_vs_expert ? s.speedup_vs_expert + "×" : "–") }],
   },
 ]);
 
@@ -377,7 +376,7 @@ function headline() {
   const subs = scored();
   columns(document.getElementById("indexChart"), subs.slice().sort(byIndex), {
     value: (s) => s.index, max: 100, aria: "Index scores", empty: "No subjects to show.", targets: LEVELS.map((l) => ({ v: l.index, label: l.label })),
-    label: (v) => Math.round(v), tip: (v, s) => `Index ${fmt(v)}${s.ci ? ` (95% CI ${ciText(s)})` : ""} · pass^${s.k} ${Math.round(s.pass_hat_k * 100)}%`,
+    label: (v) => Math.round(v), tip: (v, s) => `Work Index ${fmt(v)}${s.ci ? ` · likely range ${ciText(s)}` : ""}<br>Right every time on ${Math.round(s.pass_hat_k * 100)}% of tasks`,
   });
   const r = subs.filter((s) => s.type !== "reference");
   columns(document.getElementById("timeChart"), r.filter((s) => s.time_per_task).sort((a, b) => a.time_per_task - b.time_per_task), {
@@ -401,7 +400,7 @@ function tiers() {
   const subs = visible().filter((s) => s.readiness);
   document.getElementById("tiers").innerHTML = (TARGETS.levels || []).map((l) => {
     const names = subs.filter((s) => s.readiness.id === l.id).map(short);
-    return `<a class="tier-row" href="${BASE}/readiness/#${esc(l.id)}"><b>${esc(l.label)}</b><span>${names.length ? esc(names.join(", ")) : "—"}</span></a>`;
+    return `<a class="tier-row" href="${BASE}/readiness/#${esc(l.id)}" data-tip="${esc(tipHtml(l.id))}"><b>${esc(l.label)}</b><span>${names.length ? esc(names.join(", ")) : "—"}</span></a>`;
   }).join("");
 }
 
@@ -410,7 +409,7 @@ const ink = (v) => (v != null && v >= 64 ? "var(--s-ink-hi)" : "var(--ink)");
 
 function catTable() {
   const cats = DATA.index.categories, ct = TARGETS.category;
-  let h = `<thead><tr><th class=l>Model</th><th class=l>Readiness</th><th>Index</th>${Object.values(cats).map((c) => `<th>${esc(c.label)}</th>`).join("")}</tr></thead><tbody>`;
+  let h = `<thead><tr><th class=l>Model</th>${th("Readiness", "readiness", "l")}${th("Work Index", "work-index")}${Object.entries(cats).map(([id, c]) => `<th><a class="th-link" href="${catHref(id)}" data-tip="<b>${esc(c.label)}</b><br><i>${esc(CATEGORIES[id]?.question || "")}</i><br>${esc(CATEGORIES[id]?.work || "")}<br><span class=more>Click for its tasks and scores</span>">${esc(c.label)}</a></th>`).join("")}</tr></thead><tbody>`;
   for (const s of visible()) {
     h += `<tr><td class=l><span class="dot" style="background:${solid(s)}"></span><a href="${modelHref(s)}">${esc(name(s))}</a>${loop(s) ? '<span class="tag">plain loop</span>' : ""}${s.simulated ? '<span class="tag">sim</span>' : ""}</td><td class=l>${badge(s)}</td><td><b>${fmt(s.index)}</b></td>`;
     for (const c of Object.keys(cats)) {
@@ -424,28 +423,28 @@ function catTable() {
 
 function relChart() {
   const bar = (v, c, l) => `<div class="mini" data-tip="${l}: ${fmt(v * 100, 0)}%"><span style="width:${Math.max(0, v * 100)}%;background:${c}"></span><b>${fmt(v * 100, 0)}%</b></div>`;
-  let h = '<div class="bars"><div class="h">Model</div><div class="h">pass@1</div><div class="h">pass^k</div><div class="h">Unsafe attempts</div>';
+  let h = `<div class="bars"><div class="h">Model</div><div class="h">First-try success${info("first-try")}</div><div class="h">Right every time${info("every-time")}</div><div class="h">Unsafe actions${info("unsafe")}</div>`;
   for (const s of visible()) {
-    h += `<div><span class="dot" style="background:${solid(s)}"></span><a href="${modelHref(s)}">${esc(short(s))}</a></div>${bar(s.pass_at_1, solid(s), "pass@1")}${bar(s.pass_hat_k, solid(s), "pass^" + s.k)}${bar(s.safety_rate, "var(--critical)", "Unsafe")}`;
+    h += `<div><span class="dot" style="background:${solid(s)}"></span><a href="${modelHref(s)}">${esc(short(s))}</a></div>${bar(s.pass_at_1, solid(s), "First-try success")}${bar(s.pass_hat_k, solid(s), "Right every time")}${bar(s.safety_rate, "var(--critical)", "Unsafe actions")}`;
   }
   document.getElementById("relChart").innerHTML = h + "</div>";
 }
 
 function mainTable() {
-  let h = "<thead><tr><th>#</th><th class=l>Model</th><th class=l>Readiness</th><th class=l>Harness</th><th>Index</th><th>95% CI</th><th>pass@1</th><th>pass^k</th><th>Unsafe</th><th>$/task</th><th>Min/task</th><th>Tokens/task</th><th>Value per $</th><th>Speed-up</th><th>Coverage</th><th class=l>Weights</th></tr></thead><tbody>";
+  let h = `<thead><tr><th>#</th><th class=l>Model</th>${th("Readiness", "readiness", "l")}${th("Harness", "harness", "l")}${th("Work Index", "work-index")}${th("Likely range", "likely-range")}${th("First-try success", "first-try")}${th("Right every time", "every-time")}${th("Unsafe actions", "unsafe")}${th("Cost per task", "cost")}${th("Min per task", "time")}${th("Tokens per task", "tokens")}${th("Work value per $1", "value")}${th("Faster than an expert", "speedup")}${th("Tasks run", "coverage")}${th("Weights", "weights", "l")}</tr></thead><tbody>`;
   visible().forEach((s, i) => {
     const ow = s.open_weights || {};
     const weights = ow.hf_repo ? `<a href="https://huggingface.co/${esc(ow.hf_repo)}/tree/${esc(ow.revision || "main")}">${esc(ow.license || "open")}</a>` : s.anchor ? "closed" : "–";
-    h += `<tr><td>${i + 1}</td><td class=l><span class="dot" style="background:${solid(s)}"></span><a href="${modelHref(s)}">${esc(name(s))}</a></td><td class=l>${badge(s)}</td><td class=l>${esc(harnessName(s))}</td><td><b>${fmt(s.index)}</b></td><td>${ciText(s)}</td><td>${fmt(s.pass_at_1 * 100, 0)}%</td><td>${fmt(s.pass_hat_k * 100, 0)}%</td><td>${fmt(s.safety_rate * 100, 0)}%</td><td>${money(s.cost_per_task)}</td><td>${s.type === "reference" ? "–" : mins(s.time_per_task)}</td><td>${s.tokens_per_task ? s.tokens_per_task.toLocaleString() : "–"}</td><td>${s.value_per_dollar ? s.value_per_dollar.toLocaleString() + "×" : "–"}</td><td>${s.type === "reference" || !s.speedup_vs_expert ? "–" : s.speedup_vs_expert + "×"}</td><td>${fmt(s.coverage * 100, 0)}%</td><td class=l>${weights}</td></tr>`;
+    h += `<tr><td>${i + 1}</td><td class=l><span class="dot" style="background:${solid(s)}"></span><a href="${modelHref(s)}">${esc(name(s))}</a></td><td class=l>${badge(s)}</td><td class=l>${esc(harnessName(s))}</td><td><b>${fmt(s.index)}</b></td><td>${ciText(s)}</td><td>${fmt(s.pass_at_1 * 100, 0)}%</td><td>${fmt(s.pass_hat_k * 100, 0)}%</td><td>${fmt(s.safety_rate * 100, 0)}%</td><td>${money(s.cost_per_task)}</td><td>${s.type === "reference" ? "–" : mins(s.time_per_task)}</td><td>${s.tokens_per_task ? s.tokens_per_task.toLocaleString() : "–"}</td><td>${valueText(s)}</td><td>${s.type === "reference" || !s.speedup_vs_expert ? "–" : s.speedup_vs_expert + "×"}</td><td>${fmt(s.coverage * 100, 0)}%</td><td class=l>${weights}</td></tr>`;
   });
   document.getElementById("mainTable").innerHTML = h + "</tbody>";
 }
 
 function matrix() {
   const subs = visible(), cats = DATA.index.categories;
-  let h = `<thead><tr><th class=l>Task</th><th class=l>Category</th><th>Expert</th>${subs.map((s) => `<th class="rot"><a href="${modelHref(s)}">${esc(short(s))}</a></th>`).join("")}</tr></thead><tbody>`;
+  let h = `<thead><tr><th class=l>Task</th><th class=l>Category</th>${th("Expert", "expert")}${subs.map((s) => `<th class="rot"><a href="${modelHref(s)}">${esc(short(s))}</a></th>`).join("")}</tr></thead><tbody>`;
   for (const t of DATA.tasks) {
-    h += `<tr><td class=l data-tip="${esc(t.occupation)} · ${esc(t.difficulty)} · ${esc(t.horizon)}"><a href="${taskHref(t)}">${esc(t.title)}</a></td><td class=l>${esc(cats[t.category]?.label || t.category)}</td><td>${Math.round(t.expert_minutes)}m</td>`;
+    h += `<tr><td class=l data-tip="${esc(t.occupation)} · ${esc(t.difficulty)} · ${esc(t.horizon)}"><a href="${taskHref(t)}">${esc(t.title)}</a></td><td class=l><a href="${catHref(t.category)}">${esc(cats[t.category]?.label || t.category)}</a></td><td>${Math.round(t.expert_minutes)}m</td>`;
     for (const s of subs) {
       const r = s.tasks[t.id], v = r ? r.score * 100 : null;
       h += `<td class="heat" style="background:${seq(v)};color:${ink(v)}" data-tip="<b>${esc(s.label)}</b><br>${esc(t.title)}<br>score ${fmt(v, 0)} · solved ${r ? fmt(r.success_rate * 100, 0) + "%" : "–"} of ${r ? r.n : 0}">${fmt(v, 0)}</td>`;

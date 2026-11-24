@@ -1,0 +1,10 @@
+---
+// A small "i" beside a metric or term: hover or focus shows what it means, click opens its page.
+import { term, tipHtml } from '../lib/glossary.js';
+import { route } from '../lib/site';
+
+interface Props { id: string }
+const { id } = Astro.props;
+const t = term(id);
+---
+{t && <a class="info" href={t.page ? route(t.page) : undefined} data-tip={tipHtml(id)} aria-label={`What is ${t.name}?`}>i</a>}

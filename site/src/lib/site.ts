@@ -144,7 +144,7 @@ const FAMILIES = ['moonshot', 'zhipu', 'deepseek', 'qwen', 'mistral', 'meta', 'm
 /** The same family colours as the leaderboard charts. */
 export function familyColor(s: Pick<Subject, 'family' | 'anchor' | 'simulated'>): string {
   if (s.simulated) return 'var(--f3)';
-  if (s.anchor) return 'var(--ink)';
+  if (s.anchor) return 'var(--ref)';
   const i = FAMILIES.indexOf(s.family ?? '');
   return i >= 0 ? `var(--f${i + 1})` : 'var(--neutral)';
 }

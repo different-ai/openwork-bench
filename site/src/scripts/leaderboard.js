@@ -6,7 +6,6 @@ const DATA = JSON.parse(document.getElementById("owb-data").textContent);
 const NS = "http://www.w3.org/2000/svg";
 const FAMILIES = ["moonshot", "zhipu", "deepseek", "qwen", "mistral", "meta", "minimax", "nvidia"];
 const FAMILY_LABEL = { moonshot: "Moonshot", zhipu: "Z.ai", deepseek: "DeepSeek", qwen: "Qwen", mistral: "Mistral", meta: "Meta", minimax: "MiniMax", nvidia: "NVIDIA", anchor: "Closed reference", simulated: "Simulated test agent", reference: "Reference", other: "Other" };
-const MONO = { moonshot: "K", zhipu: "Z", deepseek: "D", qwen: "Q", mistral: "M", meta: "∞", minimax: "M", nvidia: "N", anchor: "A", simulated: "S", reference: "R" };
 const TOKENS = [
   { key: "output_tokens", label: "Output", color: "var(--tk-out)" },
   { key: "input_tokens", label: "Input", color: "var(--tk-in)" },
@@ -18,7 +17,10 @@ const LEVELS = (TARGETS.levels || []).filter((l) => l.index != null);
 const hasOpen = DATA.subjects.some((s) => s.board === "open-weights");
 const hasReal = DATA.subjects.some((s) => s.type === "model" || s.type === "product");
 const appModels = DATA.subjects.filter((s) => s.board === "open-weights" && s.type === "product").length;
-const state = { board: hasOpen ? "open" : "all", harness: appModels >= 2 ? "openwork" : "both", showTest: !hasReal };
+const hasClosed = DATA.subjects.some((s) => !s.simulated && s.type !== "reference" && s.board !== "open-weights");
+const state = { board: "all", harness: appModels >= 2 ? "openwork" : "both", showTest: !hasReal };
+/** Short names for the readiness bars drawn on the Work Index charts. */
+const BAR_NAME = { delegable: "Delegable", supervised: "With review" };
 
 const fmt = (v, d = 1) => (v == null || Number.isNaN(v) ? "–" : Number(v).toFixed(d));
 const money = (v) => (v == null ? "n/a" : v < 0.01 ? "$" + v.toFixed(4) : "$" + v.toFixed(v < 1 ? 3 : 2));
@@ -33,16 +35,19 @@ const taskHref = (t) => `${BASE}/tasks/${slug(t.id)}/`;
 const el = (tag, attrs = {}, parent) => { const n = document.createElementNS(NS, tag); for (const [k, v] of Object.entries(attrs)) n.setAttribute(k, v); if (parent) parent.appendChild(n); return n; };
 const famOf = (s) => (s.type === "reference" ? "reference" : s.simulated ? "simulated" : s.anchor ? "anchor" : FAMILIES.includes(s.family) ? s.family : "other");
 const loop = (s) => s.harness === "owb-agent";
-/** The entity's own colour: legend swatches, monograms and table marks. */
+/** The entity's own colour: marks, legend swatches and table dots. */
 const solid = (s) => {
   const f = famOf(s), i = FAMILIES.indexOf(f);
   if (i >= 0) return `var(--f${i + 1})`;
-  if (f === "anchor") return "var(--ink)";
+  if (f === "anchor") return "var(--ref)";
   if (f === "simulated") return "var(--f3)";
   return "var(--neutral)";
 };
-/** Fill for a mark: plain-loop runs wear their colour striped, simulated agents hatched. */
-const fill = (s) => (famOf(s) === "simulated" ? "url(#hatch)" : loop(s) ? `url(#stripe-${famOf(s)})` : solid(s));
+/** Fill for a mark: simulated agents are hatched; plain-loop runs wear a lighter tint (see `tint`). */
+const fill = (s) => (famOf(s) === "simulated" ? "url(#hatch)" : solid(s));
+const tint = (s) => (loop(s) ? 0.5 : 1);
+/** Plain-loop bars keep a thin outline in their colour so the lighter tint still reads as a bar. */
+const edge = (s) => (loop(s) ? { stroke: solid(s), "stroke-width": 1.25, "stroke-opacity": 0.9 } : {});
 const short = (s) => s.label.replace(/^Simulated: /, "Sim: ").replace(/\s*\(.*?\)\s*/g, " ").replace(/\s*·\s*plain loop/, " · loop").replace(/\s+/g, " ").trim();
 const name = (s) => s.label + (s.anchor ? " (closed, for reference)" : "");
 const harnessName = (s) => (s.harness === "openwork-desktop" ? "Agent app" : s.harness === "owb-agent" ? "Plain loop" : s.harness || s.type);
@@ -55,7 +60,7 @@ const catHref = (c) => `${BASE}/categories/${c}/`;
 function visible() {
   return DATA.subjects.filter((s) => {
     if (s.simulated || s.type === "reference") return state.showTest;
-    if (state.board === "open" && !(s.board === "open-weights" || s.anchor)) return false;
+    if (state.board === "open" && s.board !== "open-weights") return false;
     if (state.harness === "openwork" && s.type !== "product" && !s.anchor) return false;
     if (state.harness === "control" && s.type !== "model" && !s.anchor) return false;
     return true;
@@ -71,11 +76,6 @@ function defs(svg) {
   const h = el("pattern", { id: "hatch", width: 5, height: 5, patternUnits: "userSpaceOnUse", patternTransform: "rotate(45)" }, d);
   el("rect", { width: 5, height: 5, fill: "var(--f3)", opacity: 0.3 }, h);
   el("line", { x1: 0, y1: 0, x2: 0, y2: 5, stroke: "var(--f3)", "stroke-width": 3 }, h);
-  for (const f of [...FAMILIES, "anchor", "other"]) {
-    const p = el("pattern", { id: `stripe-${f}`, width: 6, height: 6, patternUnits: "userSpaceOnUse", patternTransform: "rotate(45)" }, d);
-    el("rect", { width: 6, height: 6, fill: solid({ family: f, anchor: f === "anchor", type: "model" }) }, p);
-    el("line", { x1: 0, y1: 0, x2: 0, y2: 6, stroke: "var(--panel)", "stroke-width": 2, opacity: 0.55 }, p);
-  }
 }
 /** A round upper bound and tick step for an axis that starts at zero: the tightest of 3–6 ticks. */
 function niceAxis(max) {
@@ -97,7 +97,10 @@ function columns(host, rows, opts) {
   const W = Math.max(280, host.clientWidth), H = opts.height || 360;
   const longest = Math.max(...rows.map((s) => short(s).length));
   const flat = (W - 60) / rows.length >= Math.max(96, longest * 6.8 + 10);
-  const m = { l: opts.axis ? 52 : 8, r: 8, t: opts.whisker ? 34 : 24, b: flat ? 64 : 136 };
+  const gutter = (opts.targets || []).length ? (W < 520 ? 76 : 96) : 8;
+  const m = { l: opts.axis ? 52 : 8, r: gutter, t: opts.whisker ? 34 : 26, b: flat ? 44 : Math.min(176, 30 + Math.min(28, longest) * 5.1) };
+  // Angled names run down-left from the first bar: leave room so the first one is not clipped.
+  if (!flat) m.l = Math.max(m.l, Math.min(120, Math.min(28, short(rows[0]).length) * 4.4 - (W - m.l - m.r) / rows.length / 2 + 6));
   const svg = el("svg", { width: W, height: H, viewBox: `0 0 ${W} ${H}`, role: "img", "aria-label": opts.aria }, host);
   defs(svg);
   const vals = rows.map(opts.value);
@@ -111,7 +114,7 @@ function columns(host, rows, opts) {
     el("line", { x1: m.l, x2: W - m.r, y1: y(t), y2: y(t), stroke: "var(--grid)", "stroke-dasharray": "2 4" }, svg);
     if (opts.axis) el("text", { x: m.l - 10, y: y(t) + 4, "text-anchor": "end", class: "tick" }, svg).textContent = opts.tick ? opts.tick(t) : t;
   }
-  (opts.targets || []).forEach((t) => el("line", { x1: m.l, x2: W - m.r, y1: y(t.v), y2: y(t.v), stroke: "var(--ink-2)", "stroke-dasharray": "5 4", opacity: 0.7 }, svg));
+  (opts.targets || []).forEach((t) => el("line", { x1: m.l, x2: W - m.r + 6, y1: y(t.v), y2: y(t.v), stroke: "var(--ink-3)", "stroke-width": 1, "stroke-dasharray": "3 4" }, svg));
   rows.forEach((s, i) => {
     const v = vals[i], cx = m.l + bw * i + bw / 2, x0 = cx - barW / 2, base = H - m.b;
     const a = el("a", { href: modelHref(s), "aria-label": `${s.label}: ${opts.label(v, s)}`, "data-tip": tipFor(s, opts.tip(v, s)) }, svg);
@@ -132,7 +135,7 @@ function columns(host, rows, opts) {
       });
     } else {
       const h = Math.max(2, base - top), r = Math.min(4, barW / 4, h / 2);
-      el("path", { d: `M${x0},${top + h} V${top + r} Q${x0},${top} ${x0 + r},${top} H${x0 + barW - r} Q${x0 + barW},${top} ${x0 + barW},${top + r} V${top + h} Z`, fill: fill(s) }, a);
+      el("path", { d: `M${x0},${top + h} V${top + r} Q${x0},${top} ${x0 + r},${top} H${x0 + barW - r} Q${x0 + barW},${top} ${x0 + barW},${top + r} V${top + h} Z`, fill: fill(s), "fill-opacity": tint(s), ...edge(s) }, a);
     }
     const ci = opts.whisker && opts.whisker(s);
     if (ci) {
@@ -142,26 +145,24 @@ function columns(host, rows, opts) {
       el("path", { d, stroke: "var(--panel)", "stroke-width": 4, fill: "none", "stroke-linecap": "round", opacity: 0.9 }, a);
       el("path", { d, stroke: "var(--ink)", "stroke-width": 1.5, fill: "none", "stroke-linecap": "round", class: "whisker" }, a);
     }
-    const label = opts.label(v, s), h = base - top;
-    const inside = !ci && !opts.stack && h > 26 && barW >= 26 && famOf(s) !== "simulated";
-    const ly = ci ? y(ci[1]) - 7 : inside ? top + 16 : top - 6;
-    // The closed reference bar wears the ink colour, so text on it takes the surface colour.
-    const onInk = famOf(s) === "anchor" ? { style: "fill: var(--bg)" } : {};
-    el("text", { x: cx, y: ly, "text-anchor": "middle", class: inside ? "val-in" : "val", ...(inside ? onInk : {}) }, svg).textContent = label;
-    const f = famOf(s), bx = cx - 7, by = base + 7;
-    el("rect", { x: bx, y: by, width: 14, height: 14, rx: 3, fill: solid(s), opacity: f === "simulated" ? 0.55 : 1 }, svg);
-    el("text", { x: cx, y: by + 10.5, "text-anchor": "middle", class: "mono", ...onInk }, svg).textContent = MONO[f] || "·";
+    // Values sit above the bar (or its whisker) in text ink, never on the colour.
+    const label = opts.label(v, s);
+    el("text", { x: cx, y: ci ? y(ci[1]) - 8 : top - 7, "text-anchor": "middle", class: "val" }, svg).textContent = label;
     const nm = short(s);
     if (flat) {
-      el("text", { x: cx, y: base + 40, "text-anchor": "middle", class: "lbl" }, svg).textContent = nm;
+      el("text", { x: cx, y: base + 22, "text-anchor": "middle", class: "lbl" }, svg).textContent = nm;
     } else {
-      const lx = cx + 4, ly2 = base + 32;
+      const lx = cx + 4, ly2 = base + 16;
       el("text", { x: lx, y: ly2, "text-anchor": "end", class: "lbl", transform: `rotate(-50 ${lx} ${ly2})` }, svg).textContent = nm.length > 28 ? nm.slice(0, 27) + "…" : nm;
     }
   });
   el("line", { x1: m.l, x2: W - m.r, y1: H - m.b, y2: H - m.b, stroke: "var(--line)" }, svg);
-  // Target labels sit on top of the bars, with a halo so they stay readable over them.
-  (opts.targets || []).forEach((t) => { el("text", { x: W - m.r, y: y(t.v) - 5, "text-anchor": "end", class: "target" }, svg).textContent = t.label; });
+  // Readiness labels sit in the right gutter, clear of the bars; hover explains, click opens the page.
+  (opts.targets || []).forEach((t) => {
+    const g = el("a", { href: `${BASE}/readiness/#${t.id}`, "data-tip": `${tipHtml(t.id)}`, "aria-label": `${t.name} bar at ${t.v}` }, svg);
+    el("text", { x: W - m.r + 12, y: y(t.v) - 2, class: "bar-name" }, g).textContent = t.name;
+    el("text", { x: W - m.r + 12, y: y(t.v) + 12, class: "bar-sub" }, g).textContent = t.sub;
+  });
 }
 
 // Index against a cost or time measure: the attractive quadrant, the Pareto line, labelled points.
@@ -212,7 +213,7 @@ function scatter(host, rows, opts) {
     const cx = x(opts.x(s)), cy = y(s.index), label = short(s), w = label.length * 6.7 + 4;
     const a = el("a", { href: modelHref(s), "aria-label": s.label, "data-tip": tipFor(s, opts.tip(s)) }, svg);
     el("circle", { cx, cy, r: 16, fill: "transparent" }, a);
-    el("circle", { cx, cy, r: 7.5, fill: fill(s), stroke: "var(--panel)", "stroke-width": 2 }, a);
+    el("circle", { cx, cy, r: 7.5, fill: fill(s), "fill-opacity": tint(s), stroke: loop(s) ? solid(s) : "var(--panel)", "stroke-width": loop(s) ? 1.5 : 2 }, a);
     const spots = [];
     for (const dy of [0, -14, 14, -28, 28]) spots.push(["start", cx + 13, cy + 4 + dy], ["end", cx - 13, cy + 4 + dy]);
     spots.splice(2, 0, ["middle", cx, cy - 15], ["middle", cx, cy + 23]);
@@ -229,10 +230,10 @@ function familyLegend(rows, extra = "") {
   const fams = [...new Set(rows.map(famOf))];
   let h = fams.map((f) => {
     const i = FAMILIES.indexOf(f);
-    const sw = i >= 0 ? `var(--f${i + 1})` : f === "anchor" ? "var(--ink)" : f === "simulated" ? "var(--f3); opacity:.55" : "var(--neutral)";
+    const sw = i >= 0 ? `var(--f${i + 1})` : f === "anchor" ? "var(--ref)" : f === "simulated" ? "var(--f3); opacity:.55" : "var(--neutral)";
     return `<span><i style="background:${sw}"></i>${esc(FAMILY_LABEL[f] || f)}</span>`;
   }).join("");
-  if (rows.some(loop) && rows.some((s) => !loop(s) && !s.simulated)) h += `<span><i class="sw-stripe"></i>Striped: plain loop</span>`;
+  if (rows.some(loop) && rows.some((s) => !loop(s) && !s.simulated)) h += `<span><i class="sw-tint"></i>Lighter: plain loop</span>`;
   return h + extra;
 }
 const tokenLegend = () => TOKENS.map((t) => `<span><i style="background:${t.color}"></i>${t.label}</span>`).join("");
@@ -310,13 +311,17 @@ const ciText = (s) => (s.ci ? `${fmt(s.ci[0])}–${fmt(s.ci[1])}` : "–");
 const valueText = (s) => (s.value_per_dollar ? "$" + Math.round(s.value_per_dollar).toLocaleString("en-US") : "–");
 const scored = () => visible().filter((s) => s.index != null);
 const byIndex = (a, b) => b.index - a.index;
-const targets = () => LEVELS.map((l) => ({ v: l.index, label: `${l.label} ≥ ${l.index}` }));
+const targets = () => LEVELS.map((l) => ({ v: l.index, id: l.id, name: BAR_NAME[l.id] || l.label, sub: `Index ${l.index}` }));
+/** What the dashed lines mean, under each Work Index chart. */
+const lower = (t) => (t ? t[0].toLowerCase() + t.slice(1) : "");
+const readinessKey = () => LEVELS.map((l) => `<a class="key" href="${BASE}/readiness/#${esc(l.id)}" data-tip="${esc(tipHtml(l.id))}"><i class="sw-dash"></i> <b>${esc(l.label)}</b> at ${l.index} · ${esc(lower((term(l.id) || {}).short))}</a>`).join("");
 
 card("c-index", [{
   key: "index", tab: "Work Index", title: "OpenWork Bench Work Index", metric: "work-index",
   sub: "Category-weighted mean task score (0–100) · Whiskers show 95% likely ranges · Dashed lines are readiness bars · Higher is better",
   empty: "No models to show.", rows: () => scored().sort(byIndex),
   draw: (host, rows) => columns(host, rows, { value: (s) => s.index, whisker: (s) => s.ci, max: 100, axis: true, height: 420, maxBar: 64, aria: "Work Index with confidence intervals", empty: "No models to show.", targets: targets(), label: (v) => fmt(v, 0), tip: (v, s) => `Work Index ${fmt(v)} · likely range ${ciText(s)}<br>Right every time on ${Math.round(s.pass_hat_k * 100)}% of tasks` }),
+  legend: (rows) => familyLegend(rows) + `<span class="key-row">${readinessKey()}</span>`,
   cols: [{ h: "Work Index", id: "work-index", v: (s) => `<b>${fmt(s.index)}</b>` }, { h: "Likely range", id: "likely-range", v: ciText }, { h: "First-try success", id: "first-try", v: (s) => fmt(s.pass_at_1 * 100, 0) + "%" }, { h: "Right every time", id: "every-time", v: (s) => fmt(s.pass_hat_k * 100, 0) + "%" }, { h: "Readiness", id: "readiness", v: (s) => badge(s) || "–" }],
 }]);
 
@@ -375,7 +380,7 @@ card("c-tradeoffs", [
 function headline() {
   const subs = scored();
   columns(document.getElementById("indexChart"), subs.slice().sort(byIndex), {
-    value: (s) => s.index, max: 100, aria: "Index scores", empty: "No models to show.", targets: LEVELS.map((l) => ({ v: l.index, label: l.label })),
+    value: (s) => s.index, max: 100, aria: "Index scores", empty: "No models to show.", targets: targets(),
     label: (v) => Math.round(v), tip: (v, s) => `Work Index ${fmt(v)}${s.ci ? ` · likely range ${ciText(s)}` : ""}<br>Right every time on ${Math.round(s.pass_hat_k * 100)}% of tasks`,
   });
   const r = subs.filter((s) => s.type !== "reference");
@@ -388,6 +393,8 @@ function headline() {
     label: (v) => money(v), tip: (v, s) => `${money(v)} per task (${esc(s.cost_source || "list price")})`,
   });
   document.getElementById("familyLegend").innerHTML = familyLegend(subs);
+  const key = document.getElementById("indexKey");
+  if (key) key.innerHTML = readinessKey();
 }
 
 function updates() {
@@ -481,6 +488,7 @@ function syncButtons() {
   document.querySelectorAll("[data-harness]").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.harness === state.harness)));
   document.getElementById("showTest").checked = state.showTest;
 }
+if (!hasClosed) { const seg = document.getElementById("boardToggle"); if (seg) seg.hidden = true; }
 function render() { syncButtons(); notice(); headline(); CARDS.forEach(draw); tiers(); catTable(); relChart(); mainTable(); matrix(); }
 
 // Open a chart card's tab from a shared link: #c-efficiency/time.

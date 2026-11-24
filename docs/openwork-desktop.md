@@ -50,7 +50,7 @@ uv run owb world plan                    # check the spec, list subjects, estima
 The plan prints the exact steps. In short:
 
 1. In `different-ai/openwork`: `pnpm world plan preview-desktop --place daytona`, then
-   `pnpm world up preview-desktop --place daytona -- --ref <sha> --lifetime 240`.
+   `pnpm world up preview-desktop --place daytona --source sha:<sha> -- --lifetime 240`.
 2. In the sandbox: install `openwork-bench` at a pinned revision, run `owb models verify` and
    `owb validate`, then `owb run <subjects> --openwork-url http://127.0.0.1:8787 --workspace-root …`.
 3. Run the control harness (`owb-agent`) for the same models from anywhere.

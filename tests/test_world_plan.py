@@ -10,8 +10,16 @@ def test_world_plan_selects_board_and_prices_it():
     assert p["totals"]["runs"] == len(p["subjects"]) * p["tasks"] * p["repeats"]
     assert p["totals"]["est_model_usd"] > 0 and p["totals"]["est_sandbox_hours"] > 0
     assert p["problems"] == []  # weights verified in the committed lock file, within budget
-    assert any("pnpm world up preview-desktop" in s for s in p["steps"])
+    up = next(s for s in p["steps"] if "pnpm world up preview-desktop" in s)
+    assert "--source ref:dev -- --lifetime 240" in up and "--ref" not in up
     assert any("pnpm world down" in s for s in p["steps"])
+
+
+def test_world_plan_pins_a_commit_with_a_sha_source():
+    spec = load_world_spec(ROOT / "worlds" / "openwork-bench.world.yaml")
+    spec["openwork"]["ref"] = "0123456789abcdef0123456789abcdef01234567"
+    up = next(s for s in plan(spec, ROOT / "tasks")["steps"] if "pnpm world up" in s)
+    assert "--source sha:0123456789abcdef0123456789abcdef01234567 --" in up
 
 
 def test_staged_pilot_plan_sums_stages_and_selects_models():

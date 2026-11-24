@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import math
 import os
+import re
 from pathlib import Path
 from typing import Any
 
@@ -116,12 +117,15 @@ def _plan_one(
     # Environment variable names the run needs; only the names are ever read or printed.
     unset = [x["name"] for x in spec.get("required_env", []) if x["name"] not in os.environ]
 
+    # OpenWork's world CLI picks the build with --source: sha:<full commit> or ref:<branch>.
+    ref = str(ow.get("ref", "dev"))
+    source = f"sha:{ref}" if re.fullmatch(r"[0-9a-f]{40}", ref) else f"ref:{ref}"
     server = ow.get("server", {})
     desktop_ids = [r["subject"] for r in rows if r["harness"] == "openwork-desktop"]
     control_ids = [r["subject"] for r in rows if r["harness"] != "openwork-desktop"]
     steps_out = [
         f"(in different-ai/openwork) pnpm world plan {ow['world']} --place {ow['place']}",
-        f"(in different-ai/openwork) pnpm world up {ow['world']} --place {ow['place']} -- --ref {ow.get('ref', 'dev')} --lifetime {ow.get('lifetime_minutes', 120)}",
+        f"(in different-ai/openwork) pnpm world up {ow['world']} --place {ow['place']} --source {source} -- --lifetime {ow.get('lifetime_minutes', 120)}",
         f"(in the sandbox) uv tool install 'git+https://github.com/different-ai/openwork-bench@{bench.get('ref', 'main')}[all]'",
         "(in the sandbox) owb models verify && owb validate",
         "(in the sandbox) write the model key to a mode-600 file and export OPENROUTER_API_KEY_FILE (never on a command line)",

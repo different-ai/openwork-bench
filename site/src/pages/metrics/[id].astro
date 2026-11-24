@@ -17,7 +17,7 @@ const rows = rankable(lb)
   .sort((a, b) => (m.better === 'lower' ? a.v - b.v : b.v - a.v));
 const scale = m.id === 'work-index' ? 100 : ['first-try', 'every-time', 'unsafe'].includes(m.id) ? 1 : Math.max(...rows.map((r) => r.v), 0) * 1.05 || 1;
 const related = m.related.map((id) => ({ id, t: term(id) })).filter((r) => r.t);
-const goalNote = goal == null || !top ? '' : `The mark on each bar is the ${top.label} bar (${m.show ? m.show(goal) : goal}).`;
+const goalNote = goal == null || !top ? '' : `Marks show the ${top.label} bar (${m.show ? m.show(goal) : goal})`;
 const description = `${m.name} on OpenWork Bench: ${m.question} ${m.short}`;
 ---
 <Site title={m.name} description={description} active="metrics">
@@ -33,7 +33,7 @@ const description = `${m.name} on OpenWork Bench: ${m.question} ${m.short}`;
     </div>
   </header>
 
-  {!isSample(lb) && lb.tasks.length < 30 && <p class="notice"><b>Pilot results.</b> {lb.tasks.length} sample tasks, three repeats each; the numbers will move when the larger task set is published.</p>}
+  {!isSample(lb) && lb.tasks.length < 30 && <p class="notice"><b>Pilot results.</b> {lb.tasks.length} sample tasks, three repeats each. Expect the numbers to move with the larger task set.</p>}
 
   <div class="explain">
     <div class="card">
@@ -49,7 +49,7 @@ const description = `${m.name} on OpenWork Bench: ${m.question} ${m.short}`;
 
   <section class="block">
     <h2>Every model on {m.name.toLowerCase().startsWith('work') ? 'the Work Index' : m.name.toLowerCase()}</h2>
-    <p class="sub">{m.better === 'lower' ? 'Lowest first.' : 'Highest first.'} {goalNote}</p>
+    <p class="sub">{m.better === 'lower' ? 'Lowest first' : 'Highest first'}{goalNote ? ` · ${goalNote}` : ''}</p>
     <div class="card">
       {rows.length ? (
         <div class="rank">

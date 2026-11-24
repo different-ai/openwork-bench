@@ -1,4 +1,4 @@
-# OpenWork Bench — design and roadmap
+# OpenWork Bench: design and roadmap
 
 This document describes what OpenWork Bench measures, how it is built, and where it is going.
 The other documents describe how each part works today.
@@ -112,13 +112,13 @@ on each side ([data-on-hugging-face.md](data-on-hugging-face.md), [versioning.md
 
 ## 5. Roadmap
 
-### v0.1 — the loop
+### v0.1: the loop
 - 12 sample tasks across six categories; `owb validate` (reference = 1.0, empty ≤ 0.15).
 - `owb-agent` with Claude and OpenAI-compatible providers; MCP world server.
 - Deterministic checks, global safety rules, judge panel, bootstrap CIs; static site;
   Hugging Face publishing; errata, regrade and pinning; CI.
 
-### v0.1.1 — open-weight board in OpenWork
+### v0.1.1: open-weight board in OpenWork
 - Open-weight catalog verified against Hugging Face; revisions and licenses pinned.
 - Pinned OpenRouter routing (no fallbacks, bf16/fp8, no data collection); billed cost and serving
   provider recorded per call.
@@ -127,7 +127,7 @@ on each side ([data-on-hugging-face.md](data-on-hugging-face.md), [versioning.md
 - **Done when:** one open model completes the sample suite through OpenWork in a world, producing
   the same rows and manifest as the control harness.
 
-### v0.2 — first public board
+### v0.2: first public board
 - 60 tasks (10 per category) across ~15 occupations and 2–3 fictional companies.
 - Measured expert baselines from timed professionals.
 - Judge calibration: ~200 human-labelled rubric items; per-rubric-type agreement published.
@@ -135,13 +135,13 @@ on each side ([data-on-hugging-face.md](data-on-hugging-face.md), [versioning.md
   1–2 closed anchors.
 - Held-out split (≈30% of tasks) run identically for every subject.
 
-### v0.3 — breadth and trust
+### v0.3: breadth and trust
 - 150 tasks, 30 occupations; multi-turn tasks with a simulated colleague; ambiguous briefs that
   reward asking.
 - Self-hosted reference serving (vLLM/SGLang in GPU sandboxes) for disputes and new models.
 - Pairwise preference ratings for open-ended deliverables; independent reviewer for index versions.
 
-### v1.0 — the index
+### v1.0: the index
 - 300+ tasks with quarterly releases and held-out rotation; per-occupation boards; index history;
   real office file formats (xlsx, docx, pdf) and larger multi-week worlds.
 

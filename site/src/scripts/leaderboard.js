@@ -1,4 +1,4 @@
-import { CATEGORIES, metric, term, tipHtml } from "../lib/glossary.js";
+import { CATEGORIES, changeLabel, metric, shortDate, term, tipHtml } from "../lib/glossary.js";
 
 // The leaderboard page: headline charts, detail chart cards (tabs, table view, image download,
 // links), the readiness summary and the tables. Data comes from the JSON embedded in the page.
@@ -197,7 +197,7 @@ function scatter(host, rows, opts) {
   });
   el("text", { x: m.l + (W - m.l - m.r) / 2, y: H - 10, "text-anchor": "middle", class: "axis-title" }, svg).textContent = opts.xTitle;
   const ay = m.t + (H - m.t - m.b) / 2;
-  el("text", { x: 16, y: ay, "text-anchor": "middle", class: "axis-title", transform: `rotate(-90 16 ${ay})` }, svg).textContent = "Work Index";
+  el("text", { x: 16, y: ay, "text-anchor": "middle", class: "axis-title", transform: `rotate(-90 16 ${ay})` }, svg).textContent = "OpenWork Bench Work Index";
   // Pareto line: no other model is both better and cheaper (or faster).
   const front = [];
   rows.slice().sort((a, b) => opts.x(a) - opts.x(b) || b.index - a.index).forEach((s) => { if (!front.length || s.index > front[front.length - 1].index) front.push(s); });
@@ -236,7 +236,7 @@ function familyLegend(rows, extra = "") {
   return h + extra;
 }
 const tokenLegend = () => TOKENS.map((t) => `<span><i style="background:${t.color}"></i>${t.label}</span>`).join("");
-const tradeLegend = () => `<span><i style="background:var(--quad);box-shadow:inset 0 0 0 1px var(--line)"></i>Better than the median on both</span><span><i class="sw-dots"></i>Pareto line</span>`;
+const tradeLegend = () => `<span><i style="background:var(--quad);box-shadow:inset 0 0 0 1px var(--line)"></i>Most attractive quadrant</span><span><i class="sw-dots"></i>Pareto line</span>`;
 
 function table(rows, cols) {
   return `<table><thead><tr><th class=l>Model</th>${th("Harness", "harness", "l")}${cols.map((c) => th(c.h, c.id)).join("")}</tr></thead><tbody>${rows.map((s) => `<tr><td class=l><span class="dot" style="background:${solid(s)}"></span><a href="${modelHref(s)}">${esc(name(s))}</a></td><td class=l>${esc(harnessName(s))}</td>${cols.map((c) => `<td>${c.v(s)}</td>`).join("")}</tr>`).join("")}</tbody></table>`;
@@ -263,7 +263,7 @@ function draw(c) {
   c.root.querySelector(".cc-title").innerHTML = esc(v.title) + info(v.metric);
   c.root.querySelector(".cc-sub").textContent = v.sub;
   const more = c.root.querySelector(".cc-more"), m = metric(v.metric);
-  if (more && m) { more.href = `${BASE}/metrics/${m.id}/`; more.textContent = `${m.question} How it is measured →`; }
+  if (more && m) { more.href = `${BASE}/metrics/${m.id}/`; more.textContent = "How it is measured →"; }
   c.root.querySelectorAll(".cc-tabs button").forEach((b, i) => b.setAttribute("aria-selected", String(i === c.active)));
   c.root.querySelector('[data-act="table"]').setAttribute("aria-pressed", String(c.table));
   const chart = c.root.querySelector(".chart"), tbl = c.root.querySelector(".cc-table");
@@ -314,41 +314,41 @@ const targets = () => LEVELS.map((l) => ({ v: l.index, label: `${l.label} ≥ ${
 
 card("c-index", [{
   key: "index", tab: "Work Index", title: "OpenWork Bench Work Index", metric: "work-index",
-  sub: "The share of each task done right, averaged over six kinds of office work, 0–100. Whiskers show the likely range; dashed lines are the readiness bars.",
-  empty: "No subjects to show.", rows: () => scored().sort(byIndex),
-  draw: (host, rows) => columns(host, rows, { value: (s) => s.index, whisker: (s) => s.ci, max: 100, axis: true, height: 420, maxBar: 64, aria: "Work Index with confidence intervals", empty: "No subjects to show.", targets: targets(), label: (v) => fmt(v, 0), tip: (v, s) => `Work Index ${fmt(v)} · likely range ${ciText(s)}<br>Right every time on ${Math.round(s.pass_hat_k * 100)}% of tasks` }),
+  sub: "Category-weighted mean task score (0–100) · Whiskers show 95% likely ranges · Dashed lines are readiness bars · Higher is better",
+  empty: "No models to show.", rows: () => scored().sort(byIndex),
+  draw: (host, rows) => columns(host, rows, { value: (s) => s.index, whisker: (s) => s.ci, max: 100, axis: true, height: 420, maxBar: 64, aria: "Work Index with confidence intervals", empty: "No models to show.", targets: targets(), label: (v) => fmt(v, 0), tip: (v, s) => `Work Index ${fmt(v)} · likely range ${ciText(s)}<br>Right every time on ${Math.round(s.pass_hat_k * 100)}% of tasks` }),
   cols: [{ h: "Work Index", id: "work-index", v: (s) => `<b>${fmt(s.index)}</b>` }, { h: "Likely range", id: "likely-range", v: ciText }, { h: "First-try success", id: "first-try", v: (s) => fmt(s.pass_at_1 * 100, 0) + "%" }, { h: "Right every time", id: "every-time", v: (s) => fmt(s.pass_hat_k * 100, 0) + "%" }, { h: "Readiness", id: "readiness", v: (s) => badge(s) || "–" }],
 }]);
 
 card("c-efficiency", [
   {
-    key: "cost", tab: "Cost per task", title: "Cost per task", metric: "cost", sub: "Average USD per task attempt, billed by the provider where available, otherwise list price · lower is better",
-    empty: "No cost data for these subjects yet.", rows: () => real().filter((s) => s.cost_per_task != null).sort((a, b) => a.cost_per_task - b.cost_per_task),
+    key: "cost", tab: "Cost per Task", title: "Cost per Task", metric: "cost", sub: "Average cost (USD) per task attempt, billed by the provider where available · Lower is better",
+    empty: "No cost data for these models yet.", rows: () => real().filter((s) => s.cost_per_task != null).sort((a, b) => a.cost_per_task - b.cost_per_task),
     draw: (host, rows) => columns(host, rows, { value: (s) => s.cost_per_task, axis: true, tick: (t) => "$" + (t < 0.1 ? t.toFixed(t < 0.01 ? 3 : 2) : t.toFixed(2)), height: 400, aria: "Cost per task", label: (v) => money(v), tip: (v, s) => `${money(v)} per task (${esc(s.cost_source || "list price")})` }),
     cols: [{ h: "Cost per task", id: "cost", v: (s) => money(s.cost_per_task) }, { h: "Source", v: (s) => esc(s.cost_source || "list price") }, { h: "Work value per $1", id: "value", v: (s) => valueText(s) }],
   },
   {
-    key: "time", tab: "Time per task", title: "Time per task", metric: "time", sub: "Average wall-clock minutes per task attempt, from first request to final answer · lower is better",
-    empty: "No timing data for these subjects yet.", rows: () => real().filter((s) => s.time_per_task).sort((a, b) => a.time_per_task - b.time_per_task),
+    key: "time", tab: "Time per Task", title: "Time per Task", metric: "time", sub: "Wall-clock time (minutes) per task attempt, first request to final answer · Lower is better",
+    empty: "No timing data for these models yet.", rows: () => real().filter((s) => s.time_per_task).sort((a, b) => a.time_per_task - b.time_per_task),
     draw: (host, rows) => columns(host, rows, { value: (s) => s.time_per_task / 60, axis: true, tick: (t) => t.toFixed(t < 1 ? 1 : 0) + "m", height: 400, aria: "Time per task", label: (v) => (v < 1 ? v.toFixed(2) : v.toFixed(1)), tip: (v, s) => `${v.toFixed(2)} min per task${s.speedup_vs_expert ? ` · ${s.speedup_vs_expert}× faster than an expert` : ""}` }),
     cols: [{ h: "Minutes per task", id: "time", v: (s) => mins(s.time_per_task) }, { h: "Faster than an expert", id: "speedup", v: (s) => (s.speedup_vs_expert ? s.speedup_vs_expert + "×" : "–") }],
   },
   {
-    key: "output", tab: "Output tokens", title: "Output tokens per task", metric: "tokens", sub: "Average tokens the model wrote per task attempt, reasoning included · lower is better",
-    empty: "No token data for these subjects yet.", rows: () => real().filter((s) => s.usage_per_task).sort((a, b) => a.usage_per_task.output_tokens - b.usage_per_task.output_tokens),
+    key: "output", tab: "Output Tokens", title: "Output Tokens per Task", metric: "tokens", sub: "Average output tokens per task attempt, reasoning included · Lower is better",
+    empty: "No token data for these models yet.", rows: () => real().filter((s) => s.usage_per_task).sort((a, b) => a.usage_per_task.output_tokens - b.usage_per_task.output_tokens),
     draw: (host, rows) => columns(host, rows, { value: (s) => s.usage_per_task.output_tokens, axis: true, tick: kfmt, height: 400, aria: "Output tokens per task", label: (v) => kfmt(v), tip: (v) => `${Math.round(v).toLocaleString()} output tokens per task` }),
     cols: [{ h: "Output tokens", id: "tokens", v: (s) => s.usage_per_task.output_tokens.toLocaleString() }, { h: "Steps per task", id: "steps", v: (s) => fmt(s.steps_per_task) }],
   },
   {
-    key: "tokens", tab: "Tokens by type", title: "Tokens per task, by type", metric: "tokens", sub: "Average tokens per task attempt, split into output, fresh input and cached context",
-    empty: "No token data for these subjects yet.", rows: () => real().filter((s) => s.usage_per_task).sort((a, b) => a.tokens_per_task - b.tokens_per_task),
+    key: "tokens", tab: "Tokens by Type", title: "Tokens per Task by Type", metric: "tokens", sub: "Average tokens per task attempt · Segmented by token type · Lower is better",
+    empty: "No token data for these models yet.", rows: () => real().filter((s) => s.usage_per_task).sort((a, b) => a.tokens_per_task - b.tokens_per_task),
     draw: (host, rows) => columns(host, rows, { value: (s) => TOKENS.reduce((n, t) => n + (s.usage_per_task[t.key] || 0), 0), stack: (s) => TOKENS.map((t) => ({ v: s.usage_per_task[t.key] || 0, color: t.color })), axis: true, tick: kfmt, height: 400, aria: "Tokens per task by type", label: (v) => kfmt(v), tip: (v, s) => TOKENS.map((t) => `${t.label}: ${(s.usage_per_task[t.key] || 0).toLocaleString()}`).join("<br>") }),
     legend: () => tokenLegend(),
     cols: TOKENS.map((t) => ({ h: t.label, v: (s) => (s.usage_per_task[t.key] || 0).toLocaleString() })).concat([{ h: "Total", v: (s) => `<b>${s.tokens_per_task.toLocaleString()}</b>` }]),
   },
   {
-    key: "steps", tab: "Steps per task", title: "Steps per task", metric: "steps", sub: "Average model turns per task attempt, each one a tool call or a reply · lower is better",
-    empty: "No step data for these subjects yet.", rows: () => real().filter((s) => s.steps_per_task).sort((a, b) => a.steps_per_task - b.steps_per_task),
+    key: "steps", tab: "Steps per Task", title: "Steps per Task", metric: "steps", sub: "Average model turns per task attempt, each a tool call or a reply · Lower is better",
+    empty: "No step data for these models yet.", rows: () => real().filter((s) => s.steps_per_task).sort((a, b) => a.steps_per_task - b.steps_per_task),
     draw: (host, rows) => columns(host, rows, { value: (s) => s.steps_per_task, axis: true, height: 400, aria: "Steps per task", label: (v) => fmt(v), tip: (v) => `${fmt(v)} steps per task` }),
     cols: [{ h: "Steps per task", id: "steps", v: (s) => fmt(s.steps_per_task) }],
   },
@@ -356,16 +356,16 @@ card("c-efficiency", [
 
 card("c-tradeoffs", [
   {
-    key: "vs-cost", tab: "Index vs. cost", title: "Work Index vs. cost per task", metric: "value", sub: "Quality against price: Work Index against average USD per task attempt (log scale)",
-    empty: "No cost data for these subjects yet.", rows: () => real().filter((s) => s.index != null && s.cost_per_task > 0),
-    draw: (host, rows) => scatter(host, rows, { x: (s) => s.cost_per_task, xTick: (v) => "$" + (v >= 1 ? v : v.toPrecision(1)), xTitle: "Cost per task (USD, log scale)", quadrant: "Better and cheaper", aria: "Index vs cost per task", empty: "No cost data for these subjects yet.", tip: (s) => `Work Index ${fmt(s.index)} · ${money(s.cost_per_task)} per task${s.value_per_dollar ? `<br>${valueText(s)} of expert work per $1` : ""}` }),
+    key: "vs-cost", tab: "Index vs. Cost", title: "Work Index vs. Cost per Task", metric: "value", sub: "OpenWork Bench Work Index · Average cost (USD) per task attempt",
+    empty: "No cost data for these models yet.", rows: () => real().filter((s) => s.index != null && s.cost_per_task > 0),
+    draw: (host, rows) => scatter(host, rows, { x: (s) => s.cost_per_task, xTick: (v) => "$" + (v >= 1 ? v : v.toPrecision(1)), xTitle: "Cost per Task (USD, Log Scale)", quadrant: "Most attractive quadrant", aria: "Index vs cost per task", empty: "No cost data for these models yet.", tip: (s) => `Work Index ${fmt(s.index)} · ${money(s.cost_per_task)} per task${s.value_per_dollar ? `<br>${valueText(s)} of expert work per $1` : ""}` }),
     legend: (rows) => familyLegend(rows, tradeLegend()),
     cols: [{ h: "Work Index", id: "work-index", v: (s) => fmt(s.index) }, { h: "Cost per task", id: "cost", v: (s) => money(s.cost_per_task) }, { h: "Work value per $1", id: "value", v: (s) => valueText(s) }],
   },
   {
-    key: "vs-time", tab: "Index vs. time", title: "Work Index vs. time per task", metric: "speedup", sub: "Quality against waiting time: Work Index against average minutes per task attempt (log scale)",
-    empty: "No timing data for these subjects yet.", rows: () => real().filter((s) => s.index != null && s.time_per_task > 0),
-    draw: (host, rows) => scatter(host, rows, { x: (s) => s.time_per_task / 60, xTick: (v) => (v >= 1 ? v : v.toPrecision(1)) + "m", xTitle: "Time per task (minutes, log scale)", quadrant: "Better and faster", aria: "Index vs time per task", empty: "No timing data for these subjects yet.", tip: (s) => `Work Index ${fmt(s.index)} · ${mins(s.time_per_task)} min per task${s.speedup_vs_expert ? `<br>${s.speedup_vs_expert}× faster than an expert` : ""}` }),
+    key: "vs-time", tab: "Index vs. Time", title: "Work Index vs. Time per Task", metric: "speedup", sub: "OpenWork Bench Work Index · Wall-clock time (minutes) per task attempt",
+    empty: "No timing data for these models yet.", rows: () => real().filter((s) => s.index != null && s.time_per_task > 0),
+    draw: (host, rows) => scatter(host, rows, { x: (s) => s.time_per_task / 60, xTick: (v) => (v >= 1 ? v : v.toPrecision(1)) + "m", xTitle: "Time per Task (Minutes, Log Scale)", quadrant: "Most attractive quadrant", aria: "Index vs time per task", empty: "No timing data for these models yet.", tip: (s) => `Work Index ${fmt(s.index)} · ${mins(s.time_per_task)} min per task${s.speedup_vs_expert ? `<br>${s.speedup_vs_expert}× faster than an expert` : ""}` }),
     legend: (rows) => familyLegend(rows, tradeLegend()),
     cols: [{ h: "Work Index", id: "work-index", v: (s) => fmt(s.index) }, { h: "Minutes per task", id: "time", v: (s) => mins(s.time_per_task) }, { h: "Faster than an expert", id: "speedup", v: (s) => (s.speedup_vs_expert ? s.speedup_vs_expert + "×" : "–") }],
   },
@@ -375,16 +375,16 @@ card("c-tradeoffs", [
 function headline() {
   const subs = scored();
   columns(document.getElementById("indexChart"), subs.slice().sort(byIndex), {
-    value: (s) => s.index, max: 100, aria: "Index scores", empty: "No subjects to show.", targets: LEVELS.map((l) => ({ v: l.index, label: l.label })),
+    value: (s) => s.index, max: 100, aria: "Index scores", empty: "No models to show.", targets: LEVELS.map((l) => ({ v: l.index, label: l.label })),
     label: (v) => Math.round(v), tip: (v, s) => `Work Index ${fmt(v)}${s.ci ? ` · likely range ${ciText(s)}` : ""}<br>Right every time on ${Math.round(s.pass_hat_k * 100)}% of tasks`,
   });
   const r = subs.filter((s) => s.type !== "reference");
   columns(document.getElementById("timeChart"), r.filter((s) => s.time_per_task).sort((a, b) => a.time_per_task - b.time_per_task), {
-    value: (s) => s.time_per_task / 60, aria: "Time per task", empty: "No timing data for these subjects yet.",
+    value: (s) => s.time_per_task / 60, aria: "Time per task", empty: "No timing data for these models yet.",
     label: (v) => (v < 1 ? v.toFixed(2) : v.toFixed(1)), tip: (v) => `${v.toFixed(2)} min per task`,
   });
   columns(document.getElementById("costChart"), r.filter((s) => s.cost_per_task != null).sort((a, b) => a.cost_per_task - b.cost_per_task), {
-    value: (s) => s.cost_per_task, aria: "Cost per task", empty: "No cost data for these subjects yet.",
+    value: (s) => s.cost_per_task, aria: "Cost per task", empty: "No cost data for these models yet.",
     label: (v) => money(v), tip: (v, s) => `${money(v)} per task (${esc(s.cost_source || "list price")})`,
   });
   document.getElementById("familyLegend").innerHTML = familyLegend(subs);
@@ -393,14 +393,14 @@ function headline() {
 function updates() {
   const log = DATA.changelog || [];
   document.getElementById("updates").innerHTML = log.slice(0, 2).map((c) => `<a class="update" href="${BASE}/changelog/#${changeSlug(c)}"><span class="k">${esc(c.kind)}</span><span class="t">${esc(c.title)}</span><span class="d">${esc(c.text)}</span><span class="arrow" aria-hidden="true">↗</span></a>`).join("");
-  document.getElementById("changelog").innerHTML = log.map((c) => `<li><a href="${BASE}/changelog/#${changeSlug(c)}"><span class="m">${esc(c.kind)} · ${esc(c.date)}</span><span class="t">${esc(c.title)}</span></a></li>`).join("") || '<li><span class="m">No changes yet.</span></li>';
+  document.getElementById("changelog").innerHTML = log.map((c) => `<li><a href="${BASE}/changelog/#${changeSlug(c)}"><span class="m">${esc(changeLabel(c.kind))} · ${esc(shortDate(c.date))}</span><span class="t">${esc(c.title)}</span></a></li>`).join("") || '<li><span class="m">No changes yet.</span></li>';
 }
 
 function tiers() {
   const subs = visible().filter((s) => s.readiness);
   document.getElementById("tiers").innerHTML = (TARGETS.levels || []).map((l) => {
     const names = subs.filter((s) => s.readiness.id === l.id).map(short);
-    return `<a class="tier-row" href="${BASE}/readiness/#${esc(l.id)}" data-tip="${esc(tipHtml(l.id))}"><b>${esc(l.label)}</b><span>${names.length ? esc(names.join(", ")) : "—"}</span></a>`;
+    return `<a class="tier-row" href="${BASE}/readiness/#${esc(l.id)}" data-tip="${esc(tipHtml(l.id))}"><b>${esc(l.label)}</b><span>${names.length ? esc(names.join(", ")) : "None"}</span></a>`;
   }).join("");
 }
 
@@ -470,9 +470,9 @@ function meta() {
 
 function notice() {
   const n = document.getElementById("notice");
-  if (!hasReal) { n.hidden = false; n.innerHTML = "<b>Sample data.</b> No model results are published yet. These rows come from reference and simulated test subjects that exercise the pipeline offline."; }
+  if (!hasReal) { n.hidden = false; n.innerHTML = "<b>Sample data.</b> No model results are published yet. These rows come from scripted and simulated test agents that exercise the pipeline offline."; }
   else if (DATA.note) { n.hidden = false; n.textContent = DATA.note; }
-  else if (DATA.subjects.some((s) => s.simulated) && state.showTest) { n.hidden = false; n.innerHTML = "<b>Includes test subjects.</b> Simulated rows come from a seeded test agent, not a real model."; }
+  else if (DATA.subjects.some((s) => s.simulated) && state.showTest) { n.hidden = false; n.innerHTML = "<b>Includes test agents.</b> Simulated rows come from a seeded test agent, not a real model."; }
   else n.hidden = true;
 }
 

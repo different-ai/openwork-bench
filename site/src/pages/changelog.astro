@@ -2,6 +2,7 @@
 // Every change to the index, the tasks, the harness and the published results.
 import Site from '../layouts/Site.astro';
 import { changeDocs, changeSlug, docs, leaderboard, route } from '../lib/site';
+import { changeLabel, shortDate } from '../lib/glossary.js';
 
 const changes = leaderboard().changelog ?? [];
 const description = 'What changed on OpenWork Bench: the index, the tasks, the harness and the published results.';
@@ -12,12 +13,12 @@ const more = (kind: string) =>
   <header class="page-head">
     <p class="crumbs"><a href={route()}>Leaderboard</a> / Changelog</p>
     <h1>Changelog</h1>
-    <p class="lede">What changed in the index, the tasks, the harness and the published results, newest first.</p>
+    <p class="lede">Changes to the index, tasks, harness and published results, newest first</p>
   </header>
   <ol class="changes">
     {changes.map((c) => (
       <li id={changeSlug(c)}>
-        <div class="when"><time datetime={c.date}>{c.date}</time><span class="kind">{c.kind}</span></div>
+        <div class="when"><time datetime={c.date}>{shortDate(c.date, true)}</time><span class="kind">{changeLabel(c.kind)}</span></div>
         <div class="what">
           <h2>{c.title}</h2>
           <p>{c.text}</p>

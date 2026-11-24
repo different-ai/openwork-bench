@@ -51,10 +51,10 @@ const stats = [
       {s.open_weights?.hf_repo && <a href={`https://huggingface.co/${s.open_weights.hf_repo}/tree/${s.open_weights.revision ?? 'main'}`}>{s.open_weights.license ?? 'open weights'} ↗</a>}
       {s.anchor && <span>Closed, for reference</span>}
     </div>
-    <p class="lede">{level ? level.meaning : 'Scored on every task with the same tools, budgets and grading as every other subject.'} <a href={docs('methodology')}>How scoring works</a></p>
+    <p class="lede">{level ? level.meaning : 'Scored on every task with the same tools, budgets and grading as every other model.'} <a href={docs('methodology')}>How scoring works</a></p>
   </header>
 
-  {s.simulated && <p class="notice"><b>Test subject.</b> This row comes from a seeded test agent that exercises the pipeline, not from a real model.</p>}
+  {s.simulated && <p class="notice"><b>Test agent.</b> This row comes from a seeded test agent that exercises the pipeline, not from a real model.</p>}
 
   <div class="stats">
     {stats.map((x) => <div class="stat"><div class="k">{x.k}<Info id={x.id} /></div><div class="v">{x.v}</div><div class="n">{x.n}</div></div>)}
@@ -62,7 +62,7 @@ const stats = [
 
   <section class="block">
     <h2>Categories</h2>
-    <p class="sub">Mean task score per category, 0–100.{target != null && ` The mark on each bar is the ${target} target.`}</p>
+    <p class="sub">Mean task score (0–100) per category{target != null && ` · Marks show the ${target} target`}</p>
     <div class="card">
       <div class="catbars">
         {Object.entries(cats).map(([id, c]) => {
@@ -84,7 +84,7 @@ const stats = [
 
   <section class="block">
     <h2>Every task</h2>
-    <p class="sub">Mean score across repeats, best first.</p>
+    <p class="sub">Mean score (0–100) across repeats, best first</p>
     <div class="card scroll">
       <table>
         <thead><tr><th class="l">Task</th><th class="l">Category</th><th>Score<Info id="task-score" /></th><th>Solved<Info id="solved" /></th><th>Attempts</th></tr></thead>

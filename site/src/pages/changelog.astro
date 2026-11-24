@@ -1,0 +1,30 @@
+---
+// Every change to the index, the tasks, the harness and the published results.
+import Site from '../layouts/Site.astro';
+import { changeDocs, changeSlug, docs, leaderboard, route } from '../lib/site';
+
+const changes = leaderboard().changelog ?? [];
+const description = 'What changed on OpenWork Bench: the index, the tasks, the harness and the published results.';
+const more = (kind: string) =>
+  kind === 'Results' ? { href: `${route()}#leaderboard`, text: 'See the leaderboard' } : { href: docs(changeDocs[kind]), text: 'Read the docs' };
+---
+<Site title="Changelog" description={description} active="changelog">
+  <header class="page-head">
+    <p class="crumbs"><a href={route()}>Leaderboard</a> / Changelog</p>
+    <h1>Changelog</h1>
+    <p class="lede">What changed in the index, the tasks, the harness and the published results, newest first.</p>
+  </header>
+  <ol class="changes">
+    {changes.map((c) => (
+      <li id={changeSlug(c)}>
+        <div class="when"><time datetime={c.date}>{c.date}</time><span class="kind">{c.kind}</span></div>
+        <div class="what">
+          <h2>{c.title}</h2>
+          <p>{c.text}</p>
+          <a href={more(c.kind).href}>{more(c.kind).text} →</a>
+        </div>
+      </li>
+    ))}
+    {!changes.length && <li><div class="what"><p>No changes yet.</p></div></li>}
+  </ol>
+</Site>

@@ -222,6 +222,10 @@ def build_leaderboard(
                 "cost_per_task": round(cost, 5) if cost is not None else None,
                 "time_per_task": round(wall, 2) if wall is not None else None,
                 "tokens_per_task": round(_mean([sum((r.get("usage") or {}).values()) for r in srows]) or 0),
+                "usage_per_task": {
+                    k: round(_mean([(r.get("usage") or {}).get(k, 0) for r in srows]) or 0)
+                    for k in ("input_tokens", "output_tokens", "cache_read_tokens", "cache_write_tokens")
+                },
                 "steps_per_task": round(_mean([r.get("steps", 0) for r in srows]) or 0, 2),
                 "value_per_dollar": round(expert_value / cost, 1) if cost else None,
                 "speedup_vs_expert": round(expert_secs / wall, 1) if wall else None,
